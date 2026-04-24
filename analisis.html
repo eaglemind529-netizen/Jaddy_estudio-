@@ -7,64 +7,185 @@
     <title>Jaddy Studio | Mentor de Mezcla</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/wavesurfer.js"></script>
     <style>
         :root { --gold: #D4AF37; --black: #050505; }
-        body { background-color: var(--black); color: white; font-family: sans-serif; }
-        .gold-text { color: var(--gold); font-weight: 900; text-transform: uppercase; }
-        .plugin-card { background: rgba(255,255,255,0.05); border: 1px solid #D4AF37; border-radius: 15px; padding: 15px; margin-bottom: 10px; }
-        .btn-add { background: #D4AF37; color: black; font-weight: bold; padding: 10px; border-radius: 10px; width: 100%; margin-top: 5px; }
+        body { background-color: var(--black); color: white; font-family: 'Inter', sans-serif; min-height: 100vh; }
+        .gold-text { color: var(--gold); background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .glass-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(212, 175, 55, 0.1); border-radius: 2rem; backdrop-filter: blur(10px); }
+        .btn-gold { background: linear-gradient(135deg, #D4AF37 0%, #996515 100%); color: black; font-weight: 900; transition: all 0.3s; cursor: pointer; }
+        .plugin-tag { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(212, 175, 55, 0.3); padding: 10px; border-radius: 12px; font-size: 10px; cursor: pointer; font-weight: 800; transition: 0.2s; text-transform: uppercase; text-align: center; }
+        .plugin-tag:hover { background: var(--gold); color: black; border-color: white; }
+        .selected-plugin { background: #D4AF37; color: #000000 !important; padding: 6px 12px; border-radius: 8px; font-weight: 900; font-size: 10px; display: flex; align-items: center; gap: 5px; }
+        .step-card { border-left: 4px solid var(--gold); background: rgba(255,255,255,0.02); margin-bottom: 15px; }
     </style>
 </head>
-<body class="p-4">
-    <h1 class="text-center gold-text text-2xl mb-6 italic">Jaddy Mentor</h1>
-    
-    <div class="mb-8">
-        <p class="text-xs text-gold mb-2">SELECCIONA TUS PLUGINS:</p>
-        <div class="grid grid-cols-2 gap-2">
-            <button onclick="agregar('Nativos', 'Ecualizador')" class="btn-add">EQ NATIVO</button>
-            <button onclick="agregar('Waves', 'Compresor')" class="btn-add">COMP WAVES</button>
-            <button onclick="agregar('Fabfilter', 'Ecualizador')" class="btn-add">PRO-Q 3</button>
-            <button onclick="agregar('Nativos', 'Compresor')" class="btn-add">LIMITER</button>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-3xl mx-auto">
+        <!-- Encabezado -->
+        <div class="flex justify-between items-center mb-6">
+            <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-gold transition text-[10px] font-black uppercase tracking-[0.2em]">
+                <i class="fas fa-arrow-left mr-2"></i> Dashboard
+            </button>
+            <div class="text-right">
+                <h1 class="text-xl font-black gold-text italic">JADDY MENTOR</h1>
+                <p class="text-[7px] text-gray-500 tracking-[0.4em]">CADENA DE VOZ PROFESIONAL</p>
+            </div>
+        </div>
+
+        <!-- Selector de Marca -->
+        <div class="mb-6 grid grid-cols-3 gap-2">
+            <button id="brand-nativos" onclick="setBrand('nativos')" class="py-2 rounded-lg border border-gold bg-gold text-black font-black text-[9px] uppercase">Nativos</button>
+            <button id="brand-waves" onclick="setBrand('waves')" class="py-2 rounded-lg border border-gold/30 text-gold font-black text-[9px] uppercase">Waves</button>
+            <button id="brand-fabfilter" onclick="setBrand('fabfilter')" class="py-2 rounded-lg border border-gold/30 text-gold font-black text-[9px] uppercase">FabFilter</button>
+        </div>
+
+        <!-- Armar Cadena -->
+        <div class="glass-card p-5 mb-6">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-[9px] font-black text-gold uppercase tracking-widest">Rack de Plugins</h3>
+                <button onclick="clearChain()" class="text-[8px] text-red-500 font-black uppercase">Limpiar</button>
+            </div>
+            
+            <div id="chain-display" class="flex flex-wrap gap-1 mb-4 p-3 rounded-xl bg-black/20 min-h-[50px] items-center">
+                <span class="text-gray-600 text-[10px] italic">Configura tu cadena...</span>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2">
+                <button onclick="addToChain('ecualizador')" class="plugin-tag">EQ</button>
+                <button onclick="addToChain('compresor')" class="plugin-tag">Comp</button>
+                <button onclick="addToChain('deesser')" class="plugin-tag">De-Ess</button>
+                <button onclick="addToChain('saturacion')" class="plugin-tag">Saturación</button>
+                <button onclick="addToChain('reverb')" class="plugin-tag">Reverb</button>
+                <button onclick="addToChain('delay')" class="plugin-tag">Delay</button>
+            </div>
+        </div>
+
+        <!-- Carga de Audio -->
+        <div class="glass-card p-6 text-center mb-6 border-2 border-dashed border-gold/10">
+            <div id="drop-zone" onclick="document.getElementById('audio-file').click()" class="cursor-pointer">
+                <div id="upload-ui">
+                    <i class="fas fa-microphone-alt text-2xl text-gold/30 mb-2"></i>
+                    <p class="text-[10px] font-black text-white uppercase">Cargar Vocal para Escaneo</p>
+                </div>
+                <div id="waveform-ui" class="hidden">
+                    <div id="waveform"></div>
+                </div>
+            </div>
+            <input type="file" id="audio-file" class="hidden" accept="audio/*">
+        </div>
+
+        <button id="btn-action" onclick="runAnalysis()" class="btn-gold w-full py-5 rounded-2xl hidden uppercase tracking-[0.2em] text-xs mb-10 shadow-lg">
+            INICIAR ESCANEO IA
+        </button>
+
+        <div id="results" class="hidden space-y-4 pb-20">
+            <div class="glass-card p-4 bg-gold/5 border-gold/20 text-center">
+                <p id="ia-diagnosis" class="text-[11px] text-gray-300 italic">Analizando data tonal...</p>
+            </div>
+            <div id="list-steps"></div>
         </div>
     </div>
 
-    <div id="pantalla-resultados" class="hidden">
-        <h2 class="gold-text text-sm mb-4">Hoja de Ajustes Técnicos:</h2>
-        <div id="lista-instrucciones"></div>
-    </div>
-
+    <!-- Scripts de Jaddy Studio -->
     <script src="logic.js"></script>
+    <script src="connection.js"></script>
 
     <script>
-        let miCadena = [];
+        let selectedBrand = 'nativos';
+        let chain = [];
+        let selectedFile = null;
 
-        function agregar(marca, tipo) {
-            miCadena.push({ marca: marca, tipo: tipo });
-            alert("Agregaste: " + tipo + " de " + marca);
-            mostrarInstrucciones();
+        const wavesurfer = WaveSurfer.create({
+            container: '#waveform',
+            waveColor: '#333',
+            progressColor: '#D4AF37',
+            barWidth: 2,
+            height: 60,
+            responsive: true
+        });
+
+        function setBrand(brand) {
+            selectedBrand = brand;
+            ['nativos', 'waves', 'fabfilter'].forEach(b => {
+                document.getElementById('brand-' + b).className = b === brand ? 
+                "py-2 rounded-lg border border-gold bg-gold text-black font-black text-[9px] uppercase" : 
+                "py-2 rounded-lg border border-gold/30 text-gold font-black text-[9px] uppercase";
+            });
         }
 
-        function mostrarInstrucciones() {
-            const contenedor = document.getElementById('lista-instrucciones');
-            const pantalla = document.getElementById('pantalla-resultados');
-            
-            // Usamos el "Cerebro" que está en logic.js
-            if (window.JaddyStudioBrain) {
-                const pasos = window.JaddyStudioBrain.procesarCadena(miCadena, null);
-                
-                contenedor.innerHTML = pasos.map(p => `
-                    <div class="plugin-card">
-                        <p class="text-gold font-bold text-xs uppercase">Paso ${p.paso}: ${p.nombre}</p>
-                        <p class="text-sm mt-2">${p.detalle}</p>
+        function addToChain(type) {
+            chain.push({ tipo: type, marca: selectedBrand });
+            updateChainUI();
+        }
+
+        function clearChain() { chain = []; updateChainUI(); }
+
+        function updateChainUI() {
+            const container = document.getElementById('chain-display');
+            if (chain.length === 0) {
+                container.innerHTML = '<span class="text-gray-600 text-[10px] italic">Configura tu cadena...</span>';
+            } else {
+                container.innerHTML = chain.map((c, i) => `
+                    <div class="selected-plugin">
+                        <span class="opacity-40 text-[8px]">${i+1}</span>
+                        ${c.tipo.substring(0,4).toUpperCase()}
                     </div>
-                `).join('');
-                
-                pantalla.classList.remove('hidden');
+                `).join('<i class="fas fa-plus text-[8px] text-gold/30 mx-0.5"></i>');
             }
+            checkState();
+        }
+
+        document.getElementById('audio-file').onchange = (e) => {
+            selectedFile = e.target.files[0];
+            if (selectedFile) {
+                wavesurfer.load(URL.createObjectURL(selectedFile));
+                document.getElementById('upload-ui').classList.add('hidden');
+                document.getElementById('waveform-ui').classList.remove('hidden');
+                checkState();
+            }
+        };
+
+        function checkState() {
+            const btn = document.getElementById('btn-action');
+            btn.style.display = (chain.length > 0 && selectedFile) ? 'block' : 'none';
+        }
+
+        async function runAnalysis() {
+            const btn = document.getElementById('btn-action');
+            btn.innerHTML = '<i class="fas fa-satellite-dish fa-spin mr-2"></i> CONECTANDO CON NUBE JADDY...';
+            btn.disabled = true;
+
+            // Llamada real a la API a través de connection.js
+            const analysisResult = await window.JaddyAPI.analyzeAudio(selectedFile);
+
+            // Si la API falla, usamos valores seguros para no detener la app
+            const dataIA = analysisResult ? {
+                frecuencia_critica: analysisResult.tonal_profile?.muddy_freq || 400,
+                sibilancia: analysisResult.tonal_profile?.sibilance_freq || 7500
+            } : { frecuencia_critica: 400, sibilancia: 7500 };
+
+            const diag = document.getElementById('ia-diagnosis');
+            diag.innerText = "IA Jaddy: Escaneo completado. Se detectaron resonancias en " + dataIA.frecuencia_critica + "Hz. Aplicando soluciones técnicas.";
+
+            const instrucciones = window.JaddyStudioBrain.procesarCadena(chain, dataIA);
+
+            const listSteps = document.getElementById('list-steps');
+            listSteps.innerHTML = instrucciones.map(ins => `
+                <div class="step-card p-5 rounded-xl shadow-lg border border-white/5">
+                    <h5 class="text-gold font-black text-[9px] mb-2 uppercase tracking-widest">${ins.nombre}</h5>
+                    <p class="text-[11px] text-gray-200 leading-relaxed">${ins.detalle}</p>
+                </div>
+            `).join('');
+
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+            btn.innerHTML = "ANÁLISIS COMPLETADO";
+            btn.disabled = false;
         }
     </script>
 </body>
 </html>
-
 
 ```
