@@ -4,73 +4,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jaddy Studio | Análisis de Voz</title>
+    <title>Jaddy Studio | Análisis Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Librería para la onda de audio -->
+    <!-- Librería para visualizar la onda de audio -->
     <script src="https://unpkg.com/wavesurfer.js"></script>
     <style>
         :root { --gold: #D4AF37; --black: #050505; }
         body { background-color: var(--black); color: white; font-family: 'Inter', sans-serif; }
         .gold-text { color: var(--gold); background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .analyzer-container { background: rgba(255,255,255,0.02); border: 1px solid rgba(212,175,55,0.1); border-radius: 2rem; }
-        #waveform { width: 100%; height: 128px; background: rgba(0,0,0,0.3); border-radius: 1rem; overflow: hidden; }
-        .btn-analyze { background: linear-gradient(135deg, #D4AF37 0%, #996515 100%); color: black; font-weight: 900; }
-        .progress-bar { height: 4px; background: rgba(212,175,55,0.1); border-radius: 2px; overflow: hidden; }
-        .progress-fill { height: 100%; width: 0%; background: var(--gold); transition: width 0.3s; }
+        .analyzer-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(212,175,55,0.1); border-radius: 2rem; backdrop-filter: blur(10px); }
+        #waveform { width: 100%; height: 120px; background: rgba(0,0,0,0.2); border-radius: 1rem; }
+        .btn-gold { background: linear-gradient(135deg, #D4AF37 0%, #996515 100%); color: black; font-weight: 900; transition: 0.3s; }
+        .btn-gold:hover { transform: scale(1.02); shadow: 0 0 20px rgba(212,175,55,0.4); }
+        .result-item { animation: fadeIn 0.5s ease forwards; opacity: 0; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="p-6 md:p-12">
+<body class="p-4 md:p-10">
 
     <div class="max-w-4xl mx-auto">
-        <!-- Header -->
-        <div class="flex items-center justify-between mb-12">
-            <button onclick="window.history.back()" class="text-gray-500 hover:text-gold transition">
-                <i class="fas fa-arrow-left mr-2"></i> VOLVER AL DASHBOARD
+        <!-- Encabezado -->
+        <div class="flex justify-between items-center mb-10">
+            <button onclick="window.location.href='index.html'" class="text-gray-500 hover:text-gold transition text-xs font-bold">
+                <i class="fas fa-chevron-left mr-2"></i> VOLVER AL PANEL
             </button>
             <div class="text-right">
-                <h1 class="text-2xl font-black gold-text italic">VOICE ANALYZER</h1>
-                <p class="text-[10px] text-gray-500 uppercase tracking-widest">Jaddy INC Intelligence</p>
+                <h1 class="text-2xl font-black gold-text italic">ANÁLISIS DE VOZ</h1>
+                <p class="text-[9px] tracking-[0.3em] text-gray-500">INTELIGENCIA ARTIFICIAL JADDY INC</p>
             </div>
         </div>
 
-        <!-- Área de Carga -->
-        <div class="analyzer-container p-8 mb-8 text-center">
-            <div id="drop-zone" class="border-2 border-dashed border-yellow-900/30 rounded-3xl p-12 transition hover:border-gold/50 cursor-pointer">
-                <i class="fas fa-microphone-lines text-5xl text-gold/30 mb-4" id="mic-icon"></i>
-                <h2 class="text-xl font-bold mb-2 italic">SUBIR VOZ PARA ANALIZAR</h2>
-                <p class="text-gray-500 text-sm mb-6">Arrastra el archivo WAV o haz clic para buscar</p>
-                <input type="file" id="audio-upload" class="hidden" accept="audio/*">
-                <button onclick="document.getElementById('audio-upload').click()" class="bg-white/5 border border-white/10 px-8 py-3 rounded-full text-xs font-bold hover:bg-white/10 transition">
-                    SELECCIONAR ARCHIVO
+        <!-- Zona de Carga y Visualización -->
+        <div class="analyzer-card p-6 md:p-10 mb-8 text-center">
+            <div id="drop-zone" class="border-2 border-dashed border-yellow-900/20 rounded-[2rem] p-8 transition hover:border-gold/40 cursor-pointer mb-6">
+                <div id="upload-prompt">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-gold/30 mb-4"></i>
+                    <h2 class="text-lg font-bold mb-1">SUBIR ARCHIVO DE VOZ</h2>
+                    <p class="text-gray-500 text-xs">Soporta WAV, MP3 o M4A (Máx 10MB)</p>
+                </div>
+                <div id="waveform-container" class="hidden">
+                    <div id="waveform"></div>
+                    <p class="text-[10px] text-gold mt-4 font-mono tracking-widest uppercase">Onda de Audio Detectada</p>
+                </div>
+                <input type="file" id="audio-input" class="hidden" accept="audio/*">
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <button id="btn-select" onclick="document.getElementById('audio-input').click()" class="bg-white/5 border border-white/10 py-3 rounded-full text-xs font-bold hover:bg-white/10 transition">
+                    CAMBIAR ARCHIVO
+                </button>
+                <button id="btn-process" class="btn-gold py-5 rounded-3xl hidden">
+                    <i class="fas fa-microchip mr-2"></i> INICIAR ANÁLISIS TÉCNICO
                 </button>
             </div>
         </div>
 
-        <!-- Visualizador de Onda (Se activa al subir audio) -->
-        <div id="waveform-panel" class="analyzer-container p-8 mb-8 hidden">
-            <div class="flex justify-between items-center mb-4">
-                <span class="text-[10px] font-bold text-gold uppercase tracking-widest">Visualización de Onda</span>
-                <span id="audio-timer" class="text-[10px] text-gray-500 font-mono">00:00 / 00:00</span>
-            </div>
-            <div id="waveform"></div>
-            <div class="flex justify-center mt-6 gap-4">
-                <button id="play-btn" class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center hover:bg-gold hover:text-black transition">
-                    <i class="fas fa-play"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Botón de Acción -->
-        <button id="analyze-action-btn" class="btn-analyze w-full py-6 rounded-3xl shadow-2xl shadow-yellow-900/20 hidden">
-            INICIAR ANÁLISIS DE FRECUENCIAS
-        </button>
-
-        <!-- Resultados del Análisis -->
-        <div id="analysis-results" class="mt-12 space-y-6 hidden">
-            <h3 class="gold-text font-black italic border-b border-gold/20 pb-2">RESULTADOS DEL ESCANEO</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="results-grid">
-                <!-- Aquí se inyectarán los datos de logic.js -->
+        <!-- Panel de Resultados -->
+        <div id="results-panel" class="hidden">
+            <h3 class="gold-text font-black text-sm mb-6 tracking-widest uppercase">Hoja de Ajustes para Plugins</h3>
+            <div id="results-list" class="space-y-4">
+                <!-- Los resultados de logic.js se inyectan aquí -->
             </div>
         </div>
     </div>
@@ -83,76 +77,72 @@
     <script src="logic.js"></script>
 
     <script>
-        let wavesurfer;
-        const fileInput = document.getElementById('audio-upload');
-        const playBtn = document.getElementById('play-btn');
-
-        // Inicializar WaveSurfer
-        wavesurfer = WaveSurfer.create({
+        const audioInput = document.getElementById('audio-input');
+        const btnProcess = document.getElementById('btn-process');
+        const uploadPrompt = document.getElementById('upload-prompt');
+        const waveformContainer = document.getElementById('waveform-container');
+        
+        let wavesurfer = WaveSurfer.create({
             container: '#waveform',
-            waveColor: '#333',
+            waveColor: '#222',
             progressColor: '#D4AF37',
             cursorColor: '#D4AF37',
-            barWidth: 2,
+            barWidth: 3,
             barRadius: 3,
             responsive: true,
-            height: 128,
+            height: 120
         });
 
-        fileInput.onchange = function(e) {
+        audioInput.onchange = function(e) {
             const file = e.target.files[0];
             if (file) {
                 const url = URL.createObjectURL(file);
                 wavesurfer.load(url);
-                document.getElementById('waveform-panel').classList.remove('hidden');
-                document.getElementById('analyze-action-btn').classList.remove('hidden');
-                document.getElementById('mic-icon').classList.add('text-gold');
+                uploadPrompt.classList.add('hidden');
+                waveformContainer.classList.remove('hidden');
+                btnProcess.classList.remove('hidden');
             }
         };
 
-        playBtn.onclick = () => wavesurfer.playPause();
-
-        wavesurfer.on('play', () => playBtn.innerHTML = '<i class="fas fa-pause"></i>');
-        wavesurfer.on('pause', () => playBtn.innerHTML = '<i class="fas fa-play"></i>');
-
-        // Botón de Análisis (Llamando a Connection y Logic)
-        document.getElementById('analyze-action-btn').onclick = async function() {
-            const file = fileInput.files[0];
-            const btn = this;
-            
-            btn.innerText = "ESCANEANDO PERFIL VOCAL...";
-            btn.disabled = true;
+        btnProcess.onclick = async function() {
+            const file = audioInput.files[0];
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> ESCANEANDO FRECUENCIAS...';
 
             try {
-                // 1. Conexión a la API
-                const data = await window.JaddyAPI.analyzeAudio(file);
+                // 1. Llamar a la conexión de IA
+                const datosAudio = await window.JaddyAPI.analyzeAudio(file);
                 
-                // 2. Traducción a perillas con logic.js
-                // Simulamos una cadena básica para el análisis rápido
-                const cadenaDefault = [
+                // 2. Usar la lógica para obtener ajustes de plugins
+                // Simulamos una cadena básica: EQ -> COMP
+                const cadenaPlugins = [
                     { tipo: 'ecualizador', marca: 'fabfilter' },
-                    { tipo: 'compresor', marca: 'waves' }
+                    { tipo: 'compresor', marca: 'waves' },
+                    { tipo: 'deesser', marca: 'nativos' }
                 ];
-                
-                const instrucciones = window.JaddyStudioBrain.generarInstrucciones(cadenaDefault, data);
 
-                // 3. Mostrar Resultados
-                const resultsGrid = document.getElementById('results-grid');
-                resultsGrid.innerHTML = instrucciones.map(ins => `
-                    <div class="bg-white/5 p-6 rounded-3xl border border-white/10">
-                        <p class="text-[9px] font-black text-gold uppercase mb-2">${ins.plugin}</p>
-                        <p class="text-sm text-gray-300">${ins.texto}</p>
+                const ajustes = window.JaddyStudioBrain.generarInstrucciones(cadenaPlugins, datosAudio);
+
+                // 3. Mostrar Resultados en pantalla
+                const resultsList = document.getElementById('results-list');
+                resultsList.innerHTML = ajustes.map((ajuste, i) => `
+                    <div class="result-item analyzer-card p-6 border-l-4 border-l-gold" style="animation-delay: ${i * 0.2}s">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-[10px] font-black text-gold uppercase tracking-tighter">${ajuste.plugin}</span>
+                            <span class="text-[9px] text-gray-600">PASO ${ajuste.paso}</span>
+                        </div>
+                        <p class="text-sm text-gray-300 leading-relaxed">${ajuste.texto}</p>
                     </div>
                 `).join('');
 
-                document.getElementById('analysis-results').classList.remove('hidden');
-                document.getElementById('analysis-results').scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('results-panel').classList.remove('hidden');
+                document.getElementById('results-panel').scrollIntoView({ behavior: 'smooth' });
 
-            } catch (err) {
-                alert("Error en el escaneo técnico.");
+            } catch (error) {
+                console.error(error);
+                alert("Error al conectar con el servidor de análisis.");
             } finally {
-                btn.innerText = "ANÁLISIS COMPLETADO";
-                btn.classList.add('opacity-50');
+                this.innerHTML = '<i class="fas fa-check-circle mr-2"></i> ANÁLISIS COMPLETADO';
             }
         };
     </script>
@@ -160,4 +150,3 @@
 </html>
 
 ```
-
