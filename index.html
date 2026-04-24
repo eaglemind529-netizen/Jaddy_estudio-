@@ -4,325 +4,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jaddy Studio | Jaddy INC</title>
+    <title>Jaddy Studio | Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root {
-            --gold: #D4AF37;
-            --black: #050505;
-            --dark-gray: #111111;
-        }
-
-        body {
-            background-color: var(--black);
-            color: #ffffff;
-            font-family: 'Inter', sans-serif;
-            overflow: hidden;
-        }
-
-        .gold-text {
-            color: var(--gold);
-            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .gold-bg {
-            background: linear-gradient(135deg, #D4AF37 0%, #996515 100%);
-        }
-
-        .sidebar-item {
-            border-left: 3px solid transparent;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .sidebar-item:hover, .sidebar-item.active {
-            background: rgba(212, 175, 55, 0.1);
-            border-left-color: var(--gold);
-            color: var(--gold);
-        }
-
-        .card-glass {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(212, 175, 55, 0.1);
-            transition: all 0.3s;
-        }
-
-        .card-glass:hover {
-            border-color: var(--gold);
-            transform: translateY(-2px);
-        }
-
-        .section-content {
-            display: none;
-            animation: fadeIn 0.4s ease-out;
-            height: 100%;
-            overflow-y: auto;
-            padding-bottom: 50px;
-        }
-
-        .section-content.active {
-            display: block;
-        }
-
-        .plugin-tag {
-            background: rgba(212, 175, 55, 0.1);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 8px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        :root { --gold: #D4AF37; --black: #050505; }
+        body { background-color: var(--black); color: white; font-family: 'Inter', sans-serif; }
+        .gold-text { color: var(--gold); background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .gold-bg { background: linear-gradient(135deg, #D4AF37 0%, #996515 100%); }
+        .card-glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(212, 175, 55, 0.1); border-radius: 24px; transition: 0.3s; }
+        .card-glass:active { transform: scale(0.95); border-color: var(--gold); }
     </style>
 </head>
-<body class="flex h-screen">
+<body class="min-h-screen p-6">
 
-    <!-- Sidebar -->
-    <nav class="w-64 bg-[#0a0a0a] border-r border-yellow-900/20 flex flex-col hidden md:flex">
-        <div class="p-8 text-center">
-            <div class="w-16 h-16 mx-auto mb-4 gold-bg rounded-full flex items-center justify-center shadow-lg shadow-yellow-900/20">
-                <i class="fas fa-eagle text-black text-2xl"></i>
-            </div>
-            <h1 class="text-xl font-black tracking-tighter gold-text uppercase">JADDY STUDIO</h1>
-            <p class="text-[10px] uppercase tracking-[3px] text-gray-500">Jaddy INC System</p>
+    <!-- Encabezado -->
+    <header class="text-center mt-4 mb-10">
+        <div class="w-20 h-20 mx-auto mb-4 gold-bg rounded-full flex items-center justify-center shadow-2xl">
+            <i class="fas fa-eagle text-black text-3xl"></i>
         </div>
+        <h1 class="text-2xl font-black gold-text uppercase tracking-tighter italic">JADDY STUDIO</h1>
+        <p class="text-[10px] text-gray-500 uppercase tracking-[4px]">Jaddy INC System</p>
+    </header>
 
-        <div class="flex-1 mt-4 px-4">
-            <div onclick="showSection('dashboard')" class="sidebar-item active flex items-center p-4 space-x-4" id="nav-dashboard">
-                <i class="fas fa-house"></i>
-                <span class="font-semibold">Dashboard</span>
+    <!-- Menú de Opciones -->
+    <div class="grid grid-cols-1 gap-6 max-w-md mx-auto">
+        
+        <!-- Botón Análisis (EL MÁS IMPORTANTE) -->
+        <div onclick="window.location.href='analisis.html'" class="card-glass p-8 flex items-center space-x-6 cursor-pointer">
+            <div class="w-14 h-14 bg-yellow-900/20 rounded-2xl flex items-center justify-center">
+                <i class="fas fa-music text-gold text-2xl"></i>
             </div>
-            <div onclick="showSection('recording')" class="sidebar-item flex items-center p-4 space-x-4 text-gray-400" id="nav-recording">
-                <i class="fas fa-microphone-lines"></i>
-                <span>Grabación</span>
-            </div>
-            <div onclick="showSection('analysis')" class="sidebar-item flex items-center p-4 space-x-4 text-gray-400" id="nav-analysis">
-                <i class="fas fa-magnifying-glass-chart"></i>
-                <span>Análisis Mix</span>
-            </div>
-            <div onclick="showSection('distribution')" class="sidebar-item flex items-center p-4 space-x-4 text-gray-400" id="nav-distribution">
-                <i class="fas fa-share-nodes"></i>
-                <span>Distribución</span>
-            </div>
-        </div>
-
-        <div class="p-6 border-t border-yellow-900/10">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-lg bg-yellow-900/20 flex items-center justify-center">
-                    <i class="fas fa-lion text-gold"></i>
-                </div>
-                <div>
-                    <p class="text-sm font-bold">Admin</p>
-                    <p class="text-xs text-gray-500">Jaddy Music Rec.</p>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Content -->
-    <main class="flex-1 p-8 bg-gradient-to-br from-[#0a0a0a] to-[#050505] overflow-hidden flex flex-col">
-        <header class="flex justify-between items-center mb-8 shrink-0">
             <div>
-                <h2 class="text-3xl font-bold italic">Plataforma <span class="gold-text italic">Jaddy INC</span></h2>
+                <h3 class="text-xl font-bold italic">ANÁLISIS MIX</h3>
+                <p class="text-gray-500 text-xs">Instrucciones técnicas de mezcla.</p>
             </div>
-            <div class="flex space-x-4">
-                <button class="bg-white/5 p-3 rounded-full hover:bg-white/10"><i class="fas fa-bell"></i></button>
-                <button class="bg-white/5 p-3 rounded-full hover:bg-white/10"><i class="fas fa-gear"></i></button>
-            </div>
-        </header>
-
-        <div class="flex-1 overflow-hidden relative">
-            <!-- DASHBOARD SECTION -->
-            <div id="dashboard-section" class="section-content active">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="card-glass p-8 rounded-3xl cursor-pointer" onclick="showSection('recording')">
-                        <div class="w-12 h-12 bg-yellow-900/20 rounded-xl flex items-center justify-center mb-6">
-                            <i class="fas fa-microphone-alt text-gold text-xl"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-2 italic">Estudio</h3>
-                        <p class="text-gray-400 text-sm">Inicia sesiones de grabación.</p>
-                    </div>
-
-                    <div class="card-glass p-8 rounded-3xl cursor-pointer" onclick="showSection('analysis')">
-                        <div class="w-12 h-12 bg-yellow-900/20 rounded-xl flex items-center justify-center mb-6">
-                            <i class="fas fa-music text-gold text-xl"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-2 italic">Análisis</h3>
-                        <p class="text-gray-400 text-sm">Ajustes técnicos por perilla.</p>
-                    </div>
-
-                    <div class="card-glass p-8 rounded-3xl cursor-pointer" onclick="showSection('distribution')">
-                        <div class="w-12 h-12 bg-yellow-900/20 rounded-xl flex items-center justify-center mb-6">
-                            <i class="fas fa-upload text-gold text-xl"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-2 italic">Distribución</h3>
-                        <p class="text-gray-400 text-sm">Jaddy Music Records.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ANALYSIS SECTION (Integrada con Logic y Connection) -->
-            <div id="analysis-section" class="section-content">
-                <div class="max-w-4xl mx-auto space-y-6">
-                    <h3 class="text-3xl font-bold italic gold-text">Analizador Inteligente de Voz</h3>
-                    
-                    <!-- Subida de Audio -->
-                    <div class="bg-white/5 border-2 border-dashed border-yellow-900/30 rounded-3xl p-8 text-center">
-                        <input type="file" id="audio-input" class="hidden" accept="audio/*">
-                        <button onclick="document.getElementById('audio-input').click()" id="upload-btn" class="gold-bg text-black px-8 py-3 rounded-full font-bold mb-2">
-                            <i class="fas fa-file-audio mr-2"></i>SELECCIONAR VOCAL
-                        </button>
-                        <p id="file-name" class="text-xs text-gray-500 italic">Ningún archivo seleccionado</p>
-                    </div>
-
-                    <!-- Configuración de Plugins -->
-                    <div class="bg-white/5 p-6 rounded-3xl border border-white/10">
-                        <div class="flex justify-between items-center mb-4">
-                            <h4 class="text-sm font-bold uppercase tracking-widest text-gold">Tu Cadena de Plugins</h4>
-                            <div class="flex gap-2">
-                                <button onclick="addToChain('ecualizador')" class="text-[10px] bg-white/10 px-3 py-1 rounded-lg">+ EQ</button>
-                                <button onclick="addToChain('compresor')" class="text-[10px] bg-white/10 px-3 py-1 rounded-lg">+ COMP</button>
-                                <button onclick="addToChain('deesser')" class="text-[10px] bg-white/10 px-3 py-1 rounded-lg">+ DE-ESS</button>
-                            </div>
-                        </div>
-                        <div id="plugin-chain-container" class="space-y-3">
-                            <p class="text-gray-600 text-xs italic text-center py-4">Añade plugins para recibir instrucciones exactas.</p>
-                        </div>
-                    </div>
-
-                    <!-- Botón Ejecutar -->
-                    <button onclick="startProccessing()" id="main-exec-btn" class="w-full gold-bg text-black font-black py-4 rounded-2xl shadow-xl uppercase tracking-tighter transition active:scale-95">
-                        GENERAR HOJA DE AJUSTES TÉCNICOS
-                    </button>
-
-                    <!-- Resultados -->
-                    <div id="results-area" class="hidden space-y-4">
-                        <h4 class="text-gold font-bold italic border-b border-gold/20 pb-2">INSTRUCCIONES DE MEZCLA JADDY INC</h4>
-                        <div id="instructions-list" class="space-y-3"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECCIONES VACÍAS (Igual que antes) -->
-            <div id="recording-section" class="section-content text-center pt-20 text-gray-500 italic">Próximamente para Jaddy INC...</div>
-            <div id="distribution-section" class="section-content text-center pt-20 text-gray-500 italic">Conexión Jaddy Music Records...</div>
         </div>
 
-        <!-- FOOTER -->
-        <footer class="mt-8 opacity-20 text-center shrink-0">
-            <p class="text-xs tracking-widest">&copy; 2024 JADDY INC | POWERED BY EAGLE MIND TECHNOLOGY</p>
-        </footer>
-    </main>
+        <!-- Botón Grabación -->
+        <div class="card-glass p-8 flex items-center space-x-6 opacity-50">
+            <div class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center">
+                <i class="fas fa-microphone-alt text-gray-400 text-2xl"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold italic">ESTUDIO</h3>
+                <p class="text-gray-500 text-xs">Próximamente disponible.</p>
+            </div>
+        </div>
 
-    <!-- SCRIPTS DE CONEXIÓN -->
-    <script type="module">
-        import JaddyAPI from './connection.js';
-        window.JaddyAPI = JaddyAPI;
-    </script>
-    <script src="logic.js"></script>
+        <!-- Botón Distribución -->
+        <div class="card-glass p-8 flex items-center space-x-6 opacity-50">
+            <div class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center">
+                <i class="fas fa-share-nodes text-gray-400 text-2xl"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold italic">DISTRIBUCIÓN</h3>
+                <p class="text-gray-500 text-xs">Jaddy Music Records.</p>
+            </div>
+        </div>
 
-    <script>
-        let currentChain = [];
+    </div>
 
-        // Cambiar entre secciones
-        function showSection(sectionId) {
-            document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
-            document.getElementById(sectionId + '-section').classList.add('active');
-            
-            document.querySelectorAll('.sidebar-item').forEach(item => {
-                item.classList.remove('active');
-                item.classList.add('text-gray-400');
-            });
-            const activeNav = document.getElementById('nav-' + sectionId);
-            if (activeNav) {
-                activeNav.classList.add('active');
-                activeNav.classList.remove('text-gray-400');
-            }
-        }
+    <!-- Footer -->
+    <footer class="mt-12 text-center">
+        <p class="text-[10px] text-gray-600 uppercase tracking-widest">&copy; 2024 JADDY INC | EAGLE MIND</p>
+    </footer>
 
-        // Manejo de Archivo
-        document.getElementById('audio-input').onchange = function(e) {
-            document.getElementById('file-name').innerText = e.target.files[0].name;
-        };
-
-        // Manejo de Cadena de Plugins
-        function addToChain(tipo) {
-            const id = Date.now();
-            currentChain.push({ id, tipo, marca: 'nativos' });
-            renderChain();
-        }
-
-        function removePlugin(id) {
-            currentChain = currentChain.filter(p => p.id !== id);
-            renderChain();
-        }
-
-        function updateMarca(id, marca) {
-            const p = currentChain.find(x => x.id === id);
-            if (p) p.marca = marca;
-        }
-
-        function renderChain() {
-            const container = document.getElementById('plugin-chain-container');
-            if (currentChain.length === 0) {
-                container.innerHTML = `<p class="text-gray-600 text-xs italic text-center py-4">Añade plugins para recibir instrucciones exactas.</p>`;
-                return;
-            }
-            container.innerHTML = currentChain.map((p, i) => `
-                <div class="plugin-tag p-3 flex justify-between items-center">
-                    <div class="flex items-center gap-3">
-                        <span class="text-gold font-black text-xs">#${i+1}</span>
-                        <select onchange="updateMarca(${p.id}, this.value)" class="bg-transparent text-[10px] font-bold uppercase outline-none text-white cursor-pointer">
-                            <option value="nativos" class="bg-black">FL Nativos - ${p.tipo}</option>
-                            <option value="waves" class="bg-black">Waves - ${p.tipo}</option>
-                            <option value="fabfilter" class="bg-black">FabFilter - ${p.tipo}</option>
-                        </select>
-                    </div>
-                    <button onclick="removePlugin(${p.id})" class="text-red-900/50 hover:text-red-500"><i class="fas fa-times"></i></button>
-                </div>
-            `).join('');
-        }
-
-        // EJECUCIÓN PRINCIPAL (CONEXIÓN)
-        async function startProccessing() {
-            const file = document.getElementById('audio-input').files[0];
-            if (!file) return alert("Sube un archivo primero.");
-            if (currentChain.length === 0) return alert("Configura tu cadena de plugins.");
-
-            const btn = document.getElementById('main-exec-btn');
-            btn.innerText = "PROCESANDO CON IA JADDY...";
-            btn.disabled = true;
-
-            try {
-                // 1. Llamada a connection.js
-                const audioData = await window.JaddyAPI.analyzeAudio(file);
-
-                // 2. Llamada a logic.js
-                const instrucciones = window.JaddyStudioBrain.generarInstrucciones(currentChain, audioData);
-
-                // 3. Mostrar Resultados
-                const list = document.getElementById('instructions-list');
-                list.innerHTML = instrucciones.map(ins => `
-                    <div class="bg-white/5 p-4 rounded-xl border-l-2 border-gold">
-                        <p class="text-[9px] font-black text-gold uppercase tracking-widest">${ins.plugin}</p>
-                        <p class="text-xs mt-1 text-gray-200">${ins.texto}</p>
-                    </div>
-                `).join('');
-
-                document.getElementById('results-area').classList.remove('hidden');
-            } catch (err) {
-                alert("Error en la conexión. Asegúrate de que connection.js y logic.js estén en el mismo repositorio.");
-            } finally {
-                btn.innerText = "GENERAR HOJA DE AJUSTES TÉCNICOS";
-                btn.disabled = false;
-            }
-        }
-    </script>
+    <!-- Eliminamos las llamadas a scripts externos que causaban error de conexión -->
 </body>
 </html>
 
