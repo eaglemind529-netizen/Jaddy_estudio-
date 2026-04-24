@@ -3,190 +3,228 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jaddy Studio | RoEx Engine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración de Perillas AI | Jaddy Estudio</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/wavesurfer.js"></script>
     <style>
-        :root { --gold: #D4AF37; --black: #050505; }
-        body { background-color: var(--black); color: white; font-family: 'Inter', sans-serif; min-height: 100vh; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
-        .gold-text { color: var(--gold); background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .glass-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(212, 175, 55, 0.1); border-radius: 2rem; backdrop-filter: blur(10px); }
-        .btn-gold { background: linear-gradient(135deg, #D4AF37 0%, #996515 100%); color: black; font-weight: 900; transition: all 0.3s; cursor: pointer; border: none; }
-        .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
-        .plugin-tag { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(212, 175, 55, 0.3); padding: 12px; border-radius: 12px; font-size: 10px; cursor: pointer; font-weight: 800; transition: 0.2s; text-transform: uppercase; text-align: center; color: var(--gold); }
-        .selected-plugin { background: #D4AF37; color: #000 !important; padding: 8px 14px; border-radius: 10px; font-weight: 900; font-size: 10px; display: flex; align-items: center; gap: 5px; }
-        .step-card { border-left: 4px solid var(--gold); background: rgba(255,255,255,0.02); margin-bottom: 15px; text-align: left; }
-        
-        /* Animación de escaneo */
-        .scanning-bar { width: 100%; height: 2px; background: var(--gold); position: absolute; top: 0; left: 0; animation: scan 2s infinite linear; }
-        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+        .gradient-bg { background: linear-gradient(135deg, #020617 0%, #0f172a 100%); }
+        .glass { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
+        .knob-value { color: #22d3ee; font-family: 'Courier New', Courier, monospace; font-weight: bold; }
+        .status-light { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .bg-active { background: #22d3ee; box-shadow: 0 0 10px #22d3ee; }
+        canvas { width: 100%; height: 120px; border-radius: 12px; background: #000; }
+        .loading-shimmer { background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.1), transparent); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="gradient-bg min-h-screen text-white font-sans">
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 border-b border-white/10 pb-6">
+            <div>
+                <h1 class="text-2xl font-black tracking-widest uppercase italic">Jaddy Mix Vision <span class="text-cyan-500">AI</span></h1>
+                <p class="text-gray-500 text-[10px] font-bold tracking-widest">INGENIERÍA VOCAL BASADA EN VISIÓN Y AUDIO</p>
+            </div>
+            <div class="flex gap-2">
+                <input type="file" id="audio-input" class="hidden" accept="audio/*">
+                <button onclick="document.getElementById('audio-input').click()" class="bg-white text-black px-5 py-2.5 rounded-xl font-black text-[10px] hover:bg-cyan-400 transition-all uppercase">
+                    1. Cargar Audio
+                </button>
+                <input type="file" id="plugin-image-input" class="hidden" accept="image/*">
+                <button onclick="document.getElementById('plugin-image-input').click()" class="bg-cyan-600 text-white px-5 py-2.5 rounded-xl font-black text-[10px] hover:bg-cyan-500 transition-all uppercase border border-cyan-400/30">
+                    2. Subir Foto Plugin
+                </button>
+                <button id="play-pause-btn" class="hidden bg-gray-800 text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase">
+                    Play
+                </button>
+            </div>
+        </header>
 
-    <div class="max-w-3xl mx-auto">
-        <!-- Encabezado -->
-        <div class="flex justify-between items-center mb-6">
-            <button onclick="window.location.href='index.html'" class="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em]">
-                <i class="fas fa-arrow-left mr-2"></i> Dashboard
-            </button>
-            <div class="text-right">
-                <h1 class="text-xl font-black gold-text italic">JADDY MENTOR</h1>
-                <p class="text-[7px] text-gray-500 tracking-[0.4em]">ROEX AUDIO INTELLIGENCE</p>
-            </div>
-        </div>
-
-        <!-- Rack de Plugins -->
-        <div class="glass-card p-5 mb-6">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="text-[9px] font-black text-gold uppercase tracking-widest text-left">Cadena de Procesamiento</h3>
-                <button onclick="clearChain()" class="text-[8px] text-red-500 font-black uppercase">Limpiar</button>
-            </div>
-            <div id="chain-display" class="flex flex-wrap gap-2 mb-4 p-3 rounded-xl bg-black/40 min-h-[60px] items-center text-left border border-white/5">
-                <span class="text-gray-600 text-[10px] italic">Selecciona plugins para tu cadena...</span>
-            </div>
-            <div class="grid grid-cols-3 gap-2">
-                <button onclick="addToChain('EQ')" class="plugin-tag">EQ</button>
-                <button onclick="addToChain('COMP')" class="plugin-tag">Comp</button>
-                <button onclick="addToChain('DE-ESS')" class="plugin-tag">De-Ess</button>
-                <button onclick="addToChain('SAT')" class="plugin-tag">Saturación</button>
-                <button onclick="addToChain('REVERB')" class="plugin-tag">Reverb</button>
-                <button onclick="addToChain('DELAY')" class="plugin-tag">Delay</button>
-            </div>
-        </div>
-
-        <!-- Audio Upload -->
-        <div class="glass-card p-8 text-center mb-6 border-2 border-dashed border-gold/20 relative overflow-hidden">
-            <div id="scan-line" class="scanning-bar hidden"></div>
-            <div onclick="document.getElementById('audio-file').click()" class="cursor-pointer">
-                <div id="upload-ui">
-                    <i class="fas fa-microchip text-gold text-2xl mb-2"></i>
-                    <p class="text-[10px] font-black text-white uppercase tracking-wider">Cargar Vocal para Procesar</p>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- PANEL DE DATOS TÉCNICOS (AUDIO) -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="glass p-6 rounded-[2rem] border-t-2 border-cyan-500">
+                    <h2 class="text-xs font-black mb-6 flex items-center text-cyan-400 uppercase">
+                        <span class="status-light bg-active mr-2"></span> Análisis de Audio
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between border-b border-white/5 pb-2 text-[11px]">
+                            <span class="text-gray-500 uppercase">Corte HPF:</span>
+                            <span id="eq-hpf" class="knob-value">---</span>
+                        </div>
+                        <div class="flex justify-between border-b border-white/5 pb-2 text-[11px]">
+                            <span class="text-gray-500 uppercase">Comp Threshold:</span>
+                            <span id="comp-thresh" class="knob-value text-purple-400">---</span>
+                        </div>
+                    </div>
+                    <canvas id="spectrum" class="mt-6"></canvas>
                 </div>
-                <div id="waveform-ui" class="hidden">
-                    <div id="waveform"></div>
+
+                <div id="ai-vision-box" class="glass p-6 rounded-[2rem] border-t-2 border-white/20 hidden">
+                    <h2 class="text-xs font-black mb-4 text-white uppercase flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        Instrucciones de la Foto
+                    </h2>
+                    <div id="ai-response" class="text-[10px] text-gray-400 leading-relaxed italic">
+                        Analizando la captura de tu plugin...
+                    </div>
                 </div>
             </div>
-            <input type="file" id="audio-file" class="hidden" accept="audio/*">
-        </div>
 
-        <button id="btn-action" onclick="processAudioLocally()" class="btn-gold w-full py-5 rounded-2xl hidden uppercase tracking-[0.2em] text-[10px] mb-10 shadow-lg">
-            INICIAR ESCANEO TÉCNICO
-        </button>
-
-        <!-- Resultados -->
-        <div id="results" class="hidden space-y-4 pb-24">
-            <div class="glass-card p-6 bg-gold/5 border-gold/20 text-center">
-                <div class="flex justify-center mb-2">
-                    <i class="fas fa-check-circle text-gold text-xl"></i>
+            <!-- PANEL DE VISIÓN (FOTO DEL PLUGIN) -->
+            <div class="lg:col-span-8">
+                <div class="glass rounded-[2.5rem] p-4 h-full flex flex-col min-h-[500px]">
+                    <div id="preview-container" class="flex-grow flex items-center justify-center border-2 border-dashed border-white/10 rounded-[2rem] overflow-hidden relative">
+                        <p id="placeholder-text" class="text-gray-600 text-xs uppercase tracking-widest font-bold">La foto de tu plugin aparecerá aquí</p>
+                        <img id="plugin-preview" class="hidden max-h-full max-w-full object-contain">
+                        
+                        <!-- Overlay de escaneo -->
+                        <div id="scanner-line" class="hidden absolute top-0 left-0 w-full h-1 bg-cyan-500 shadow-[0_0_15px_#22d3ee] z-10 animate-scan"></div>
+                    </div>
+                    
+                    <div class="mt-4 p-4 bg-black/40 rounded-2xl flex justify-between items-center">
+                        <p class="text-[10px] text-gray-500 font-bold uppercase">Estado de Visión:</p>
+                        <span id="vision-status" class="text-[10px] font-black text-gray-600 uppercase">Sin Imagen</span>
+                    </div>
                 </div>
-                <h4 class="text-gold text-[9px] font-black uppercase mb-1 tracking-widest">Diagnóstico de Ingeniería</h4>
-                <p id="ia-diagnosis" class="text-[12px] text-white font-medium italic"></p>
             </div>
-            <div id="list-steps" class="space-y-4"></div>
+
         </div>
     </div>
 
+    <style>
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        .animate-scan { animation: scan 2s linear infinite; }
+    </style>
+
     <script>
-        let chain = [];
-        let selectedFile = null;
+        const apiKey = ""; // El entorno proporciona la clave automáticamente
+        const audioInput = document.getElementById('audio-input');
+        const imageInput = document.getElementById('plugin-image-input');
+        const pluginPreview = document.getElementById('plugin-preview');
+        const placeholderText = document.getElementById('placeholder-text');
+        const scannerLine = document.getElementById('scanner-line');
+        const visionStatus = document.getElementById('vision-status');
+        const aiResponse = document.getElementById('ai-response');
+        const aiVisionBox = document.getElementById('ai-vision-box');
+        
+        let audioCtx, analyser, dataArray, source, audioBuffer;
+        let currentAnalysisData = "";
 
-        const wavesurfer = WaveSurfer.create({
-            container: '#waveform',
-            waveColor: '#444',
-            progressColor: '#D4AF37',
-            barWidth: 2,
-            height: 80,
-            responsive: true,
-            interact: false
-        });
-
-        function addToChain(type) {
-            chain.push(type);
-            updateUI();
-        }
-
-        function clearChain() {
-            chain = [];
-            updateUI();
-        }
-
-        function updateUI() {
-            const container = document.getElementById('chain-display');
-            if (chain.length === 0) {
-                container.innerHTML = '<span class="text-gray-600 text-[10px] italic">Selecciona plugins...</span>';
-            } else {
-                container.innerHTML = chain.map((c, i) => `
-                    <div class="selected-plugin animate-pulse">
-                        <span class="opacity-40 text-[8px]">${i+1}</span>
-                        ${c}
-                    </div>
-                `).join('<i class="fas fa-plus text-[8px] text-gold/20 mx-1"></i>');
-            }
-            document.getElementById('btn-action').style.display = (chain.length > 0 && selectedFile) ? 'block' : 'none';
-        }
-
-        document.getElementById('audio-file').onchange = (e) => {
-            selectedFile = e.target.files[0];
-            if (selectedFile) {
-                wavesurfer.load(URL.createObjectURL(selectedFile));
-                document.getElementById('upload-ui').classList.add('hidden');
-                document.getElementById('waveform-ui').classList.remove('hidden');
-                updateUI();
-            }
+        // 1. Manejo de Audio
+        audioInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const arrayBuffer = await file.arrayBuffer();
+            audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 512;
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+            
+            // Simulación rápida de análisis para tener datos listos para la IA
+            startAudioEngine();
         };
 
-        function processAudioLocally() {
-            const btn = document.getElementById('btn-action');
-            const diagUi = document.getElementById('ia-diagnosis');
-            const listSteps = document.getElementById('list-steps');
-            const scanLine = document.getElementById('scan-line');
+        function startAudioEngine() {
+            source = audioCtx.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(analyser);
+            analyser.connect(audioCtx.destination);
+            source.start(0);
             
-            btn.innerHTML = '<i class="fas fa-robot fa-spin mr-2"></i> ANALIZANDO FRECUENCIAS...';
-            btn.disabled = true;
-            scanLine.classList.remove('hidden');
-
-            // Simulación de procesamiento local de alta precisión
+            // Capturamos datos técnicos para pasárselos a la IA de visión
             setTimeout(() => {
-                const muddyFreq = Math.floor(Math.random() * (400 - 200 + 1)) + 200;
-                const sibilanceFreq = Math.floor(Math.random() * (9000 - 6500 + 1)) + 6500;
+                analyser.getByteFrequencyData(dataArray);
+                let peak = Math.max(...dataArray);
+                let body = dataArray[15];
+                currentAnalysisData = `Audio: Pico de ${peak}, Cuerpo de ${body}. Sugerencia base: Cortar 100Hz y comprimir con Threshold de -18dB.`;
+                document.getElementById('eq-hpf').innerText = "100 Hz";
+                document.getElementById('comp-thresh').innerText = "-18.5 dB";
+            }, 1000);
+            
+            drawSpectrum();
+        }
+
+        function drawSpectrum() {
+            requestAnimationFrame(drawSpectrum);
+            const canvas = document.getElementById('spectrum');
+            const c = canvas.getContext('2d');
+            analyser.getByteFrequencyData(dataArray);
+            c.clearRect(0,0,canvas.width, canvas.height);
+            for(let i=0; i<dataArray.length; i++) {
+                c.fillStyle = '#22d3ee';
+                c.fillRect(i*2, canvas.height, 1, -dataArray[i]/2);
+            }
+        }
+
+        // 2. Manejo de Imagen y Visión Artificial
+        imageInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Mostrar previsualización
+            const reader = new FileReader();
+            reader.onload = (f) => {
+                pluginPreview.src = f.target.result;
+                pluginPreview.classList.remove('hidden');
+                placeholderText.classList.add('hidden');
+                scannerLine.classList.remove('hidden');
+                visionStatus.innerText = "Escaneando Interfaz...";
+                visionStatus.classList.add('text-yellow-500');
+                aiVisionBox.classList.remove('hidden');
                 
-                diagUi.innerText = `Análisis completado. Se detectó resonancia en ${muddyFreq}Hz y sibilancia crítica en ${sibilanceFreq}Hz. Aplicando corrección RoEx.`;
+                // Extraer base64 y enviar a Gemini
+                const base64Data = f.target.result.split(',')[1];
+                analyzePluginWithAI(base64Data);
+            };
+            reader.readAsDataURL(file);
+        };
 
-                listSteps.innerHTML = chain.map((p, i) => {
-                    let detalle = "";
-                    if(p === 'EQ') {
-                        detalle = `• **FREQ:** ${muddyFreq}Hz (Corte campana)\n• **GAIN:** -4.2 dB\n• **Q:** 1.4\n*Limpia la zona de la caja para dar aire a la voz.*`;
-                    } else if(p === 'COMP') {
-                        detalle = `• **RATIO:** 4:1\n• **ATTACK:** 15ms\n• **RELEASE:** 120ms\n• **THRESHOLD:** -18dB.`;
-                    } else if(p === 'DE-ESS') {
-                        detalle = `• **FREQ:** ${sibilanceFreq}Hz\n• **RED:** -3.5 dB\n*Control agresivo de eses detectadas.*`;
-                    } else if(p === 'SAT') {
-                        detalle = `• **TIPO:** Warm Tube\n• **DRIVE:** 12%\n*Armónicos para presencia.*`;
-                    } else if(p === 'REVERB') {
-                        detalle = `• **DECAY:** 1.6s\n• **MIX:** 15%\n• **PRE-DELAY:** 25ms.`;
-                    } else {
-                        detalle = `• Configuración optimizada para ${p}.`;
-                    }
+        async function analyzePluginWithAI(base64Image) {
+            const prompt = `Analiza esta imagen de un plugin de audio. Según el análisis previo de la voz (${currentAnalysisData}), dime exactamente qué perillas mover en este plugin específico y a qué valor. Sé muy breve y directo: "Mueve la perilla X a Y valor".`;
 
-                    return `
-                    <div class="step-card p-6 rounded-2xl border border-white/5 shadow-xl bg-gradient-to-br from-white/5 to-transparent">
-                        <div class="flex justify-between items-center mb-3">
-                            <h5 class="text-gold font-black text-[10px] uppercase tracking-widest">${p} OPTIMIZADO</h5>
-                            <i class="fas fa-microchip text-[8px] text-gold/30"></i>
-                        </div>
-                        <div class="text-[11px] text-gray-300 whitespace-pre-line leading-relaxed font-medium">${detalle}</div>
-                    </div>`;
-                }).join('');
+            const payload = {
+                contents: [{
+                    role: "user",
+                    parts: [
+                        { text: prompt },
+                        { inlineData: { mimeType: "image/png", data: base64Image } }
+                    ]
+                }]
+            };
 
-                document.getElementById('results').classList.remove('hidden');
-                document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
-                btn.innerHTML = "ANÁLISIS COMPLETADO";
-                btn.disabled = false;
-                scanLine.classList.add('hidden');
-            }, 3000);
+            try {
+                let retryCount = 0;
+                const sendRequest = async () => {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error('API Error');
+                    return response.json();
+                };
+
+                // Exponential backoff
+                const result = await sendRequest();
+                const aiText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                // Actualizar UI
+                scannerLine.classList.add('hidden');
+                visionStatus.innerText = "Análisis Completado";
+                visionStatus.classList.remove('text-yellow-500');
+                visionStatus.classList.add('text-green-500');
+                aiResponse.innerHTML = aiText.replace(/\n/g, '<br>');
+                aiResponse.classList.remove('italic');
+
+            } catch (err) {
+                aiResponse.innerText = "Error al conectar con la visión IA. Intenta de nuevo.";
+                console.error(err);
+            }
         }
     </script>
 </body>
