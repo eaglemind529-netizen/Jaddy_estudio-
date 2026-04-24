@@ -14,11 +14,9 @@
         .gold-text { color: var(--gold); background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .glass-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(212, 175, 55, 0.1); border-radius: 2rem; backdrop-filter: blur(10px); }
         .btn-gold { background: linear-gradient(135deg, #D4AF37 0%, #996515 100%); color: black; font-weight: 900; transition: all 0.3s; cursor: pointer; border: none; }
-        .btn-gold:active { transform: scale(0.98); opacity: 0.9; }
         .plugin-tag { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(212, 175, 55, 0.3); padding: 12px; border-radius: 12px; font-size: 10px; cursor: pointer; font-weight: 800; transition: 0.2s; text-transform: uppercase; text-align: center; }
-        .selected-plugin { background: #D4AF37; color: #000000 !important; padding: 8px 14px; border-radius: 10px; font-weight: 900; font-size: 10px; display: flex; align-items: center; gap: 5px; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2); }
-        .step-card { border-left: 4px solid var(--gold); background: rgba(255,255,255,0.02); margin-bottom: 15px; animation: slideIn 0.4s ease-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        .selected-plugin { background: #D4AF37; color: #000000 !important; padding: 8px 14px; border-radius: 10px; font-weight: 900; font-size: 10px; display: flex; align-items: center; gap: 5px; }
+        .step-card { border-left: 4px solid var(--gold); background: rgba(255,255,255,0.02); margin-bottom: 15px; }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -30,7 +28,7 @@
             </button>
             <div class="text-right">
                 <h1 class="text-xl font-black gold-text italic">JADDY MENTOR</h1>
-                <p class="text-[7px] text-gray-500 tracking-[0.4em]">CADENA DE VOZ PROFESIONAL</p>
+                <p class="text-[7px] text-gray-500 tracking-[0.4em]">MEZCLA REAL-TIME</p>
             </div>
         </div>
 
@@ -41,16 +39,15 @@
             <button id="brand-fabfilter" onclick="setBrand('fabfilter')" class="py-2 rounded-lg border border-gold/30 text-gold font-black text-[9px] uppercase">FabFilter</button>
         </div>
 
+        <!-- Rack -->
         <div class="glass-card p-5 mb-6">
             <div class="flex justify-between items-center mb-3">
                 <h3 class="text-[9px] font-black text-gold uppercase tracking-widest text-left">Rack de Plugins</h3>
                 <button onclick="clearChain()" class="text-[8px] text-red-500 font-black uppercase">Limpiar</button>
             </div>
-            
             <div id="chain-display" class="flex flex-wrap gap-2 mb-4 p-3 rounded-xl bg-black/20 min-h-[60px] items-center">
-                <span class="text-gray-600 text-[10px] italic">Configura tu cadena...</span>
+                <span class="text-gray-600 text-[10px] italic">Agrega plugins para analizar...</span>
             </div>
-            
             <div class="grid grid-cols-3 gap-2">
                 <button onclick="addToChain('ecualizador')" class="plugin-tag">EQ</button>
                 <button onclick="addToChain('compresor')" class="plugin-tag">Comp</button>
@@ -61,11 +58,12 @@
             </div>
         </div>
 
+        <!-- Audio -->
         <div class="glass-card p-6 text-center mb-6 border-2 border-dashed border-gold/10">
-            <div id="drop-zone" onclick="document.getElementById('audio-file').click()" class="cursor-pointer">
+            <div onclick="document.getElementById('audio-file').click()" class="cursor-pointer">
                 <div id="upload-ui">
                     <i class="fas fa-microphone-alt text-2xl text-gold/30 mb-2"></i>
-                    <p class="text-[10px] font-black text-white uppercase">Cargar Vocal para Escaneo</p>
+                    <p class="text-[10px] font-black text-white uppercase">Cargar Vocal para Mezcla</p>
                 </div>
                 <div id="waveform-ui" class="hidden">
                     <div id="waveform"></div>
@@ -80,13 +78,13 @@
 
         <div id="results" class="hidden space-y-4 pb-20 text-left">
             <div class="glass-card p-4 bg-gold/5 border-gold/20 text-center">
-                <p id="ia-diagnosis" class="text-[11px] text-gray-300 italic font-medium"></p>
+                <p id="ia-diagnosis" class="text-[11px] text-white font-bold italic"></p>
             </div>
             <div id="list-steps"></div>
         </div>
     </div>
 
-    <!-- CARGA DE SCRIPTS CON FALLBACK -->
+    <!-- SCRIPTS -->
     <script src="logic.js"></script>
     <script src="connection.js"></script>
 
@@ -96,12 +94,8 @@
         let selectedFile = null;
 
         const wavesurfer = WaveSurfer.create({
-            container: '#waveform',
-            waveColor: '#333',
-            progressColor: '#D4AF37',
-            barWidth: 2,
-            height: 60,
-            responsive: true
+            container: '#waveform', waveColor: '#333', progressColor: '#D4AF37',
+            barWidth: 2, height: 60, responsive: true
         });
 
         function setBrand(brand) {
@@ -123,7 +117,7 @@
         function updateChainUI() {
             const container = document.getElementById('chain-display');
             if (chain.length === 0) {
-                container.innerHTML = '<span class="text-gray-600 text-[10px] italic">Configura tu cadena...</span>';
+                container.innerHTML = '<span class="text-gray-600 text-[10px] italic">Agrega plugins...</span>';
             } else {
                 container.innerHTML = chain.map((c, i) => `
                     <div class="selected-plugin">
@@ -150,64 +144,41 @@
             btn.style.display = (chain.length > 0 && selectedFile) ? 'block' : 'none';
         }
 
-        // LÓGICA DE PROCESAMIENTO INTERNA (Por si logic.js falla)
-        const FallbackBrain = {
-            procesar(chain, data) {
-                return chain.map(p => {
-                    if(p.tipo === 'ecualizador') return { nombre: `${p.marca.toUpperCase()} EQ`, detalle: `Atenuar -3dB en la zona de lodo (${data.frecuencia_critica}Hz) para limpiar la voz.` };
-                    if(p.tipo === 'compresor') return { nombre: `${p.marca.toUpperCase()} COMP`, detalle: `Ratio 4:1, Attack rápido para controlar picos. Umbral ajustado para -4dB de reducción.` };
-                    if(p.tipo === 'deesser') return { nombre: `${p.marca.toUpperCase()} DE-ESSER`, detalle: `Reducir sibilancia en los ${data.sibilancia}Hz con un umbral suave.` };
-                    return { nombre: `${p.marca.toUpperCase()} ${p.tipo.toUpperCase()}`, detalle: `Ajuste optimizado por IA Jaddy para perfil tonal profesional.` };
-                });
-            }
-        };
-
         async function runAnalysis() {
             const btn = document.getElementById('btn-action');
             const diag = document.getElementById('ia-diagnosis');
+            const listSteps = document.getElementById('list-steps');
             
-            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> ESCANEANDO...';
+            btn.innerHTML = '<i class="fas fa-satellite-dish fa-spin mr-2"></i> ESCUCHANDO VOZ...';
             btn.disabled = true;
 
             try {
-                let dataIA;
-                // Intento de conexión real con el API Handler
-                if (window.JaddyAPI && typeof window.JaddyAPI.analyzeAudio === 'function') {
-                    const result = await window.JaddyAPI.analyzeAudio(selectedFile);
-                    dataIA = {
-                        frecuencia_critica: result?.muddy_freq || 400,
-                        sibilancia: result?.sibilance_freq || 7500
-                    };
-                } else {
-                    // Simulación inmediata si el conector no está listo
-                    dataIA = { frecuencia_critica: 415, sibilancia: 7800 };
-                }
+                // 1. LLAMADA A LA IA REAL
+                const result = await window.JaddyAPI.analyzeAudio(selectedFile);
+                
+                // 2. LLAMADA AL CEREBRO (logic.js)
+                // Usamos los nombres exactos que configuramos en logic.js
+                const instrucciones = window.JaddyStudioBrain.procesarCadena(chain, result);
 
-                diag.innerText = `Jaddy IA: Escaneo completado. Resonancia detectada en ${dataIA.frecuencia_critica}Hz.`;
+                // Mostramos el diagnóstico
+                diag.innerText = "ESCANEO COMPLETADO CON ÉXITO.";
 
-                // Procesar cadena (Usando logic.js o Fallback)
-                let instrucciones;
-                if (window.JaddyStudioBrain) {
-                    instrucciones = window.JaddyStudioBrain.procesarCadena(chain, dataIA);
-                } else {
-                    instrucciones = FallbackBrain.procesar(chain, dataIA);
-                }
-
-                const listSteps = document.getElementById('list-steps');
+                // 3. RENDERIZAR RESULTADOS
                 listSteps.innerHTML = instrucciones.map(ins => `
                     <div class="step-card p-5 rounded-xl shadow-lg border border-white/5">
-                        <h5 class="text-gold font-black text-[9px] mb-2 uppercase tracking-widest text-left">${ins.nombre}</h5>
-                        <p class="text-[11px] text-gray-200 leading-relaxed text-left">${ins.detalle}</p>
+                        <h5 class="text-gold font-black text-[10px] mb-2 uppercase tracking-widest text-left">${ins.nombre}</h5>
+                        <div class="text-[11px] text-gray-200 leading-relaxed text-left whitespace-pre-line">${ins.detalle}</div>
                     </div>
                 `).join('');
 
                 document.getElementById('results').classList.remove('hidden');
                 document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
                 btn.innerHTML = "ANÁLISIS COMPLETADO";
+
             } catch (error) {
                 console.error(error);
-                diag.innerText = "Error en el escaneo. Intente de nuevo.";
-                btn.innerHTML = "INICIAR ESCANEO IA";
+                diag.innerText = "Error crítico de conexión.";
+                btn.innerHTML = "REINTENTAR ESCANEO";
             } finally {
                 btn.disabled = false;
             }
@@ -216,3 +187,4 @@
 </body>
 </html>
 
+```
