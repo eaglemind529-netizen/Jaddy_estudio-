@@ -4,147 +4,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jaddy Studio | Análisis Pro</title>
+    <title>Jaddy Studio | Mentor de Mezcla</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Librería para visualizar la onda de audio -->
     <script src="https://unpkg.com/wavesurfer.js"></script>
     <style>
         :root { --gold: #D4AF37; --black: #050505; }
-        body { background-color: var(--black); color: white; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--black); color: white; font-family: 'Inter', sans-serif; min-height: 100vh; }
         .gold-text { color: var(--gold); background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .analyzer-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(212,175,55,0.1); border-radius: 2rem; backdrop-filter: blur(10px); }
-        #waveform { width: 100%; height: 120px; background: rgba(0,0,0,0.2); border-radius: 1rem; }
-        .btn-gold { background: linear-gradient(135deg, #D4AF37 0%, #996515 100%); color: black; font-weight: 900; transition: 0.3s; }
-        .btn-gold:hover { transform: scale(1.02); shadow: 0 0 20px rgba(212,175,55,0.4); }
-        .result-item { animation: fadeIn 0.5s ease forwards; opacity: 0; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .glass-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(212, 175, 55, 0.1); border-radius: 2rem; backdrop-filter: blur(10px); }
+        .btn-gold { background: linear-gradient(135deg, #D4AF37 0%, #996515 100%); color: black; font-weight: 900; transition: all 0.3s; cursor: pointer; }
+        
+        .plugin-tag { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(212, 175, 55, 0.4); padding: 12px 18px; border-radius: 14px; font-size: 12px; cursor: pointer; font-weight: 800; color: #ffffff; transition: 0.2s; text-transform: uppercase; }
+        .plugin-tag:hover { background: var(--gold); color: black; }
+        
+        #chain-display { min-height: 70px; background: rgba(255,255,255,0.03); border: 2px solid rgba(212, 175, 55, 0.1); }
+        .selected-plugin { background: #D4AF37; color: #000000 !important; padding: 8px 15px; border-radius: 10px; font-weight: 900; font-size: 11px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; }
+        
+        .step-card { border-left: 4px solid var(--gold); background: rgba(255,255,255,0.02); margin-bottom: 20px; transition: 0.3s; }
+        .step-card:hover { background: rgba(255,255,255,0.05); }
+        .knob-value { color: #D4AF37; font-weight: 800; font-family: monospace; background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(212,175,55,0.2); }
     </style>
 </head>
-<body class="p-4 md:p-10">
+<body class="p-4 md:p-8">
 
-    <div class="max-w-4xl mx-auto">
-        <!-- Encabezado -->
-        <div class="flex justify-between items-center mb-10">
-            <button onclick="window.location.href='index.html'" class="text-gray-500 hover:text-gold transition text-xs font-bold">
-                <i class="fas fa-chevron-left mr-2"></i> VOLVER AL PANEL
+    <div class="max-w-3xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-gold transition text-[10px] font-black uppercase tracking-[0.2em]">
+                <i class="fas fa-arrow-left mr-2"></i> Dashboard
             </button>
             <div class="text-right">
-                <h1 class="text-2xl font-black gold-text italic">ANÁLISIS DE VOZ</h1>
-                <p class="text-[9px] tracking-[0.3em] text-gray-500">INTELIGENCIA ARTIFICIAL JADDY INC</p>
+                <h1 class="text-2xl font-black gold-text italic">JADDY MENTOR</h1>
+                <p class="text-[8px] text-gray-500 tracking-[0.4em]">MEZCLA TÉCNICA PASO A PASO</p>
             </div>
         </div>
 
-        <!-- Zona de Carga y Visualización -->
-        <div class="analyzer-card p-6 md:p-10 mb-8 text-center">
-            <div id="drop-zone" class="border-2 border-dashed border-yellow-900/20 rounded-[2rem] p-8 transition hover:border-gold/40 cursor-pointer mb-6">
-                <div id="upload-prompt">
-                    <i class="fas fa-cloud-upload-alt text-4xl text-gold/30 mb-4"></i>
-                    <h2 class="text-lg font-bold mb-1">SUBIR ARCHIVO DE VOZ</h2>
-                    <p class="text-gray-500 text-xs">Soporta WAV, MP3 o M4A (Máx 10MB)</p>
+        <!-- Selector de Modo -->
+        <div class="flex gap-3 mb-6">
+            <button id="mode-mix" onclick="setMode('mix')" class="flex-1 py-4 rounded-2xl border-2 border-gold bg-gold text-black font-extrabold text-xs uppercase tracking-widest transition shadow-lg">Mezclar Voz Seca</button>
+            <button id="mode-master" onclick="setMode('master')" class="flex-1 py-4 rounded-2xl border-2 border-gold/30 text-gold font-extrabold text-xs uppercase tracking-widest transition">Masterizar Pista</button>
+        </div>
+
+        <!-- Armar Cadena -->
+        <div class="glass-card p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-[10px] font-black text-gold uppercase tracking-[0.2em] flex items-center gap-2">
+                    <i class="fas fa-layer-group"></i> Configura tu Rack de FL Studio
+                </h3>
+                <button onclick="clearChain()" class="text-[9px] text-red-500 uppercase font-black hover:underline">Reiniciar</button>
+            </div>
+            
+            <div id="chain-display" class="flex flex-wrap gap-2 mb-6 p-4 rounded-2xl flex items-center">
+                <span class="text-gray-500 text-xs italic">Elige el orden de tus plugins...</span>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <button onclick="addToChain('EQ')" class="plugin-tag">EQ 2</button>
+                <button onclick="addToChain('COMP')" class="plugin-tag">Limiter</button>
+                <button onclick="addToChain('SAT')" class="plugin-tag">Fast Dist</button>
+                <button onclick="addToChain('DS')" class="plugin-tag">De-Esser</button>
+            </div>
+        </div>
+
+        <!-- Carga de Audio -->
+        <div class="glass-card p-8 text-center mb-8 border-2 border-dashed border-gold/10">
+            <div id="drop-zone" onclick="document.getElementById('audio-file').click()" class="cursor-pointer">
+                <div id="upload-ui">
+                    <i class="fas fa-wave-square text-3xl text-gold/30 mb-4"></i>
+                    <p class="text-[11px] font-black text-white uppercase tracking-widest">Cargar Audio para Analizar</p>
                 </div>
-                <div id="waveform-container" class="hidden">
+                <div id="waveform-ui" class="hidden">
                     <div id="waveform"></div>
-                    <p class="text-[10px] text-gold mt-4 font-mono tracking-widest uppercase">Onda de Audio Detectada</p>
+                    <p id="file-name" class="text-[10px] text-gold mt-4 font-bold uppercase"></p>
                 </div>
-                <input type="file" id="audio-input" class="hidden" accept="audio/*">
             </div>
-
-            <div class="flex flex-col gap-4">
-                <button id="btn-select" onclick="document.getElementById('audio-input').click()" class="bg-white/5 border border-white/10 py-3 rounded-full text-xs font-bold hover:bg-white/10 transition">
-                    CAMBIAR ARCHIVO
-                </button>
-                <button id="btn-process" class="btn-gold py-5 rounded-3xl hidden">
-                    <i class="fas fa-microchip mr-2"></i> INICIAR ANÁLISIS TÉCNICO
-                </button>
-            </div>
+            <input type="file" id="audio-file" class="hidden" accept="audio/*">
         </div>
 
-        <!-- Panel de Resultados -->
-        <div id="results-panel" class="hidden">
-            <h3 class="gold-text font-black text-sm mb-6 tracking-widest uppercase">Hoja de Ajustes para Plugins</h3>
-            <div id="results-list" class="space-y-4">
-                <!-- Los resultados de logic.js se inyectan aquí -->
+        <!-- Botón de Acción -->
+        <button id="btn-action" onclick="runAnalysis()" class="btn-gold w-full py-6 rounded-3xl hidden shadow-2xl uppercase tracking-[0.3em] text-sm mb-12">
+            ESCANEAR Y DAR SOLUCIONES
+        </button>
+
+        <!-- Resultados Técnicos -->
+        <div id="results" class="hidden space-y-4 pb-24">
+            <div class="glass-card p-6 border-b-2 border-gold/20 mb-6 bg-gold/5">
+                <h4 class="text-gold font-black text-xs uppercase mb-2">Diagnóstico de la IA:</h4>
+                <p id="ia-diagnosis" class="text-xs text-gray-300 italic"></p>
             </div>
+            
+            <div id="list-steps" class="grid gap-4"></div>
         </div>
     </div>
 
-    <!-- Scripts de Integración -->
-    <script type="module">
-        import JaddyAPI from './connection.js';
-        window.JaddyAPI = JaddyAPI;
-    </script>
-    <script src="logic.js"></script>
-
     <script>
-        const audioInput = document.getElementById('audio-input');
-        const btnProcess = document.getElementById('btn-process');
-        const uploadPrompt = document.getElementById('upload-prompt');
-        const waveformContainer = document.getElementById('waveform-container');
-        
-        let wavesurfer = WaveSurfer.create({
+        let currentMode = 'mix';
+        let chain = [];
+        let isAudioLoaded = false;
+
+        const wavesurfer = WaveSurfer.create({
             container: '#waveform',
-            waveColor: '#222',
+            waveColor: '#444',
             progressColor: '#D4AF37',
-            cursorColor: '#D4AF37',
             barWidth: 3,
-            barRadius: 3,
-            responsive: true,
-            height: 120
+            height: 100,
+            responsive: true
         });
 
-        audioInput.onchange = function(e) {
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('mode-mix').className = mode === 'mix' ? 'flex-1 py-4 rounded-2xl border-2 border-gold bg-gold text-black font-extrabold text-xs uppercase' : 'flex-1 py-4 rounded-2xl border-2 border-gold/30 text-gold font-extrabold text-xs uppercase';
+            document.getElementById('mode-master').className = mode === 'master' ? 'flex-1 py-4 rounded-2xl border-2 border-gold bg-gold text-black font-extrabold text-xs uppercase' : 'flex-1 py-4 rounded-2xl border-2 border-gold/30 text-gold font-extrabold text-xs uppercase';
+        }
+
+        function addToChain(type) {
+            chain.push(type);
+            updateChainUI();
+        }
+
+        function clearChain() { chain = []; updateChainUI(); }
+
+        function updateChainUI() {
+            const container = document.getElementById('chain-display');
+            if (chain.length === 0) {
+                container.innerHTML = '<span class="text-gray-500 text-xs italic">Elige el orden de tus plugins...</span>';
+            } else {
+                container.innerHTML = chain.map((c, i) => `
+                    <div class="selected-plugin">
+                        <span class="opacity-40 text-[9px]">${i+1}</span>
+                        ${c}
+                    </div>
+                `).join('<i class="fas fa-chevron-right text-[10px] text-gold/40 mx-1"></i>');
+            }
+            checkState();
+        }
+
+        document.getElementById('audio-file').onchange = (e) => {
             const file = e.target.files[0];
             if (file) {
-                const url = URL.createObjectURL(file);
-                wavesurfer.load(url);
-                uploadPrompt.classList.add('hidden');
-                waveformContainer.classList.remove('hidden');
-                btnProcess.classList.remove('hidden');
+                document.getElementById('file-name').innerText = file.name;
+                wavesurfer.load(URL.createObjectURL(file));
+                document.getElementById('upload-ui').classList.add('hidden');
+                document.getElementById('waveform-ui').classList.remove('hidden');
+                isAudioLoaded = true;
+                checkState();
             }
         };
 
-        btnProcess.onclick = async function() {
-            const file = audioInput.files[0];
-            this.disabled = true;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> ESCANEANDO FRECUENCIAS...';
+        function checkState() {
+            const btn = document.getElementById('btn-action');
+            btn.style.display = (chain.length > 0 && isAudioLoaded) ? 'block' : 'none';
+        }
 
-            try {
-                // 1. Llamar a la conexión de IA
-                const datosAudio = await window.JaddyAPI.analyzeAudio(file);
+        async function runAnalysis() {
+            const btn = document.getElementById('btn-action');
+            btn.innerHTML = '<i class="fas fa-microscope fa-spin mr-2"></i> ANALIZANDO DEFECTOS...';
+            btn.disabled = true;
+
+            await new Promise(r => setTimeout(r, 2500));
+
+            const diag = document.getElementById('ia-diagnosis');
+            diag.innerText = currentMode === 'mix' 
+                ? "He detectado frecuencias 'sucias' en los 400Hz y picos inestables de volumen. Tu voz necesita control dinámico y limpieza de aire."
+                : "La pista tiene un exceso de bajos que quita claridad. El rango dinámico está muy abierto, vamos a apretarlo para sonar comercial.";
+
+            const listSteps = document.getElementById('list-steps');
+            listSteps.innerHTML = chain.map((type, i) => {
+                let html = "";
                 
-                // 2. Usar la lógica para obtener ajustes de plugins
-                // Simulamos una cadena básica: EQ -> COMP
-                const cadenaPlugins = [
-                    { tipo: 'ecualizador', marca: 'fabfilter' },
-                    { tipo: 'compresor', marca: 'waves' },
-                    { tipo: 'deesser', marca: 'nativos' }
-                ];
+                if (currentMode === 'mix') {
+                    switch(type) {
+                        case 'EQ':
+                            html = `
+                                <div class="step-card p-6">
+                                    <h5 class="text-gold font-black text-[10px] mb-4 uppercase">Paso ${i+1}: Limpieza en EQ 2</h5>
+                                    <div class="space-y-3 text-xs text-gray-300">
+                                        <p>1. <b>Banda 1:</b> Cambia el tipo a 'High Pass' y corta hasta <span class="knob-box knob-value">90 Hz</span>.</p>
+                                        <p>2. <b>Banda 3 (La naranja):</b> Ponla en <span class="knob-value">420 Hz</span> y bájala exactamente <span class="knob-value">-3.5 dB</span>. Esto quita el efecto de caja.</p>
+                                        <p>3. <b>Banda 7 (La última):</b> Súbela en <span class="knob-value">12,000 Hz</span> unos <span class="knob-value">+2.0 dB</span> para dar aire profesional.</p>
+                                    </div>
+                                </div>`;
+                            break;
+                        case 'COMP':
+                            html = `
+                                <div class="step-card p-6">
+                                    <h5 class="text-gold font-black text-[10px] mb-4 uppercase">Paso ${i+1}: Control con Fruity Limiter</h5>
+                                    <div class="space-y-3 text-xs text-gray-300">
+                                        <p>1. Cambia a modo <b>COMP</b> en la pestaña de abajo.</p>
+                                        <p>2. <b>Threshold:</b> Muévelo a <span class="knob-value">-18 dB</span> (o hasta que la línea blanca baje).</p>
+                                        <p>3. <b>Ratio:</b> Ponlo exactamente en <span class="knob-value">4.0:1</span>.</p>
+                                        <p>4. <b>Gain:</b> Súbelo <span class="knob-value">+3.2 dB</span> para recuperar el volumen perdido.</p>
+                                    </div>
+                                </div>`;
+                            break;
+                        case 'SAT':
+                            html = `
+                                <div class="step-card p-6">
+                                    <h5 class="text-gold font-black text-[10px] mb-4 uppercase">Paso ${i+1}: Calor con Fast Dist</h5>
+                                    <div class="space-y-3 text-xs text-gray-300">
+                                        <p>1. <b>Preamp:</b> Gíralo solo un <span class="knob-value">15%</span> hacia la derecha.</p>
+                                        <p>2. <b>Mix:</b> Si suena muy fuerte, baja la perilla de mezcla al <span class="knob-value">40%</span>. Queremos textura, no distorsión.</p>
+                                    </div>
+                                </div>`;
+                            break;
+                        case 'DS':
+                            html = `
+                                <div class="step-card p-6">
+                                    <h5 class="text-gold font-black text-[10px] mb-4 uppercase">Paso ${i+1}: Eliminar Sss en Limiter</h5>
+                                    <div class="space-y-3 text-xs text-gray-300">
+                                        <p>1. Usa el preset 'De-esser' y ajusta el <b>Threshold</b> a <span class="knob-value">-24 dB</span>.</p>
+                                        <p>2. Asegúrate que la reducción solo actúe cuando el cantante pronuncie la 'S'.</p>
+                                    </div>
+                                </div>`;
+                            break;
+                    }
+                } else {
+                    // MODO MASTER
+                    if(type === 'COMP') {
+                        html = `<div class="step-card p-6">
+                            <h5 class="text-gold font-black text-[10px] mb-4 uppercase">Mastering: Pegada Final</h5>
+                            <p class="text-xs text-gray-300">Abre el <b>Fruity Soft Clipper</b>. Sube el volumen de tu pista hasta que llegue a <span class="knob-value">0 dB</span>. El clipper evitará el clipeo y te dará ese sonido 'compacto' de radio.</p>
+                        </div>`;
+                    } else {
+                         html = `<div class="step-card p-6">
+                            <h5 class="text-gold font-black text-[10px] mb-4 uppercase">Ajuste de Master</h5>
+                            <p class="text-xs text-gray-300">Realiza un corte de bajos (High Pass) en <span class="knob-value">30 Hz</span> para limpiar la energía innecesaria que ensucia tus bajos reales.</p>
+                        </div>`;
+                    }
+                }
+                return html;
+            }).join('');
 
-                const ajustes = window.JaddyStudioBrain.generarInstrucciones(cadenaPlugins, datosAudio);
-
-                // 3. Mostrar Resultados en pantalla
-                const resultsList = document.getElementById('results-list');
-                resultsList.innerHTML = ajustes.map((ajuste, i) => `
-                    <div class="result-item analyzer-card p-6 border-l-4 border-l-gold" style="animation-delay: ${i * 0.2}s">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-[10px] font-black text-gold uppercase tracking-tighter">${ajuste.plugin}</span>
-                            <span class="text-[9px] text-gray-600">PASO ${ajuste.paso}</span>
-                        </div>
-                        <p class="text-sm text-gray-300 leading-relaxed">${ajuste.texto}</p>
-                    </div>
-                `).join('');
-
-                document.getElementById('results-panel').classList.remove('hidden');
-                document.getElementById('results-panel').scrollIntoView({ behavior: 'smooth' });
-
-            } catch (error) {
-                console.error(error);
-                alert("Error al conectar con el servidor de análisis.");
-            } finally {
-                this.innerHTML = '<i class="fas fa-check-circle mr-2"></i> ANÁLISIS COMPLETADO';
-            }
-        };
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+            btn.innerHTML = "ANÁLISIS COMPLETADO";
+            btn.disabled = false;
+        }
     </script>
 </body>
 </html>
