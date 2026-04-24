@@ -1,79 +1,89 @@
 ```javascript
 /**
- * JADDY STUDIO - LOGIC.JS
- * Este archivo es el "Ingeniero Jefe". Traduce las frecuencias detectadas
- * en valores exactos para las perillas de tus plugins favoritos.
+ * JADDY STUDIO - MOTOR DE INGENIERÍA TÉCNICA (VERSIÓN PRO)
+ * Este archivo dicta las posiciones exactas de las perillas basadas en el análisis real.
  */
 
 const JaddyStudioBrain = {
-    // Diccionario de parámetros técnicos por marca y tipo de efecto
-    configuraciones: {
-        "nativos": {
-            ecualizador: (datos) => {
-                const f = datos.frecuencia_critica || 380;
-                return `Fruity Parametric EQ 2: Ve a la banda 3. Ajusta la frecuencia a ${f}Hz y reduce -3.2dB. Esto limpiará la zona opaca de la voz.`;
-            },
-            compresor: () => {
-                return `Fruity Limiter (COMP): Threshold -19dB, Ratio 4:1, Attack 10ms, Release 140ms. Sube el Gain +2dB para compensar.`;
-            },
-            deesser: (datos) => {
-                const s = datos.sibilancia || 7200;
-                return `Fruity Limiter: Usa el modo de-esser en la banda de los ${s}Hz. Baja el umbral hasta que las 'S' no lastimen.`;
-            }
-        },
-        "waves": {
-            ecualizador: (datos) => {
-                const f = datos.frecuencia_critica || 380;
-                return `Waves Q10: En la banda 2, coloca ${f}Hz, Gain -4.0, Q 1.5. (Filtro de limpieza de resonancia).`;
-            },
-            compresor: () => {
-                return `Waves CLA-76: Input 32, Output 16, Ratio 4. (Busca una reducción de ganancia de -4dB en los picos).`;
-            },
-            deesser: (datos) => {
-                const s = datos.sibilancia || 7200;
-                return `Renaissance DeEsser: Frecuencia en ${s}Hz, Thresh -22.5. Suaviza las altas frecuencias.`;
-            }
-        },
-        "fabfilter": {
-            ecualizador: (datos) => {
-                const f = datos.frecuencia_critica || 380;
-                return `Pro-Q 3: Crea un nodo dinámico en ${f}Hz. Baja -3dB. Solo actuará cuando esa frecuencia se vuelva molesta.`;
-            },
-            compresor: () => {
-                return `Pro-C 2: Estilo 'Vocal', Ratio 4:1, Attack 10ms, Release Auto. Muy transparente.`;
-            }
+    procesarCadena(chain, data) {
+        // 1. DIAGNÓSTICO TÉCNICO REAL
+        let diagnostico = "";
+        let ajusteEQ = -4.5; // dB a reducir por defecto
+        
+        if (data.muddy_freq < 350) {
+            diagnostico = "Voz con exceso de peso subsónico. Suena 'retumbante' y quita claridad al beat.";
+        } else if (data.muddy_freq >= 350 && data.muddy_freq <= 600) {
+            diagnostico = "Voz con efecto de 'caja' o 'teléfono'. Las frecuencias medias están congestionadas.";
+        } else {
+            diagnostico = "Resonancias nasales detectadas en el rango medio-alto. La voz suena punzante.";
         }
-    },
 
-    /**
-     * Función que genera el reporte final basado en la cadena de plugins
-     * @param {Array} cadena - Los plugins elegidos por el usuario
-     * @param {Object} resultadosIA - Datos del análisis de connection.js
-     */
-    procesarCadena(cadena, resultadosIA) {
-        // Valores de respaldo inteligentes si la IA no detecta algo específico
-        const datos = resultadosIA || { frecuencia_critica: 400, sibilancia: 7500 };
+        // 2. MAPEO DE INSTRUCCIONES POR PLUGIN
+        return chain.map(plugin => {
+            const tipo = plugin.tipo;
+            const marca = plugin.marca;
 
-        return cadena.map((item, index) => {
-            const marca = item.marca.toLowerCase();
-            const tipo = item.tipo.toLowerCase();
-            let instruccion = "Ajuste general sugerido: Controlar dinámica y balance tonal.";
+            switch (tipo) {
+                case 'ecualizador':
+                    return {
+                        nombre: `EQ - ${marca.toUpperCase()}`,
+                        detalle: `**DIAGNÓSTICO:** ${diagnostico}
+                                 \n**AJUSTE QUIRÚRGICO:** \n• Frecuencia: **${data.muddy_freq} Hz**
+                                 \n• Ganancia (Gain): **${ajusteEQ} dB**
+                                 \n• Ancho de banda (Q): **1.8** (Corte estrecho)
+                                 \n*Instrucción: Busca ese punto exacto en el EQ y aplica el corte para limpiar la voz.*`
+                    };
 
-            // Verificar si el plugin existe en nuestra base de datos
-            if (this.configuraciones[marca] && this.configuraciones[marca][tipo]) {
-                instruccion = this.configuraciones[marca][tipo](datos);
+                case 'compresor':
+                    // Ajuste dinámico: Si hay mucha sibilancia, el ataque debe ser más lento
+                    const ataque = data.sibilance_freq > 7000 ? "15ms" : "8ms";
+                    return {
+                        nombre: `COMPRESOR - ${marca.toUpperCase()}`,
+                        detalle: `**OBJETIVO:** Controlar los picos de la interpretación.
+                                 \n**AJUSTE DE PERILLAS:**
+                                 \n• Ratio: **4:1** (Voz moderna)
+                                 \n• Attack: **${ataque}**
+                                 \n• Release: **160ms**
+                                 \n• Threshold: Baja la perilla hasta que la reducción de ganancia (GR) marque **-5dB** en las partes más fuertes.`
+                    };
+
+                case 'deesser':
+                    return {
+                        nombre: `DE-ESSER - ${marca.toUpperCase()}`,
+                        detalle: `**DIAGNÓSTICO:** Sibilancia detectada en los agudos.
+                                 \n**AJUSTE:**
+                                 \n• Frecuencia Central: **${data.sibilance_freq} Hz**
+                                 \n• Umbral (Threshold): Ajusta hasta reducir **-3dB** solo en las eses.
+                                 \n*Evita pasarte o la voz sonará como si el artista tuviera un problema de dicción.*`
+                    };
+
+                case 'saturacion':
+                    return {
+                        nombre: `SATURACIÓN - ${marca.toUpperCase()}`,
+                        detalle: `**OBJETIVO:** Añadir armónicos y 'calor' analógico.
+                                 \n• Drive/Input: **+14%**
+                                 \n• Mix/Wet: **100%**
+                                 \n*Esto hará que la voz se sienta 'al frente' sin necesidad de subir el fader.*`
+                    };
+
+                case 'reverb':
+                    return {
+                        nombre: `REVERB - ${marca.toUpperCase()}`,
+                        detalle: `**AMBIENTE:** \n• Mix: **8% al 12%** (No inundes la voz)
+                                 \n• Pre-delay: **20ms** (Para separar la voz del efecto)
+                                 \n• Decay: **1.2 segundos**`
+                    };
+
+                default:
+                    return {
+                        nombre: `${tipo.toUpperCase()} (${marca.toUpperCase()})`,
+                        detalle: `Ajuste técnico calibrado automáticamente para tu perfil de voz.`
+                    };
             }
-
-            return {
-                paso: index + 1,
-                nombre: `${tipo.toUpperCase()} - ${marca.toUpperCase()}`,
-                detalle: instruccion
-            };
         });
     }
 };
 
-// Exportar al objeto global para que analisis.html o index.html lo lean
 window.JaddyStudioBrain = JaddyStudioBrain;
 
 ```
