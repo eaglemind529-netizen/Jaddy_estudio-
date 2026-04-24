@@ -1,1 +1,235 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jaddy Studio | Jaddy INC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --black: #050505;
+            --dark-gray: #111111;
+        }
+
+        body {
+            background-color: var(--black);
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        .gold-text {
+            color: var(--gold);
+            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gold-bg {
+            background: linear-gradient(135deg, #D4AF37 0%, #996515 100%);
+        }
+
+        .sidebar-item {
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .sidebar-item:hover, .sidebar-item.active {
+            background: rgba(212, 175, 55, 0.1);
+            border-left-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .card-glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            transition: all 0.3s;
+        }
+
+        .card-glass:hover {
+            border-color: var(--gold);
+            transform: translateY(-2px);
+        }
+
+        .section-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .section-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="flex h-screen">
+
+    <!-- Sidebar -->
+    <nav class="w-64 bg-[#0a0a0a] border-r border-yellow-900/20 flex flex-col hidden md:flex">
+        <div class="p-8 text-center">
+            <div class="w-16 h-16 mx-auto mb-4 gold-bg rounded-full flex items-center justify-center shadow-lg shadow-yellow-900/20">
+                <i class="fas fa-eagle text-black text-2xl"></i>
+            </div>
+            <h1 class="text-xl font-black tracking-tighter gold-text uppercase">JADDY STUDIO</h1>
+            <p class="text-[10px] uppercase tracking-[3px] text-gray-500">Jaddy INC System</p>
+        </div>
+
+        <div class="flex-1 mt-4 px-4">
+            <div onclick="showSection('dashboard')" class="sidebar-item active flex items-center p-4 space-x-4" id="nav-dashboard">
+                <i class="fas fa-house"></i>
+                <span class="font-semibold">Dashboard</span>
+            </div>
+            <div onclick="showSection('recording')" class="sidebar-item flex items-center p-4 space-x-4 text-gray-400" id="nav-recording">
+                <i class="fas fa-microphone-lines"></i>
+                <span>Grabación</span>
+            </div>
+            <div onclick="showSection('analysis')" class="sidebar-item flex items-center p-4 space-x-4 text-gray-400" id="nav-analysis">
+                <i class="fas fa-magnifying-glass-chart"></i>
+                <span>Análisis Mix</span>
+            </div>
+            <div onclick="showSection('distribution')" class="sidebar-item flex items-center p-4 space-x-4 text-gray-400" id="nav-distribution">
+                <i class="fas fa-share-nodes"></i>
+                <span>Distribución</span>
+            </div>
+        </div>
+
+        <div class="p-6 border-t border-yellow-900/10">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-yellow-900/20 flex items-center justify-center">
+                    <i class="fas fa-lion text-gold"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-bold">Admin</p>
+                    <p class="text-xs text-gray-500">Jaddy Music Rec.</p>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <main class="flex-1 p-8 bg-gradient-to-br from-[#0a0a0a] to-[#050505] overflow-y-auto">
+        <header class="flex justify-between items-center mb-12">
+            <div>
+                <h2 class="text-4xl font-bold italic">Hola, <span class="gold-text italic">Freddy</span></h2>
+                <p class="text-gray-500 mt-1">Ecosistema operativo de Jaddy INC.</p>
+            </div>
+            <div class="flex space-x-4">
+                <button class="bg-white/5 p-3 rounded-full hover:bg-white/10"><i class="fas fa-bell"></i></button>
+                <button class="bg-white/5 p-3 rounded-full hover:bg-white/10"><i class="fas fa-gear"></i></button>
+            </div>
+        </header>
+
+        <!-- DASHBOARD SECTION -->
+        <div id="dashboard-section" class="section-content active">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Card Recording -->
+                <div class="card-glass p-8 rounded-3xl cursor-pointer" onclick="showSection('recording')">
+                    <div class="w-12 h-12 bg-yellow-900/20 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-microphone-alt text-gold text-xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2 italic">Estudio</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Inicia sesiones de grabación y gestiona tus pistas de audio.</p>
+                    <button class="mt-6 text-gold font-bold flex items-center">
+                        Grabar ahora <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+
+                <!-- Card Analysis -->
+                <div class="card-glass p-8 rounded-3xl cursor-pointer" onclick="showSection('analysis')">
+                    <div class="w-12 h-12 bg-yellow-900/20 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-music text-gold text-xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2 italic">Análisis</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Verifica el perfil tonal y la calidad técnica de tus temas.</p>
+                    <button class="mt-6 text-gold font-bold flex items-center">
+                        Abrir estudio <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+
+                <!-- Card Distribution -->
+                <div class="card-glass p-8 rounded-3xl cursor-pointer" onclick="showSection('distribution')">
+                    <div class="w-12 h-12 bg-yellow-900/20 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-upload text-gold text-xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2 italic">Distribución</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Envía tus proyectos a plataformas globales con Jaddy Music Records.</p>
+                    <button class="mt-6 text-gold font-bold flex items-center">
+                        Gestionar <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ANALYSIS SECTION -->
+        <div id="analysis-section" class="section-content">
+            <div class="max-w-4xl">
+                <h3 class="text-3xl font-bold mb-6 italic gold-text">Analizador de Mezcla</h3>
+                <div class="bg-white/5 border-2 border-dashed border-yellow-900/30 rounded-3xl p-12 text-center">
+                    <i class="fas fa-cloud-arrow-up text-5xl text-gold mb-4"></i>
+                    <h4 class="text-xl font-bold mb-2">Arrastra tu archivo de audio</h4>
+                    <p class="text-gray-500 mb-8">Soporta WAV y MP3 de alta calidad</p>
+                    <input type="file" id="audio-input" class="hidden">
+                    <button onclick="document.getElementById('audio-input').click()" class="gold-bg text-black px-10 py-3 rounded-full font-bold hover:opacity-90 transition">
+                        SELECCIONAR ARCHIVO
+                    </button>
+                    <p class="mt-6 text-[10px] text-gray-600 uppercase tracking-widest">Powered by Tonn API for Jaddy INC</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- RECORDING SECTION -->
+        <div id="recording-section" class="section-content">
+            <h3 class="text-3xl font-bold italic gold-text">Estudio de Grabación</h3>
+            <p class="text-gray-400 mt-4 italic">Módulo de grabación en línea próximo a implementarse para Jaddy INC...</p>
+        </div>
+
+        <!-- DISTRIBUTION SECTION -->
+        <div id="distribution-section" class="section-content">
+            <h3 class="text-3xl font-bold italic gold-text">Distribución Global</h3>
+            <p class="text-gray-400 mt-4 italic">Conexión directa con Jaddy Music Records en curso...</p>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="mt-20 opacity-20 text-center">
+            <p class="text-xs tracking-widest">&copy; 2024 JADDY INC | POWERED BY EAGLE MIND TECHNOLOGY</p>
+        </footer>
+    </main>
+
+    <script>
+        function showSection(sectionId) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.classList.remove('active');
+            });
+            // Mostrar la sección seleccionada
+            const targetSection = document.getElementById(sectionId + '-section');
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+
+            // Actualizar Sidebar
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active', 'text-white');
+                item.classList.add('text-gray-400');
+            });
+            const activeNav = document.getElementById('nav-' + sectionId);
+            if (activeNav) {
+                activeNav.classList.add('active');
+                activeNav.classList.remove('text-gray-400');
+            }
+        }
+    </script>
+</body>
+</html>
+
+```
 
