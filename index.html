@@ -59,10 +59,19 @@
         .section-content {
             display: none;
             animation: fadeIn 0.4s ease-out;
+            height: 100%;
+            overflow-y: auto;
+            padding-bottom: 50px;
         }
 
         .section-content.active {
             display: block;
+        }
+
+        .plugin-tag {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 8px;
         }
 
         @keyframes fadeIn {
@@ -116,11 +125,10 @@
     </nav>
 
     <!-- Content -->
-    <main class="flex-1 p-8 bg-gradient-to-br from-[#0a0a0a] to-[#050505] overflow-y-auto">
-        <header class="flex justify-between items-center mb-12">
+    <main class="flex-1 p-8 bg-gradient-to-br from-[#0a0a0a] to-[#050505] overflow-hidden flex flex-col">
+        <header class="flex justify-between items-center mb-8 shrink-0">
             <div>
-                <h2 class="text-4xl font-bold italic">Bienvenido al <span class="gold-text italic">Ecosistema</span></h2>
-                <p class="text-gray-500 mt-1">La plataforma oficial de Jaddy INC está operativa.</p>
+                <h2 class="text-3xl font-bold italic">Plataforma <span class="gold-text italic">Jaddy INC</span></h2>
             </div>
             <div class="flex space-x-4">
                 <button class="bg-white/5 p-3 rounded-full hover:bg-white/10"><i class="fas fa-bell"></i></button>
@@ -128,103 +136,190 @@
             </div>
         </header>
 
-        <!-- DASHBOARD SECTION -->
-        <div id="dashboard-section" class="section-content active">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Card Recording -->
-                <div class="card-glass p-8 rounded-3xl cursor-pointer" onclick="showSection('recording')">
-                    <div class="w-12 h-12 bg-yellow-900/20 rounded-xl flex items-center justify-center mb-6">
-                        <i class="fas fa-microphone-alt text-gold text-xl"></i>
+        <div class="flex-1 overflow-hidden relative">
+            <!-- DASHBOARD SECTION -->
+            <div id="dashboard-section" class="section-content active">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="card-glass p-8 rounded-3xl cursor-pointer" onclick="showSection('recording')">
+                        <div class="w-12 h-12 bg-yellow-900/20 rounded-xl flex items-center justify-center mb-6">
+                            <i class="fas fa-microphone-alt text-gold text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2 italic">Estudio</h3>
+                        <p class="text-gray-400 text-sm">Inicia sesiones de grabación.</p>
                     </div>
-                    <h3 class="text-2xl font-bold mb-2 italic">Estudio</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed">Inicia sesiones de grabación y gestiona tus pistas de audio.</p>
-                    <button class="mt-6 text-gold font-bold flex items-center">
-                        Grabar ahora <i class="fas fa-arrow-right ml-2"></i>
-                    </button>
-                </div>
 
-                <!-- Card Analysis -->
-                <div class="card-glass p-8 rounded-3xl cursor-pointer" onclick="showSection('analysis')">
-                    <div class="w-12 h-12 bg-yellow-900/20 rounded-xl flex items-center justify-center mb-6">
-                        <i class="fas fa-music text-gold text-xl"></i>
+                    <div class="card-glass p-8 rounded-3xl cursor-pointer" onclick="showSection('analysis')">
+                        <div class="w-12 h-12 bg-yellow-900/20 rounded-xl flex items-center justify-center mb-6">
+                            <i class="fas fa-music text-gold text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2 italic">Análisis</h3>
+                        <p class="text-gray-400 text-sm">Ajustes técnicos por perilla.</p>
                     </div>
-                    <h3 class="text-2xl font-bold mb-2 italic">Análisis</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed">Verifica el perfil tonal y la calidad técnica de tus temas.</p>
-                    <button class="mt-6 text-gold font-bold flex items-center">
-                        Abrir estudio <i class="fas fa-arrow-right ml-2"></i>
-                    </button>
-                </div>
 
-                <!-- Card Distribution -->
-                <div class="card-glass p-8 rounded-3xl cursor-pointer" onclick="showSection('distribution')">
-                    <div class="w-12 h-12 bg-yellow-900/20 rounded-xl flex items-center justify-center mb-6">
-                        <i class="fas fa-upload text-gold text-xl"></i>
+                    <div class="card-glass p-8 rounded-3xl cursor-pointer" onclick="showSection('distribution')">
+                        <div class="w-12 h-12 bg-yellow-900/20 rounded-xl flex items-center justify-center mb-6">
+                            <i class="fas fa-upload text-gold text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2 italic">Distribución</h3>
+                        <p class="text-gray-400 text-sm">Jaddy Music Records.</p>
                     </div>
-                    <h3 class="text-2xl font-bold mb-2 italic">Distribución</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed">Envía tus proyectos a plataformas globales con Jaddy Music Records.</p>
-                    <button class="mt-6 text-gold font-bold flex items-center">
-                        Gestionar <i class="fas fa-arrow-right ml-2"></i>
-                    </button>
                 </div>
             </div>
-        </div>
 
-        <!-- ANALYSIS SECTION -->
-        <div id="analysis-section" class="section-content">
-            <div class="max-w-4xl">
-                <h3 class="text-3xl font-bold mb-6 italic gold-text">Analizador de Mezcla</h3>
-                <div class="bg-white/5 border-2 border-dashed border-yellow-900/30 rounded-3xl p-12 text-center">
-                    <i class="fas fa-cloud-arrow-up text-5xl text-gold mb-4"></i>
-                    <h4 class="text-xl font-bold mb-2">Arrastra tu archivo de audio</h4>
-                    <p class="text-gray-500 mb-8">Soporta WAV y MP3 de alta calidad</p>
-                    <input type="file" id="audio-input" class="hidden">
-                    <button onclick="document.getElementById('audio-input').click()" class="gold-bg text-black px-10 py-3 rounded-full font-bold hover:opacity-90 transition">
-                        SELECCIONAR ARCHIVO
+            <!-- ANALYSIS SECTION (Integrada con Logic y Connection) -->
+            <div id="analysis-section" class="section-content">
+                <div class="max-w-4xl mx-auto space-y-6">
+                    <h3 class="text-3xl font-bold italic gold-text">Analizador Inteligente de Voz</h3>
+                    
+                    <!-- Subida de Audio -->
+                    <div class="bg-white/5 border-2 border-dashed border-yellow-900/30 rounded-3xl p-8 text-center">
+                        <input type="file" id="audio-input" class="hidden" accept="audio/*">
+                        <button onclick="document.getElementById('audio-input').click()" id="upload-btn" class="gold-bg text-black px-8 py-3 rounded-full font-bold mb-2">
+                            <i class="fas fa-file-audio mr-2"></i>SELECCIONAR VOCAL
+                        </button>
+                        <p id="file-name" class="text-xs text-gray-500 italic">Ningún archivo seleccionado</p>
+                    </div>
+
+                    <!-- Configuración de Plugins -->
+                    <div class="bg-white/5 p-6 rounded-3xl border border-white/10">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-sm font-bold uppercase tracking-widest text-gold">Tu Cadena de Plugins</h4>
+                            <div class="flex gap-2">
+                                <button onclick="addToChain('ecualizador')" class="text-[10px] bg-white/10 px-3 py-1 rounded-lg">+ EQ</button>
+                                <button onclick="addToChain('compresor')" class="text-[10px] bg-white/10 px-3 py-1 rounded-lg">+ COMP</button>
+                                <button onclick="addToChain('deesser')" class="text-[10px] bg-white/10 px-3 py-1 rounded-lg">+ DE-ESS</button>
+                            </div>
+                        </div>
+                        <div id="plugin-chain-container" class="space-y-3">
+                            <p class="text-gray-600 text-xs italic text-center py-4">Añade plugins para recibir instrucciones exactas.</p>
+                        </div>
+                    </div>
+
+                    <!-- Botón Ejecutar -->
+                    <button onclick="startProccessing()" id="main-exec-btn" class="w-full gold-bg text-black font-black py-4 rounded-2xl shadow-xl uppercase tracking-tighter transition active:scale-95">
+                        GENERAR HOJA DE AJUSTES TÉCNICOS
                     </button>
-                    <p class="mt-6 text-[10px] text-gray-600 uppercase tracking-widest">Powered by Tonn API for Jaddy INC</p>
+
+                    <!-- Resultados -->
+                    <div id="results-area" class="hidden space-y-4">
+                        <h4 class="text-gold font-bold italic border-b border-gold/20 pb-2">INSTRUCCIONES DE MEZCLA JADDY INC</h4>
+                        <div id="instructions-list" class="space-y-3"></div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- RECORDING SECTION -->
-        <div id="recording-section" class="section-content">
-            <h3 class="text-3xl font-bold italic gold-text">Estudio de Grabación</h3>
-            <p class="text-gray-400 mt-4 italic">Módulo de grabación en línea próximo a implementarse para Jaddy INC...</p>
-        </div>
-
-        <!-- DISTRIBUTION SECTION -->
-        <div id="distribution-section" class="section-content">
-            <h3 class="text-3xl font-bold italic gold-text">Distribución Global</h3>
-            <p class="text-gray-400 mt-4 italic">Conexión directa con Jaddy Music Records en curso...</p>
+            <!-- SECCIONES VACÍAS (Igual que antes) -->
+            <div id="recording-section" class="section-content text-center pt-20 text-gray-500 italic">Próximamente para Jaddy INC...</div>
+            <div id="distribution-section" class="section-content text-center pt-20 text-gray-500 italic">Conexión Jaddy Music Records...</div>
         </div>
 
         <!-- FOOTER -->
-        <footer class="mt-20 opacity-20 text-center">
+        <footer class="mt-8 opacity-20 text-center shrink-0">
             <p class="text-xs tracking-widest">&copy; 2024 JADDY INC | POWERED BY EAGLE MIND TECHNOLOGY</p>
         </footer>
     </main>
 
-    <script>
-        function showSection(sectionId) {
-            // Ocultar todas las secciones
-            document.querySelectorAll('.section-content').forEach(section => {
-                section.classList.remove('active');
-            });
-            // Mostrar la sección seleccionada
-            const targetSection = document.getElementById(sectionId + '-section');
-            if (targetSection) {
-                targetSection.classList.add('active');
-            }
+    <!-- SCRIPTS DE CONEXIÓN -->
+    <script type="module">
+        import JaddyAPI from './connection.js';
+        window.JaddyAPI = JaddyAPI;
+    </script>
+    <script src="logic.js"></script>
 
-            // Actualizar Sidebar
+    <script>
+        let currentChain = [];
+
+        // Cambiar entre secciones
+        function showSection(sectionId) {
+            document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId + '-section').classList.add('active');
+            
             document.querySelectorAll('.sidebar-item').forEach(item => {
-                item.classList.remove('active', 'text-white');
+                item.classList.remove('active');
                 item.classList.add('text-gray-400');
             });
             const activeNav = document.getElementById('nav-' + sectionId);
             if (activeNav) {
                 activeNav.classList.add('active');
                 activeNav.classList.remove('text-gray-400');
+            }
+        }
+
+        // Manejo de Archivo
+        document.getElementById('audio-input').onchange = function(e) {
+            document.getElementById('file-name').innerText = e.target.files[0].name;
+        };
+
+        // Manejo de Cadena de Plugins
+        function addToChain(tipo) {
+            const id = Date.now();
+            currentChain.push({ id, tipo, marca: 'nativos' });
+            renderChain();
+        }
+
+        function removePlugin(id) {
+            currentChain = currentChain.filter(p => p.id !== id);
+            renderChain();
+        }
+
+        function updateMarca(id, marca) {
+            const p = currentChain.find(x => x.id === id);
+            if (p) p.marca = marca;
+        }
+
+        function renderChain() {
+            const container = document.getElementById('plugin-chain-container');
+            if (currentChain.length === 0) {
+                container.innerHTML = `<p class="text-gray-600 text-xs italic text-center py-4">Añade plugins para recibir instrucciones exactas.</p>`;
+                return;
+            }
+            container.innerHTML = currentChain.map((p, i) => `
+                <div class="plugin-tag p-3 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <span class="text-gold font-black text-xs">#${i+1}</span>
+                        <select onchange="updateMarca(${p.id}, this.value)" class="bg-transparent text-[10px] font-bold uppercase outline-none text-white cursor-pointer">
+                            <option value="nativos" class="bg-black">FL Nativos - ${p.tipo}</option>
+                            <option value="waves" class="bg-black">Waves - ${p.tipo}</option>
+                            <option value="fabfilter" class="bg-black">FabFilter - ${p.tipo}</option>
+                        </select>
+                    </div>
+                    <button onclick="removePlugin(${p.id})" class="text-red-900/50 hover:text-red-500"><i class="fas fa-times"></i></button>
+                </div>
+            `).join('');
+        }
+
+        // EJECUCIÓN PRINCIPAL (CONEXIÓN)
+        async function startProccessing() {
+            const file = document.getElementById('audio-input').files[0];
+            if (!file) return alert("Sube un archivo primero.");
+            if (currentChain.length === 0) return alert("Configura tu cadena de plugins.");
+
+            const btn = document.getElementById('main-exec-btn');
+            btn.innerText = "PROCESANDO CON IA JADDY...";
+            btn.disabled = true;
+
+            try {
+                // 1. Llamada a connection.js
+                const audioData = await window.JaddyAPI.analyzeAudio(file);
+
+                // 2. Llamada a logic.js
+                const instrucciones = window.JaddyStudioBrain.generarInstrucciones(currentChain, audioData);
+
+                // 3. Mostrar Resultados
+                const list = document.getElementById('instructions-list');
+                list.innerHTML = instrucciones.map(ins => `
+                    <div class="bg-white/5 p-4 rounded-xl border-l-2 border-gold">
+                        <p class="text-[9px] font-black text-gold uppercase tracking-widest">${ins.plugin}</p>
+                        <p class="text-xs mt-1 text-gray-200">${ins.texto}</p>
+                    </div>
+                `).join('');
+
+                document.getElementById('results-area').classList.remove('hidden');
+            } catch (err) {
+                alert("Error en la conexión. Asegúrate de que connection.js y logic.js estén en el mismo repositorio.");
+            } finally {
+                btn.innerText = "GENERAR HOJA DE AJUSTES TÉCNICOS";
+                btn.disabled = false;
             }
         }
     </script>
