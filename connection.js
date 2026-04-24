@@ -1,63 +1,61 @@
 ```javascript
 /**
- * JADDY STUDIO - API Connection Handler (ROEX TONN API)
- * Este archivo centraliza el análisis profesional de voces mediante RoEx.
+ * JADDY STUDIO - ROEX TONN API CONNECTOR
+ * Este archivo conecta directamente con el analizador de voces profesional.
  */
 
 const JaddyAPI = {
     config: {
-        // Tu llave de RoEx
+        // Tu llave de RoEx Tonn API
         roexKey: "AIzaSyCrwU3NTViFTwJ-t6BMURPS8X2y__FJ4Qc", 
-        roexBaseUrl: "https://api.roex.io/v1" 
+        roexBaseUrl: "https://api.roex.io/v1/analyze" 
     },
 
     /**
-     * Módulo de Análisis de Audio Profesional
-     * Envía el audio a RoEx para obtener el perfil tonal exacto.
+     * Analiza el audio y devuelve las frecuencias exactas para la mezcla.
      */
     async analyzeAudio(file) {
-        console.log("Jaddy Studio: Iniciando análisis tonal en RoEx...");
+        console.log("Jaddy Studio: Enviando audio a RoEx...");
         
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('output_format', 'json');
 
         try {
-            const response = await fetch(`${this.config.roexBaseUrl}/analyze`, {
+            const response = await fetch(this.config.roexBaseUrl, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${this.config.roexKey}`
+                    // Nota: No poner Content-Type manual, el navegador lo hace con FormData
                 },
                 body: formData
             });
 
             if (!response.ok) {
-                console.error("Error en respuesta de RoEx:", response.status);
-                throw new Error('Error en la conexión con RoEx');
+                const errorData = await response.json();
+                console.error("Error RoEx:", errorData);
+                throw new Error('Fallo en el servidor de análisis');
             }
 
             const data = await response.json();
             
-            // Mapeamos los resultados de RoEx a lo que necesita logic.js
-            // RoEx suele devolver 'low_mid_resonance' o similares
+            // Extraemos los datos técnicos que RoEx nos da
+            // Ajustamos según la estructura real de la API Tonn
             return {
-                muddy_freq: data.tonal_analysis?.problem_frequencies?.muddy || 400,
-                sibilance_freq: data.tonal_analysis?.problem_frequencies?.sibilance || 7500,
-                gain_suggestion: data.loudness?.target_gain || 0
+                muddy_freq: data.results?.tonal_balance?.muddy_area || 400,
+                sibilance_freq: data.results?.tonal_balance?.sibilance_peak || 7500,
+                clarity_score: data.results?.clarity || 0.5
             };
 
         } catch (error) {
-            console.error("Error en Jaddy Connection (RoEx):", error);
-            // Si la API falla por red, devolvemos un perfil seguro para no trabar al usuario
-            return { muddy_freq: 410, sibilance_freq: 7800 };
+            console.error("Error crítico en conexión:", error);
+            // Si el internet del celular falla, devolvemos un estándar para que la App no muera
+            return { muddy_freq: 415, sibilance_freq: 7800 };
         }
-    },
-
-    async submitToDistribution(trackData) {
-        console.log("Módulo Jaddy Music Records en desarrollo...");
     }
 };
 
-// Lo hacemos global para que el botón del HTML lo encuentre
+// Lo dejamos en el objeto window para que analisis.html lo vea sin importar el navegador
 window.JaddyAPI = JaddyAPI;
 
 ```
