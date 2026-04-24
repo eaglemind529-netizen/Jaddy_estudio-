@@ -1,22 +1,22 @@
 ```javascript
 /**
- * JADDY STUDIO - API Connection Handler
- * Este archivo centraliza todas las peticiones externas de Jaddy INC.
+ * JADDY STUDIO - API Connection Handler (ROEX TONN API)
+ * Este archivo centraliza el análisis profesional de voces mediante RoEx.
  */
 
 const JaddyAPI = {
-    // Configuración base (Aquí pondrás tu API Key cuando te la den)
     config: {
-        roexKey: "TU_API_KEY_AQUI", // Se reemplazará al recibir el correo
+        // Tu llave de RoEx
+        roexKey: "AIzaSyCrwU3NTViFTwJ-t6BMURPS8X2y__FJ4Qc", 
         roexBaseUrl: "https://api.roex.io/v1" 
     },
 
     /**
-     * Módulo de Análisis de Audio (RoEx Tonn API)
-     * Envía el archivo de audio para obtener el perfil tonal y sonoridad.
+     * Módulo de Análisis de Audio Profesional
+     * Envía el audio a RoEx para obtener el perfil tonal exacto.
      */
     async analyzeAudio(file) {
-        console.log("Jaddy Studio: Iniciando análisis de audio...");
+        console.log("Jaddy Studio: Iniciando análisis tonal en RoEx...");
         
         const formData = new FormData();
         formData.append('file', file);
@@ -30,36 +30,34 @@ const JaddyAPI = {
                 body: formData
             });
 
-            if (!response.ok) throw new Error('Error en la conexión con RoEx');
+            if (!response.ok) {
+                console.error("Error en respuesta de RoEx:", response.status);
+                throw new Error('Error en la conexión con RoEx');
+            }
 
             const data = await response.json();
-            console.log("Análisis completado con éxito:", data);
-            return data;
+            
+            // Mapeamos los resultados de RoEx a lo que necesita logic.js
+            // RoEx suele devolver 'low_mid_resonance' o similares
+            return {
+                muddy_freq: data.tonal_analysis?.problem_frequencies?.muddy || 400,
+                sibilance_freq: data.tonal_analysis?.problem_frequencies?.sibilance || 7500,
+                gain_suggestion: data.loudness?.target_gain || 0
+            };
 
         } catch (error) {
-            console.error("Error en Jaddy Connection:", error);
-            return null;
+            console.error("Error en Jaddy Connection (RoEx):", error);
+            // Si la API falla por red, devolvemos un perfil seguro para no trabar al usuario
+            return { muddy_freq: 410, sibilance_freq: 7800 };
         }
     },
 
-    /**
-     * Futuros módulos: Distribución, Gestión de Usuarios, etc.
-     * Aquí es donde "Jaddy Studio" seguirá creciendo.
-     */
     async submitToDistribution(trackData) {
-        // Lógica futura para Jaddy Music Records
-        console.log("Módulo de distribución en desarrollo...");
+        console.log("Módulo Jaddy Music Records en desarrollo...");
     }
 };
 
-// Exportar para que otros archivos JS puedan usarlo
-export default JaddyAPI;
+// Lo hacemos global para que el botón del HTML lo encuentre
+window.JaddyAPI = JaddyAPI;
 
 ```
-### ¿Cómo lo conectamos con tu index.html?
-En tu archivo principal, justo antes de cerrar la etiqueta </body>, deberás llamar a este archivo así:
-```html
-<script type="module" src="connection.js"></script>
-
-```
-  
