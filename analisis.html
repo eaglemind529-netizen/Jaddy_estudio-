@@ -4,297 +4,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jaddy Studio Elite | AI Analysis</title>
+    <title>Jaddy Studio | Precision Presets</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;900&display=swap');
         
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #050505;
-            color: white;
+            background-color: #0a0a0a;
+            color: #eee;
             margin: 0;
             display: flex;
             justify-content: center;
-            align-items: center;
-            min-h-screen;
+            padding: 20px;
         }
 
-        .phone-container {
+        .app-container {
             width: 100%;
-            max-width: 400px;
-            height: 90vh;
-            background: #000;
+            max-width: 500px;
+            background: #111;
+            border-radius: 2rem;
             border: 1px solid #222;
-            border-radius: 3rem;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
-        .glass-header {
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid #111;
+        .header {
+            padding: 2rem;
+            background: linear-gradient(to bottom, #1a1a1a, #111);
+            text-align: center;
+            border-bottom: 1px solid #222;
+        }
+
+        .mono { font-family: 'JetBrains+Mono', monospace; }
+
+        .plugin-card {
+            background: #161616;
+            margin: 15px;
+            border-radius: 1.5rem;
+            border-left: 4px solid #facc15;
             padding: 1.5rem;
-            z-index: 50;
         }
 
-        .scroll-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1.5rem;
-            scrollbar-width: none;
+        .param-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
         }
-        .scroll-area::-webkit-scrollbar { display: none; }
 
-        .btn-elite {
+        .param-item {
+            background: #1d1d1d;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #282828;
+        }
+
+        .label { color: #888; font-size: 0.65rem; text-transform: uppercase; font-weight: bold; }
+        .value { color: #facc15; font-size: 0.9rem; font-weight: bold; }
+
+        .band-row {
+            display: grid;
+            grid-template-columns: 40px 1fr 1fr 1fr;
+            gap: 5px;
+            padding: 5px 0;
+            border-bottom: 1px solid #222;
+            font-size: 0.75rem;
+        }
+
+        .btn-generate {
             background: #facc15;
-            color: black;
+            color: #000;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: 1px;
             transition: all 0.3s;
         }
-        .btn-elite:active { transform: scale(0.95); }
 
-        .result-card {
-            background: linear-gradient(145deg, #0a0a0a, #111);
-            border: 1px solid #222;
-            border-radius: 2rem;
-            padding: 1.5rem;
+        .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(250, 204, 21, 0.3); }
+        
+        .loading-bar {
+            height: 4px;
+            background: #222;
+            width: 100%;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 10px;
         }
-
-        .history-modal {
-            position: absolute;
-            inset: 0;
-            background: black;
-            z-index: 100;
-            transform: translateX(100%);
-            transition: transform 0.3s ease-in-out;
-            padding: 1.5rem;
-        }
-        .history-modal.active { transform: translateX(0); }
-
-        @keyframes pulse-gold {
-            0% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0); }
-        }
-        .analyzing { animation: pulse-gold 2s infinite; }
+        .progress { height: 100%; background: #facc15; width: 0%; transition: width 0.2s; }
     </style>
 </head>
 <body>
 
-    <div class="phone-container">
-        <!-- HEADER -->
-        <header class="glass-header flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-yellow-400 rounded-xl flex items-center justify-center">
-                    <i class="fas fa-microphone-alt text-black text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-sm font-black italic uppercase tracking-tighter">JADDY STUDIO <span class="text-yellow-400">ELITE</span></h1>
-                    <p class="text-[7px] font-bold text-zinc-500 tracking-[0.3em] uppercase">AI Dynamics Engine</p>
-                </div>
-            </div>
-            <button onclick="toggleHistory()" class="p-2 text-yellow-400 hover:scale-110">
-                <i class="fas fa-history text-lg"></i>
-            </button>
-        </header>
-
-        <!-- CONTENT -->
-        <div class="scroll-area space-y-6">
+    <div class="app-container">
+        <div class="header">
+            <h1 class="text-2xl font-black italic tracking-tighter">JADDY <span class="text-yellow-400">PRECISION</span></h1>
+            <p class="text-[10px] text-zinc-500 uppercase tracking-widest mt-1">Generador de Parámetros Exactos</p>
             
-            <!-- UPLOAD ZONE -->
-            <label id="drop-zone" class="block w-full aspect-video border-2 border-dashed border-zinc-800 rounded-[2.5rem] flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-yellow-400/50 transition-colors bg-zinc-900/10 group">
-                <input type="file" id="audio-input" class="hidden" accept="audio/*">
-                <div class="w-12 h-12 bg-zinc-900 rounded-2xl flex items-center justify-center group-hover:bg-yellow-400 group-hover:text-black transition-all">
-                    <i class="fas fa-cloud-upload-alt text-xl"></i>
-                </div>
-                <span id="file-name" class="text-[9px] font-black uppercase tracking-widest text-zinc-500">Subir Pista Vocal</span>
-            </label>
-
-            <!-- PLAYER (HIDDEN BY DEFAULT) -->
-            <div id="player-ui" class="hidden bg-zinc-900/30 border border-zinc-800 p-4 rounded-2xl flex items-center gap-4">
-                <button id="play-btn" class="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center">
-                    <i class="fas fa-play ml-1"></i>
+            <div class="mt-6 flex flex-col items-center">
+                <input type="file" id="audio-upload" class="hidden" accept="audio/*">
+                <button onclick="document.getElementById('audio-upload').click()" class="bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-3 rounded-full text-xs font-bold transition flex items-center gap-2">
+                    <i class="fas fa-wave-square text-yellow-400"></i> CARGAR AUDIO PARA ANALIZAR
                 </button>
-                <div class="flex-1 h-1 bg-zinc-800 rounded-full overflow-hidden">
-                    <div id="progress-bar" class="h-full bg-yellow-400" style="width: 0%"></div>
-                </div>
-                <audio id="main-audio" class="hidden"></audio>
+                <div id="file-name" class="text-[10px] text-zinc-500 mt-2 italic"></div>
             </div>
 
-            <button id="analyze-btn" class="w-full py-5 rounded-2xl btn-elite flex items-center justify-center gap-3 text-[10px] disabled:opacity-50">
-                <i class="fas fa-bolt"></i> ANALIZAR CADENA
+            <button id="calc-btn" class="btn-generate w-full mt-6 py-4 rounded-2xl hidden">
+                CALCULAR CADENA SERIAL
             </button>
-
-            <!-- RESULTS SECTION -->
-            <div id="results-area" class="hidden space-y-6 pb-10">
-                <div class="result-card">
-                    <p class="text-[9px] font-black text-yellow-400 uppercase mb-1">Elite Score</p>
-                    <div class="flex items-baseline gap-2">
-                        <span id="score-val" class="text-6xl font-black italic">96%</span>
-                        <span class="text-[10px] text-zinc-500 font-bold uppercase">Precisión</span>
-                    </div>
-                </div>
-
-                <div class="space-y-4">
-                    <div class="bg-zinc-900/30 p-5 rounded-2xl border border-zinc-900">
-                        <h3 class="text-[9px] font-black uppercase text-yellow-400 tracking-widest mb-4 flex items-center gap-2">
-                            <i class="fas fa-sliders-h"></i> Ecualización
-                        </h3>
-                        <div id="eq-list" class="space-y-3">
-                            <!-- JS Inject -->
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-[2rem] text-black">
-                        <div class="flex items-center gap-2 mb-2">
-                            <i class="fas fa-terminal"></i>
-                            <span class="text-[9px] font-black uppercase tracking-widest">Diagnóstico</span>
-                        </div>
-                        <p id="feedback-text" class="text-[11px] font-bold leading-relaxed italic">--</p>
-                    </div>
-                </div>
+            <div id="loading-container" class="hidden">
+                <div class="loading-bar"><div id="progress" class="progress"></div></div>
+                <p class="text-[9px] text-yellow-400 mt-2 uppercase font-bold text-center">Escaneando armónicos y dinámica...</p>
             </div>
         </div>
 
-        <!-- HISTORY MODAL -->
-        <div id="history-modal" class="history-modal flex flex-col">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-xl font-black italic uppercase">HISTORIAL <span class="text-yellow-400">CLOUD</span></h2>
-                <button onclick="toggleHistory()" class="w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div id="history-list" class="flex-1 overflow-y-auto space-y-3">
-                <!-- JS Inject -->
-                <p class="text-zinc-600 text-[10px] text-center mt-10 uppercase tracking-widest font-bold">Sin registros recientes</p>
-            </div>
+        <div id="results" class="hidden pb-10">
+            <!-- Los plugins se inyectan aquí -->
         </div>
-
-        <!-- FOOTER -->
-        <footer class="p-6 border-t border-zinc-900 bg-zinc-950/50 text-center">
-            <p class="text-[7px] font-bold text-zinc-700 tracking-[0.5em] uppercase italic">
-                Engineered by Jaddy Studio • © 2026
-            </p>
-        </footer>
     </div>
 
     <script>
-        const audioInput = document.getElementById('audio-input');
-        const fileName = document.getElementById('file-name');
-        const playerUI = document.getElementById('player-ui');
-        const mainAudio = document.getElementById('main-audio');
-        const playBtn = document.getElementById('play-btn');
-        const progressBar = document.getElementById('progress-bar');
-        const analyzeBtn = document.getElementById('analyze-btn');
-        const resultsArea = document.getElementById('results-area');
-        const historyModal = document.getElementById('history-modal');
+        const audioInput = document.getElementById('audio-upload');
+        const calcBtn = document.getElementById('calc-btn');
+        const loadingContainer = document.getElementById('loading-container');
+        const results = document.getElementById('results');
+        const progress = document.getElementById('progress');
 
-        let isPlaying = false;
-
-        // MANEJO DE ARCHIVO
         audioInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                fileName.innerText = file.name;
-                const url = URL.createObjectURL(file);
-                mainAudio.src = url;
-                playerUI.classList.remove('hidden');
-                resultsArea.classList.add('hidden');
+            if(e.target.files[0]) {
+                document.getElementById('file-name').innerText = e.target.files[0].name;
+                calcBtn.classList.remove('hidden');
             }
         });
 
-        // REPRODUCTOR
-        playBtn.addEventListener('click', () => {
-            if (isPlaying) {
-                mainAudio.pause();
-                playBtn.innerHTML = '<i class="fas fa-play ml-1"></i>';
-            } else {
-                mainAudio.play();
-                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-            }
-            isPlaying = !isPlaying;
+        calcBtn.addEventListener('click', () => {
+            calcBtn.classList.add('hidden');
+            loadingContainer.classList.remove('hidden');
+            let p = 0;
+            const interval = setInterval(() => {
+                p += 5;
+                progress.style.width = p + '%';
+                if(p >= 100) {
+                    clearInterval(interval);
+                    showResults();
+                }
+            }, 100);
         });
 
-        mainAudio.addEventListener('timeupdate', () => {
-            const pct = (mainAudio.currentTime / mainAudio.duration) * 100;
-            progressBar.style.width = pct + '%';
-        });
+        function showResults() {
+            loadingContainer.classList.add('hidden');
+            results.classList.remove('hidden');
+            
+            // Datos simulados de precisión (En un entorno real, aquí se procesaría el buffer de audio)
+            const data = [
+                {
+                    title: "1. EQ QUIRÚRGICO (Fruity Parametric EQ 2)",
+                    type: "eq",
+                    bands: [
+                        { b: 1, type: "High Pass", f: "115 Hz", g: "0 dB", q: "0.70" },
+                        { b: 2, type: "Peaking", f: "245 Hz", g: "-3.2 dB", q: "45%" },
+                        { b: 3, type: "Peaking", f: "480 Hz", g: "-2.5 dB", q: "30%" },
+                        { b: 4, type: "Peaking", f: "820 Hz", g: "-1.8 dB", q: "20%" },
+                        { b: 5, type: "Peaking", f: "2.1 kHz", g: "+1.2 dB", q: "15%" },
+                        { b: 6, type: "Peaking", f: "5.4 kHz", g: "0 dB", q: "25%" },
+                        { b: 7, type: "High Shelf", f: "12 kHz", g: "0 dB", q: "50%" }
+                    ]
+                },
+                {
+                    title: "2. COMP 1: PICOS (Fruity Limiter - Comp Mode)",
+                    type: "grid",
+                    params: [
+                        { l: "Threshold", v: "-14.2 dB" },
+                        { l: "Ratio", v: "6.5 : 1" },
+                        { l: "Attack", v: "0.45 ms" },
+                        { l: "Release", v: "80 ms" },
+                        { l: "Knee", v: "15%" },
+                        { l: "Gain (Post)", v: "+1.5 dB" }
+                    ]
+                },
+                {
+                    title: "3. EQ TONO: BRILLO (Fruity Parametric EQ 2)",
+                    type: "eq",
+                    bands: [
+                        { b: 1, type: "Low Shelf", f: "200 Hz", g: "+1.0 dB", q: "40%" },
+                        { b: 2, type: "Peaking", f: "3.5 kHz", g: "+2.8 dB", q: "25%" },
+                        { b: 3, type: "High Shelf", f: "10.5 kHz", g: "+4.5 dB", q: "55%" },
+                        { b: "4-7", type: "Flat", f: "-", g: "0 dB", q: "-" }
+                    ]
+                },
+                {
+                    title: "4. COMP 2: CUERPO (Fruity Compressor)",
+                    type: "grid",
+                    params: [
+                        { l: "Threshold", v: "-22.0 dB" },
+                        { l: "Ratio", v: "2.2 : 1" },
+                        { l: "Attack", v: "35 ms" },
+                        { l: "Release", v: "150 ms" },
+                        { l: "Type", v: "Vintage" },
+                        { l: "Gain", v: "+3.0 dB" }
+                    ]
+                },
+                {
+                    title: "5. DE-ESSER (Patcher - Preset Intelligent)",
+                    type: "grid",
+                    params: [
+                        { l: "Center Freq", v: "6850 Hz" },
+                        { l: "Bandwidth", v: "1.2 Oct" },
+                        { l: "Threshold", v: "-18 dB" },
+                        { l: "Reduction", v: "Max -4dB" }
+                    ]
+                }
+            ];
 
-        mainAudio.addEventListener('ended', () => {
-            isPlaying = false;
-            playBtn.innerHTML = '<i class="fas fa-play ml-1"></i>';
-        });
-
-        // ANÁLISIS SIMULADO
-        analyzeBtn.addEventListener('click', () => {
-            analyzeBtn.disabled = true;
-            analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO...';
-            analyzeBtn.classList.add('analyzing');
-
-            setTimeout(() => {
-                const isKing = fileName.innerText.toLowerCase().includes('king');
-                const score = isKing ? 98 : Math.floor(Math.random() * 15) + 80;
-                
-                document.getElementById('score-val').innerText = score + '%';
-                document.getElementById('feedback-text').innerText = isKing 
-                    ? "Frecuencias dominantes alineadas al estándar J King. La respuesta en transitorios es excelente."
-                    : "Se detecta exceso de energía en los 300Hz. Aplicar compresión paralela para dar cuerpo.";
-
-                const eqTips = [
-                    { l: "Sub Low", v: "110Hz Corte" },
-                    { l: "Presencia", v: "+2.5dB @ 3kHz" },
-                    { l: "Aire", v: "+1.0dB @ 12kHz" }
-                ];
-
-                const eqList = document.getElementById('eq-list');
-                eqList.innerHTML = eqTips.map(tip => `
-                    <div class="flex justify-between items-center text-[10px]">
-                        <span class="text-zinc-500 font-bold uppercase">${tip.l}</span>
-                        <span class="text-white font-black">${tip.v}</span>
-                    </div>
-                `).join('');
-
-                resultsArea.classList.remove('hidden');
-                analyzeBtn.disabled = false;
-                analyzeBtn.innerHTML = '<i class="fas fa-bolt"></i> RE-ANALIZAR';
-                analyzeBtn.classList.remove('analyzing');
-                
-                // Guardar localmente para simular historial
-                saveToLocal(fileName.innerText, score);
-            }, 2500);
-        });
-
-        function toggleHistory() {
-            historyModal.classList.toggle('active');
-            if(historyModal.classList.contains('active')) renderHistory();
-        }
-
-        function saveToLocal(name, score) {
-            let history = JSON.parse(localStorage.getItem('jaddy_history') || '[]');
-            history.unshift({ name, score, date: new Date().toLocaleDateString() });
-            localStorage.setItem('jaddy_history', JSON.stringify(history.slice(0, 10)));
-        }
-
-        function renderHistory() {
-            const list = document.getElementById('history-list');
-            const history = JSON.parse(localStorage.getItem('jaddy_history') || '[]');
-            if (history.length === 0) return;
-
-            list.innerHTML = history.map(item => `
-                <div class="bg-zinc-900/50 p-4 rounded-2xl border border-zinc-800 flex justify-between items-center">
-                    <div class="truncate pr-4">
-                        <p class="text-[10px] font-black uppercase truncate text-zinc-300">${item.name}</p>
-                        <p class="text-[8px] font-bold text-zinc-600 mt-1">${item.date}</p>
-                    </div>
-                    <span class="text-lg font-black text-yellow-400 italic">${item.score}%</span>
+            results.innerHTML = data.map(plugin => `
+                <div class="plugin-card">
+                    <h3 class="text-[11px] font-black uppercase mb-4 text-white italic">${plugin.title}</h3>
+                    ${plugin.type === 'eq' ? `
+                        <div class="bg-black/40 p-3 rounded-xl">
+                            <div class="band-row opacity-50 font-bold">
+                                <span>BND</span><span>TYPE</span><span>FREQ</span><span>GAIN</span>
+                            </div>
+                            ${plugin.bands.map(b => `
+                                <div class="band-row mono">
+                                    <span class="text-yellow-400 font-bold">${b.b}</span>
+                                    <span class="text-[9px]">${b.type}</span>
+                                    <span>${b.f}</span>
+                                    <span class="${b.g.includes('-') ? 'text-red-400' : 'text-green-400'}">${b.g}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <div class="param-grid">
+                            ${plugin.params.map(p => `
+                                <div class="param-item">
+                                    <div class="label">${p.l}</div>
+                                    <div class="value mono">${p.v}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
                 </div>
             `).join('');
         }
