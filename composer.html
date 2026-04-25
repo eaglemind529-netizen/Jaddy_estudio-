@@ -18,42 +18,47 @@
         .btn-primary { @apply bg-white text-black font-bold py-3 px-6 rounded-xl hover:bg-zinc-200 transition-all active:scale-95 disabled:opacity-50; }
         .btn-secondary { @apply bg-zinc-800 text-white font-bold py-3 px-6 rounded-xl hover:bg-zinc-700 transition-all active:scale-95; }
         .btn-download { @apply flex items-center justify-center gap-2 bg-blue-600/10 border border-blue-500/20 text-blue-400 py-2 px-4 rounded-lg hover:bg-blue-600/20 transition-all text-xs font-bold; }
+        .error-msg { color: #ef4444; font-size: 10px; margin-top: 5px; text-transform: uppercase; }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
 
     <div class="max-w-4xl w-full">
         <header class="mb-8 text-center">
+            <div class="mb-4">
+                <a href="index.html" class="text-zinc-600 hover:text-white text-[10px] font-bold tracking-widest uppercase border border-zinc-800 px-4 py-2 rounded-full transition-all">← Volver al Panel Principal</a>
+            </div>
             <h1 class="text-4xl font-black tracking-tighter text-white italic uppercase">
                 Studio <span class="text-blue-500">Organic</span> v3
             </h1>
-            <p class="text-zinc-500 text-sm mt-2 font-medium">Corrección de Botones de Descarga.</p>
+            <p class="text-zinc-500 text-sm mt-2 font-medium">Motor de Composición IA Activo.</p>
         </header>
 
         <div class="studio-card p-6 md:p-10 rounded-[2.5rem] shadow-2xl border border-white/5">
             
             <div id="loadingStatus" class="mb-6 flex items-center gap-3 bg-blue-500/5 p-4 rounded-2xl border border-blue-500/10">
                 <div class="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
-                <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Cargando muestras reales...</span>
+                <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Cargando muestras de audio...</span>
             </div>
 
             <div class="space-y-4">
                 <textarea id="promptInput" 
                     class="w-full bg-black/40 border border-zinc-800 rounded-2xl p-6 text-lg focus:ring-2 focus:ring-blue-500/30 outline-none h-32 placeholder-zinc-700 transition-all"
-                    placeholder="Escribe aquí tu idea para el loop de 4 compases..."></textarea>
+                    placeholder="Describe tu melodía (ej. Piano melancólico de trap en Do menor)..."></textarea>
                 
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <button id="generateBtn" class="btn-primary flex-1">
+                    <button id="generateBtn" onclick="generate()" class="btn-primary flex-1">
                         GENERAR LOOP
                     </button>
-                    <button id="playBtn" class="btn-secondary hidden flex-[0.5] items-center justify-center gap-2">
+                    <button id="playBtn" onclick="playSequence()" class="btn-secondary hidden flex-[0.5] items-center justify-center gap-2">
                         PLAY
                     </button>
                 </div>
+                <div id="errorMessage" class="error-msg hidden"></div>
             </div>
 
             <div id="exportPanel" class="hidden mt-8 pt-8 border-t border-zinc-800 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <h3 class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-4">Exportar Composición</h3>
+                <h3 class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-4">Exportar Archivos</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button id="midiBtn" class="btn-download">
                         DESCARGAR MIDI (.mid)
@@ -71,82 +76,120 @@
     </div>
 
     <script>
-        const apiKey = ""; // Tu llave de API aquí
+        const apiKey = ""; // La clave se inyectará automáticamente
         let sampler, reverb, filter, recorder, currentNotes = [];
 
         async function init() {
-            reverb = new Tone.Reverb({ decay: 3, wet: 0.35 }).toDestination();
-            filter = new Tone.Filter(2500, "lowpass").connect(reverb);
+            try {
+                reverb = new Tone.Reverb({ decay: 3, wet: 0.35 }).toDestination();
+                filter = new Tone.Filter(2500, "lowpass").connect(reverb);
 
-            sampler = new Tone.Sampler({
-                urls: {
-                    A0: "A0.mp3", C1: "C1.mp3", "D#1": "Ds1.mp3", "F#1": "Fs1.mp3",
-                    A1: "A1.mp3", C2: "C2.mp3", "D#2": "Ds2.mp3", "F#2": "Fs2.mp3",
-                    A2: "A2.mp3", C3: "C3.mp3", "D#3": "Ds3.mp3", "F#3": "Fs3.mp3",
-                    A3: "A3.mp3", C4: "C4.mp3", "D#4": "Ds4.mp3", "F#4": "Fs4.mp3",
-                    A4: "A4.mp3", C5: "C5.mp3", "D#5": "Ds5.mp3", "F#5": "Fs5.mp3",
-                    A5: "A5.mp3", C6: "C6.mp3", "D#6": "Ds6.mp3", "F#6": "Fs6.mp3",
-                },
-                baseUrl: "https://tonejs.github.io/audio/salamander/",
-                onload: () => {
-                    document.getElementById('loadingStatus').classList.add('hidden');
-                    log("Instrumentos listos para sonar.");
-                }
-            }).connect(filter);
+                sampler = new Tone.Sampler({
+                    urls: {
+                        A0: "A0.mp3", C1: "C1.mp3", "D#1": "Ds1.mp3", "F#1": "Fs1.mp3",
+                        A1: "A1.mp3", C2: "C2.mp3", "D#2": "Ds2.mp3", "F#2": "Fs2.mp3",
+                        A2: "A2.mp3", C3: "C3.mp3", "D#3": "Ds3.mp3", "F#3": "Fs3.mp3",
+                        A3: "A3.mp3", C4: "C4.mp3", "D#4": "Ds4.mp3", "F#4": "Fs4.mp3",
+                        A4: "A4.mp3", C5: "C5.mp3", "D#5": "Ds5.mp3", "F#5": "Fs5.mp3",
+                    },
+                    baseUrl: "https://tonejs.github.io/audio/salamander/",
+                    onload: () => {
+                        document.getElementById('loadingStatus').classList.add('hidden');
+                        log("Motor de audio inicializado.");
+                    }
+                }).connect(filter);
 
-            recorder = new Tone.Recorder();
-            Tone.Destination.connect(recorder);
+                recorder = new Tone.Recorder();
+                Tone.Destination.connect(recorder);
+            } catch (e) {
+                log("Error al iniciar audio: " + e.message);
+            }
         }
 
         function log(msg) {
             document.getElementById('consoleLog').innerText = "> " + msg;
         }
 
+        function showError(msg) {
+            const errDiv = document.getElementById('errorMessage');
+            errDiv.innerText = msg;
+            errDiv.classList.remove('hidden');
+            setTimeout(() => errDiv.classList.add('hidden'), 5000);
+        }
+
         async function generate() {
             const prompt = document.getElementById('promptInput').value;
-            if(!prompt) return;
+            if(!prompt) {
+                showError("Por favor escribe una descripción");
+                return;
+            }
 
             const btn = document.getElementById('generateBtn');
             btn.disabled = true;
-            btn.innerText = "COMPONIENDO...";
+            btn.innerText = "IA COMPONIENDO...";
 
-            const sysPrompt = "Genera un JSON de melodía de piano de 4 compases. Formato: { 'bpm': 120, 'notes': [{ 'note': 'C4', 'time': 0, 'duration': '4n', 'velocity': 0.8 }] }";
+            const sysPrompt = "Genera un JSON estrictamente válido para una melodía de piano. Estructura: { 'bpm': 120, 'notes': [{ 'note': 'C4', 'time': 0, 'duration': '4n', 'velocity': 0.8 }] }. Asegúrate de que las notas sean musicales y coherentes.";
 
-            try {
+            // Implementación de reintentos con backoff exponencial
+            let retries = 5;
+            let delay = 1000;
+
+            const callApi = async () => {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
                         systemInstruction: { parts: [{ text: sysPrompt }] },
-                        generationConfig: { responseMimeType: "application/json" }
+                        generationConfig: { 
+                            responseMimeType: "application/json",
+                            temperature: 0.7
+                        }
                     })
                 });
 
-                const data = await response.json();
-                const result = JSON.parse(data.candidates[0].content.parts[0].text);
-                currentNotes = result.notes;
-                
-                document.getElementById('playBtn').classList.remove('hidden');
-                document.getElementById('exportPanel').classList.remove('hidden');
-                log("Melodía generada.");
-            } catch (e) {
-                log("Error: " + e.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "GENERAR LOOP";
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.json();
+            };
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const data = await callApi();
+                    const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (!content) throw new Error("Respuesta vacía de la IA");
+
+                    const result = JSON.parse(content);
+                    currentNotes = result.notes;
+                    
+                    document.getElementById('playBtn').classList.remove('hidden');
+                    document.getElementById('exportPanel').classList.remove('hidden');
+                    log("Composición recibida correctamente.");
+                    break; 
+                } catch (e) {
+                    if (i === retries - 1) {
+                        showError("Fallo en la conexión: Revisa tu API Key o conexión.");
+                        log("Error crítico: " + e.message);
+                    }
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
             }
+            
+            btn.disabled = false;
+            btn.innerText = "GENERAR LOOP";
         }
 
         async function playSequence() {
+            if (currentNotes.length === 0) return;
             await Tone.start();
             const now = Tone.now() + 0.1;
             currentNotes.forEach(n => {
-                sampler.triggerAttackRelease(n.note, n.duration, now + n.time, n.velocity);
+                sampler.triggerAttackRelease(n.note, n.duration, now + Tone.Time(n.time).toSeconds(), n.velocity);
             });
+            log("Reproduciendo...");
         }
 
-        // --- CORRECCIÓN DEFINITIVA MIDI ---
+        // Descarga MIDI
         document.getElementById('midiBtn').onclick = function() {
             if (currentNotes.length === 0) return;
             const midi = new Midi();
@@ -154,7 +197,7 @@
             currentNotes.forEach(n => {
                 track.addNote({
                     name: n.note,
-                    time: n.time,
+                    time: Tone.Time(n.time).toSeconds(),
                     duration: Tone.Time(n.duration).toSeconds(),
                     velocity: n.velocity
                 });
@@ -162,49 +205,41 @@
             const blob = new Blob([midi.toArray()], { type: "audio/midi" });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
-            a.style.display = "none";
             a.href = url;
-            a.download = "mi_melodia_4compases.mid";
-            document.body.appendChild(a);
+            a.download = "jaddy_melody.mid";
             a.click();
-            window.URL.revokeObjectURL(url);
-            log("MIDI descargado exitosamente.");
+            log("Archivo MIDI generado.");
         };
 
-        // --- CORRECCIÓN DEFINITIVA AUDIO ---
+        // Descarga Audio (WAV)
         document.getElementById('audioBtn').onclick = async function() {
             if (currentNotes.length === 0) return;
             const btn = document.getElementById('audioBtn');
-            btn.innerText = "GRABANDO LOOP...";
+            const originalText = btn.innerText;
+            btn.innerText = "GRABANDO...";
             
             await Tone.start();
             recorder.start();
-            
             playSequence();
 
-            const duration = currentNotes.reduce((max, n) => Math.max(max, n.time + Tone.Time(n.duration).toSeconds()), 0);
+            const duration = currentNotes.reduce((max, n) => 
+                Math.max(max, Tone.Time(n.time).toSeconds() + Tone.Time(n.duration).toSeconds()), 0);
             
             setTimeout(async () => {
                 const recording = await recorder.stop();
                 const url = window.URL.createObjectURL(recording);
                 const a = document.createElement("a");
-                a.style.display = "none";
                 a.href = url;
-                a.download = "mi_loop_organico.wav";
-                document.body.appendChild(a);
+                a.download = "jaddy_loop.wav";
                 a.click();
-                window.URL.revokeObjectURL(url);
-                btn.innerText = "DESCARGAR SONIDO (.wav)";
-                log("Audio descargado exitosamente.");
+                btn.innerText = originalText;
+                log("Archivo de audio exportado.");
             }, (duration + 1) * 1000);
         };
 
-        document.getElementById('generateBtn').onclick = generate;
-        document.getElementById('playBtn').onclick = playSequence;
         window.onload = init;
     </script>
 </body>
 </html>
 
 ```
-
