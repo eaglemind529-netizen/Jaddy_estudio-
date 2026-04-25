@@ -15,9 +15,9 @@
         @keyframes pulse { 0% { opacity: 0.4; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0.4; transform: scale(0.8); } }
     </style>
 </head>
-<body class="gradient-bg min-h-screen text-white font-sans flex flex-col justify-center">
+<body class="gradient-bg min-h-screen text-white font-sans py-12">
 
-    <div class="max-w-6xl mx-auto px-6 py-12 w-full">
+    <div class="max-w-7xl mx-auto px-6 w-full">
         
         <!-- Logo y Título -->
         <header class="text-center mb-16 space-y-4">
@@ -27,54 +27,70 @@
             <h1 class="text-5xl md:text-7xl font-black italic tracking-tighter uppercase">
                 Jaddy <span class="text-cyan-500 neon-text">Studio</span>
             </h1>
-            <p class="text-gray-500 font-medium tracking-widest text-xs">SOLUCIONES INTEGRALES PARA EL ARTISTA URBANO</p>
+            <p class="text-gray-500 font-medium tracking-widest text-xs uppercase">Soluciones integrales para el artista urbano</p>
         </header>
 
-        <!-- Grilla de Opciones -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Grilla de Opciones (4 Columnas ahora) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             
             <!-- Opción 1: Análisis -->
             <a href="analisis.html" class="group">
-                <div class="glass-card p-10 rounded-[3rem] h-full flex flex-col items-center text-center">
-                    <div class="w-16 h-16 bg-cyan-500/20 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-cyan-500 group-hover:text-black transition-colors">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                <div class="glass-card p-8 rounded-[2.5rem] h-full flex flex-col items-center text-center">
+                    <div class="w-14 h-14 bg-cyan-500/10 text-cyan-400 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-cyan-500 group-hover:text-black transition-colors">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                     </div>
-                    <h3 class="text-xl font-black uppercase tracking-tighter mb-4">Análisis de Voz</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed mb-6">Escaneo espectral y visión AI para mezcla profesional.</p>
+                    <h3 class="text-lg font-black uppercase tracking-tighter mb-3">Análisis de Voz</h3>
+                    <p class="text-gray-500 text-xs leading-relaxed mb-6">Escaneo espectral y visión AI para mezcla profesional.</p>
                     <div class="mt-auto">
-                        <span class="text-[10px] font-bold text-cyan-500 tracking-widest uppercase flex items-center">
+                        <span class="text-[9px] font-bold text-cyan-500 tracking-widest uppercase flex items-center justify-center">
                             <span class="status-dot bg-cyan-500 mr-2"></span> Sistema Activo
                         </span>
                     </div>
                 </div>
             </a>
 
-            <!-- Opción 2: Limpieza (Próximamente) -->
-            <div class="group cursor-not-allowed opacity-60">
-                <div class="glass-card p-10 rounded-[3rem] h-full flex flex-col items-center text-center">
-                    <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-8">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            <!-- Opción 2: Composición IA (NUEVO) -->
+            <a href="composer.html" class="group">
+                <div class="glass-card p-8 rounded-[2.5rem] h-full flex flex-col items-center text-center border-blue-500/20 bg-blue-500/5">
+                    <div class="w-14 h-14 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-500 group-hover:text-black transition-colors">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"></path></svg>
                     </div>
-                    <h3 class="text-xl font-black uppercase tracking-tighter mb-4">Limpieza de Voz</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed mb-6">Eliminación de ruido y restauración de audio con IA.</p>
+                    <h3 class="text-lg font-black uppercase tracking-tighter mb-3">Estudio de Melodía</h3>
+                    <p class="text-gray-500 text-xs leading-relaxed mb-6">Generación de piano orgánico y loops mediante IA.</p>
                     <div class="mt-auto">
-                        <span class="text-[10px] font-bold text-gray-600 tracking-widest uppercase flex items-center">
-                            <span class="status-dot bg-gray-600 mr-2"></span> En Desarrollo
+                        <span class="text-[9px] font-bold text-blue-400 tracking-widest uppercase flex items-center justify-center">
+                            <span class="status-dot bg-blue-500 mr-2"></span> Online
                         </span>
                     </div>
                 </div>
-            </div>
+            </a>
 
-            <!-- Opción 3: Distribución (Próximamente) -->
-            <div class="group cursor-not-allowed opacity-60">
-                <div class="glass-card p-10 rounded-[3rem] h-full flex flex-col items-center text-center">
-                    <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-8">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.5a2.5 2.5 0 012.5 2.5V14a2 2 0 002 2h2.935M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <!-- Opción 3: Limpieza -->
+            <a href="limpieza.html" class="group">
+                <div class="glass-card p-8 rounded-[2.5rem] h-full flex flex-col items-center text-center">
+                    <div class="w-14 h-14 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 group-hover:text-black transition-colors">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                     </div>
-                    <h3 class="text-xl font-black uppercase tracking-tighter mb-4">Distribución</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed mb-6">Envía tu música a todas las plataformas digitales.</p>
+                    <h3 class="text-lg font-black uppercase tracking-tighter mb-3">Limpieza de Voz</h3>
+                    <p class="text-gray-500 text-xs leading-relaxed mb-6">Eliminación de ruido y restauración de audio con IA.</p>
                     <div class="mt-auto">
-                        <span class="text-[10px] font-bold text-gray-600 tracking-widest uppercase flex items-center">
+                        <span class="text-[9px] font-bold text-emerald-500 tracking-widest uppercase flex items-center justify-center">
+                            <span class="status-dot bg-emerald-500 mr-2"></span> Calibrado
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Opción 4: Distribución -->
+            <div class="group cursor-not-allowed opacity-40">
+                <div class="glass-card p-8 rounded-[2.5rem] h-full flex flex-col items-center text-center">
+                    <div class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.5a2.5 2.5 0 012.5 2.5V14a2 2 0 002 2h2.935M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-lg font-black uppercase tracking-tighter mb-3">Distribución</h3>
+                    <p class="text-gray-500 text-xs leading-relaxed mb-6">Envía tu música a todas las plataformas digitales.</p>
+                    <div class="mt-auto">
+                        <span class="text-[9px] font-bold text-gray-600 tracking-widest uppercase flex items-center justify-center">
                             <span class="status-dot bg-gray-600 mr-2"></span> En Desarrollo
                         </span>
                     </div>
@@ -85,7 +101,7 @@
 
         <!-- Footer Informativo -->
         <footer class="mt-20 text-center border-t border-white/5 pt-8">
-            <p class="text-gray-700 text-[10px] font-mono tracking-widest">© 2024 JADDY ESTUDIO | WORKFLOW DE INGENIERÍA AVANZADA</p>
+            <p class="text-gray-700 text-[10px] font-mono tracking-widest uppercase italic">© 2024 JADDY ESTUDIO | Workflow de Ingeniería Avanzada por Gemini 2.5</p>
         </footer>
 
     </div>
