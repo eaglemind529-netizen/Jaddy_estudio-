@@ -4,326 +4,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jaddy Piano Solo | Real Emotion & Export</title>
+    <title>Jaddy Piano Solo | Grabación y MIDI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="https://unpkg.com/@tonejs/midi"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,900;1,400&family=Inter:wght@300;400;600&display=swap');
-        
-        :root {
-            --piano-gold: #c5a059;
-            --piano-black: #0a0a0a;
-        }
-
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background: var(--piano-black); 
-            color: #d4d4d8;
-            overflow-x: hidden;
-        }
-
+        :root { --piano-gold: #c5a059; --piano-black: #0a0a0a; }
+        body { font-family: 'Inter', sans-serif; background: var(--piano-black); color: #d4d4d8; min-height: 100vh; overflow: hidden; }
         .serif { font-family: 'Playfair Display', serif; }
+        .piano-gradient { background: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%); }
+        .gold-glow { box-shadow: 0 0 50px rgba(197, 160, 89, 0.08); border: 1px solid rgba(197, 160, 89, 0.15); }
+        .btn-gold { background: var(--piano-gold); color: black; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .btn-gold:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(197, 160, 89, 0.2); }
+        .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .piano-gradient {
-            background: radial-gradient(circle at top right, #1a1a1a 0%, #050505 100%);
+        .note-particle {
+            position: absolute;
+            bottom: 20%;
+            color: var(--piano-gold);
+            font-family: serif;
+            pointer-events: none;
+            animation: floatUp 3s linear forwards;
+            opacity: 0;
         }
-
-        .gold-glow {
-            box-shadow: 0 0 20px rgba(197, 160, 89, 0.1);
-        }
-
-        .loading-text {
-            letter-spacing: 0.3em;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 1; }
-        }
-
-        .key-viz {
-            transition: all 0.1s ease;
-            transform-origin: bottom;
-        }
-
-        #downloadBtn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            filter: grayscale(1);
+        @keyframes floatUp {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            20% { opacity: 0.6; }
+            100% { transform: translateY(-300px) translateX(20px); opacity: 0; }
         }
     </style>
 </head>
-<body class="min-h-screen piano-gradient flex flex-col items-center p-6 md:p-12">
+<body class="piano-gradient flex flex-col items-center justify-center p-4">
 
-    <div class="w-full max-w-4xl">
-        <!-- Header -->
-        <header class="text-center mb-12">
-            <h1 class="serif text-5xl md:text-7xl font-black text-white italic mb-2 tracking-tighter">
-                Piano <span class="text-[var(--piano-gold)]">Solo</span>
-            </h1>
-            <p class="text-zinc-500 font-light text-sm uppercase tracking-[0.4em]">Grabación Profesional de Alta Fidelidad</p>
-        </header>
-
-        <!-- Inicialización -->
-        <div id="loader" class="mb-12 text-center">
-            <button id="init-btn" onclick="initPiano()" class="px-10 py-4 border border-[var(--piano-gold)] text-[var(--piano-gold)] hover:bg-[var(--piano-gold)] hover:text-black transition-all duration-500 uppercase text-xs font-bold tracking-widest rounded-full">
-                Activar Mecanismo de Piano
-            </button>
-            <div id="loading-status" class="hidden">
-                <p class="loading-text text-[var(--piano-gold)] text-[10px] font-bold uppercase">Cargando martillos y cuerdas...</p>
-                <div class="w-48 h-[1px] bg-zinc-800 mx-auto mt-4 overflow-hidden">
-                    <div id="load-progress" class="h-full bg-[var(--piano-gold)] w-0 transition-all duration-300"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Interfaz Principal -->
-        <main id="main-ui" class="opacity-20 pointer-events-none transition-opacity duration-1000 space-y-8">
-            <div class="relative bg-zinc-900/40 p-8 rounded-3xl border border-white/5 gold-glow">
-                <label class="block text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-6 italic italic">Define la emoción del piano</label>
-                
-                <textarea id="pianoPrompt" 
-                    class="w-full bg-transparent border-none text-2xl md:text-3xl serif italic text-white placeholder-zinc-800 focus:ring-0 resize-none h-32"
-                    placeholder="Ej: Un piano sensual, íntimo, estilo jazz melancólico..."></textarea>
-                
-                <div class="flex flex-col md:flex-row justify-between items-center gap-6 mt-8 pt-8 border-t border-white/5">
-                    <div class="flex gap-4">
-                        <div class="text-left">
-                            <span class="block text-[9px] text-zinc-600 uppercase font-bold">Estado</span>
-                            <span id="recorder-status" class="text-xs text-zinc-400">Listo para grabar</span>
-                        </div>
-                    </div>
-                    
-                    <button id="interpretBtn" onclick="interpretEmotion()" class="w-full md:w-auto px-12 py-5 bg-[var(--piano-gold)] text-black font-bold rounded-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3">
-                        <i class="fas fa-feather-pointed"></i> INTERPRETAR
-                    </button>
-                </div>
-            </div>
-
-            <!-- Visualizador -->
-            <div class="flex justify-center items-end gap-1 h-32 px-4" id="visualizer"></div>
-
-            <!-- Controles de Audio y Descarga -->
-            <div class="flex flex-col items-center gap-8">
-                <div class="flex justify-center gap-12 items-center">
-                    <button id="playBtn" disabled onclick="togglePlayback()" class="group flex flex-col items-center gap-2">
-                        <div id="playCircle" class="w-20 h-20 rounded-full border border-zinc-700 flex items-center justify-center group-hover:border-[var(--piano-gold)] transition-all">
-                            <i id="playIcon" class="fas fa-play text-white text-xl group-hover:text-[var(--piano-gold)]"></i>
-                        </div>
-                        <span class="text-[9px] uppercase tracking-widest text-zinc-600">Reproducir y Grabar</span>
-                    </button>
-
-                    <button id="downloadBtn" disabled onclick="downloadAudio()" class="group flex flex-col items-center gap-2">
-                        <div class="w-20 h-20 rounded-full border border-zinc-700 flex items-center justify-center group-hover:border-emerald-500 transition-all">
-                            <i class="fas fa-download text-white text-xl group-hover:text-emerald-500"></i>
-                        </div>
-                        <span class="text-[9px] uppercase tracking-widest text-zinc-600">Descargar Audio</span>
-                    </button>
-                </div>
-                <p id="info-text" class="text-[10px] text-zinc-500 italic">Para descargar, primero debes reproducir la pieza completa.</p>
-            </div>
-        </main>
+    <div id="loader" class="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center transition-opacity duration-1000">
+        <h1 class="serif text-4xl text-[var(--piano-gold)] italic mb-8 animate-pulse">Piano Solo</h1>
+        <button id="start-btn" onclick="startApp()" class="px-12 py-4 border border-[var(--piano-gold)] text-[var(--piano-gold)] uppercase tracking-[0.3em] text-xs font-bold hover:bg-[var(--piano-gold)] hover:text-black transition-all">
+            Cargar Instrumentos
+        </button>
+        <p id="loading-msg" class="hidden mt-4 text-[10px] uppercase tracking-widest text-zinc-500">Preparando grabación...</p>
     </div>
 
-    <div id="status-log" class="fixed bottom-6 right-6 text-[9px] font-mono text-zinc-700 uppercase"></div>
+    <div class="w-full max-w-3xl relative z-10">
+        <header class="text-center mb-8">
+            <h2 class="serif text-6xl md:text-7xl font-black text-white italic tracking-tighter mb-2">
+                Piano <span class="text-[var(--piano-gold)]">Solo</span>
+            </h2>
+            <p class="text-zinc-500 text-[10px] uppercase tracking-[0.5em]">Estudio de Grabación Profesional</p>
+        </header>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+        <div class="bg-zinc-900/60 backdrop-blur-2xl p-8 md:p-10 rounded-[2.5rem] gold-glow relative overflow-hidden">
+            <div id="particle-container" class="absolute inset-0 pointer-events-none"></div>
+
+            <textarea id="moodInput" 
+                class="w-full bg-transparent border-none text-2xl md:text-3xl serif italic text-white placeholder-zinc-800 focus:ring-0 resize-none h-24 relative z-10"
+                placeholder="Escribe el sentimiento para la obra..."></textarea>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 relative z-10">
+                <button id="actionBtn" onclick="handleAction()" class="btn-gold py-4 rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 order-1 md:col-span-2">
+                    <span id="btn-label">Grabar Composición</span>
+                </button>
+
+                <button id="downloadAudio" onclick="downloadRecordedAudio()" class="hidden bg-zinc-800 text-white py-3 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-zinc-700 transition-all flex items-center justify-center gap-2 order-2">
+                    Descargar MP3/WAV
+                </button>
+                
+                <button id="downloadMidi" onclick="downloadMidiFile()" class="hidden bg-zinc-800 text-white py-3 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-zinc-700 transition-all flex items-center justify-center gap-2 order-3">
+                    Descargar MIDI
+                </button>
+            </div>
+
+            <div class="flex items-center justify-center gap-3 mt-8 pt-6 border-t border-white/5 relative z-10">
+                <div id="status-led" class="w-2 h-2 rounded-full bg-zinc-700"></div>
+                <span id="status-text" class="text-[9px] uppercase font-bold text-zinc-500 tracking-widest">Listo para grabar</span>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const apiKey = "";
-        let piano, reverb, delay, recorder, chunks = [];
+        let sampler, recorder, reverb, delay;
         let isPlaying = false;
-        let currentSequence = [];
-        let audioUrl = null;
+        let audioBlob = null;
+        let currentMidi = null;
 
-        function log(msg) {
-            document.getElementById('status-log').innerText = `> ${msg}`;
-        }
+        const progressions = {
+            nostalgic: [
+                { chord: ["A2", "E3", "A3", "C4"], scale: ["A3", "B3", "C4", "E4", "G4"] },
+                { chord: ["F2", "C3", "F3", "A3"], scale: ["F3", "G3", "A3", "C4", "E4"] },
+                { chord: ["D2", "A2", "D3", "F3"], scale: ["D3", "E3", "F3", "A3", "C4"] },
+                { chord: ["E2", "B2", "E3", "G#3"], scale: ["E3", "F#3", "G#3", "B3", "D4"] }
+            ],
+            peaceful: [
+                { chord: ["C2", "G2", "C3", "E3"], scale: ["C3", "D3", "E3", "G3", "A3"] },
+                { chord: ["F2", "C3", "F3", "A3"], scale: ["F3", "G3", "A3", "C4", "D4"] },
+                { chord: ["G2", "D3", "G3", "B3"], scale: ["G3", "A3", "B3", "D4", "E4"] },
+                { chord: ["A2", "E3", "A3", "C4"], scale: ["A3", "B3", "C4", "E4", "G4"] }
+            ]
+        };
 
-        async function initPiano() {
-            document.getElementById('init-btn').classList.add('hidden');
-            document.getElementById('loading-status').classList.remove('hidden');
+        async function startApp() {
+            document.getElementById('start-btn').classList.add('hidden');
+            document.getElementById('loading-msg').classList.remove('hidden');
+
+            await Tone.start();
             
-            try {
-                await Tone.start();
-                
-                // Configuración de Audio
-                reverb = new Tone.Reverb({ decay: 5, wet: 0.4 }).toDestination();
-                delay = new Tone.FeedbackDelay("8n", 0.3).connect(reverb);
-                
-                // Grabador vinculado a la salida maestra
-                const dest = Tone.context.createMediaStreamDestination();
-                reverb.connect(dest);
-                recorder = new MediaRecorder(dest.stream);
-                
-                recorder.ondataavailable = e => chunks.push(e.data);
-                recorder.onstop = () => {
-                    const blob = new Blob(chunks, { type: 'audio/webm; codecs=opus' });
-                    audioUrl = URL.createObjectURL(blob);
-                    document.getElementById('downloadBtn').disabled = false;
-                    document.getElementById('recorder-status').innerText = "Grabación lista";
-                    document.getElementById('recorder-status').className = "text-xs text-emerald-500";
-                    log("ARCHIVO GENERADO");
-                };
+            recorder = new Tone.Recorder();
+            const compressor = new Tone.Compressor(-18, 4).toDestination();
+            reverb = new Tone.Reverb({ decay: 6, wet: 0.4 }).connect(compressor);
+            delay = new Tone.FeedbackDelay("8n.", 0.3).connect(reverb);
+            
+            // Conectar todo al grabador
+            compressor.connect(recorder);
 
-                // Sampler de Piano Profesional
-                piano = new Tone.Sampler({
-                    urls: {
-                        "A0": "A0.mp3", "C1": "C1.mp3", "D#1": "Ds1.mp3", "F#1": "Fs1.mp3",
-                        "A1": "A1.mp3", "C2": "C2.mp3", "D#2": "Ds2.mp3", "F#2": "Fs2.mp3",
-                        "A2": "A2.mp3", "C3": "C3.mp3", "D#3": "Ds3.mp3", "F#3": "Fs3.mp3",
-                        "A3": "A3.mp3", "C4": "C4.mp3", "D#4": "Ds4.mp3", "F#4": "Fs4.mp3",
-                        "A4": "A4.mp3", "C5": "C5.mp3", "D#5": "Ds5.mp3", "F#5": "Fs5.mp3",
-                        "A5": "A5.mp3", "C6": "C6.mp3", "D#6": "Ds6.mp3", "F#6": "Fs6.mp3",
-                        "A6": "A6.mp3", "C7": "C7.mp3", "D#7": "Ds7.mp3", "F#7": "Fs7.mp3"
-                    },
-                    release: 1.5,
-                    baseUrl: "https://tonejs.github.io/audio/salamander/",
-                    onload: () => {
-                        document.getElementById('load-progress').style.width = '100%';
-                        setTimeout(() => {
-                            document.getElementById('loading-status').classList.add('hidden');
-                            document.getElementById('main-ui').classList.remove('opacity-20', 'pointer-events-none');
-                            log("MOTOR DE PIANO LISTO");
-                        }, 500);
-                    }
-                }).connect(delay);
-
-                const vis = document.getElementById('visualizer');
-                for(let i=0; i<32; i++) {
-                    const k = document.createElement('div');
-                    k.className = "key-viz flex-1 bg-zinc-900 border-x border-black h-2 rounded-full";
-                    vis.appendChild(k);
+            sampler = new Tone.Sampler({
+                urls: { "C4": "C4.mp3", "A4": "A4.mp3", "C1": "C1.mp3", "A1": "A1.mp3" },
+                baseUrl: "https://tonejs.github.io/audio/salamander/",
+                onload: () => {
+                    document.getElementById('loader').style.opacity = '0';
+                    setTimeout(() => document.getElementById('loader').remove(), 1000);
                 }
-
-            } catch (e) {
-                log("ERROR DE INICIALIZACIÓN");
-            }
+            }).connect(delay);
         }
 
-        async function interpretEmotion() {
-            const prompt = document.getElementById('pianoPrompt').value;
-            if(!prompt) return;
-
-            const btn = document.getElementById('interpretBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> CREANDO ALMA...';
-            document.getElementById('downloadBtn').disabled = true;
-            audioUrl = null;
-
-            try {
-                const systemPrompt = `Eres un pianista de élite. Crea una pieza de piano solo basada en la emoción del usuario.
-                Reglas:
-                - Devuelve JSON estricto.
-                - Usa variaciones sutiles de 'time' para que no sea mecánico.
-                - Usa 'vel' (0.1 a 1.0) para expresar volumen y emoción.
-                - Si pide algo sensual, usa silencios largos y acordes Maj7/m9.
-                - Formato: {"bpm": number, "notes": [{"time": "0:0:0", "note": "C4", "dur": "2n", "vel": 0.4}]}`;
-
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        systemInstruction: { parts: [{ text: systemPrompt }] },
-                        generationConfig: { responseMimeType: "application/json" }
-                    })
-                });
-
-                const data = await response.json();
-                const result = JSON.parse(data.candidates[0].content.parts[0].text);
-                
-                currentSequence = result.notes;
-                Tone.Transport.bpm.value = result.bpm || 70;
-                
-                document.getElementById('playBtn').disabled = false;
-                document.getElementById('recorder-status').innerText = "Interpretación lista para grabar";
-                log("COMPOSICIÓN FINALIZADA");
-            } catch (err) {
-                log("ERROR EN LA COMPOSICIÓN");
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-feather-pointed"></i> INTERPRETAR';
-            }
+        function handleAction() {
+            if (isPlaying) return;
+            playAndRecord();
         }
 
-        function togglePlayback() {
-            if (isPlaying) {
-                stopRecordingAndPlayback();
-            } else {
-                startRecordingAndPlayback();
-            }
-        }
+        async function playAndRecord() {
+            const mood = document.getElementById('moodInput').value.toLowerCase();
+            let selectedProg = mood.includes('paz') || mood.includes('feliz') ? progressions.peaceful : progressions.nostalgic;
 
-        function startRecordingAndPlayback() {
-            chunks = [];
-            document.getElementById('downloadBtn').disabled = true;
-            document.getElementById('recorder-status').innerText = "Grabando en vivo...";
-            document.getElementById('recorder-status').className = "text-xs text-red-500 animate-pulse";
-            
-            Tone.Transport.cancel();
-            
-            let lastTime = 0;
-            currentSequence.forEach(n => {
-                Tone.Transport.schedule((time) => {
-                    piano.triggerAttackRelease(n.note, n.dur, time, n.vel || 0.5);
-                    animateKey(n.vel || 0.5);
-                }, n.time);
-                
-                // Calcular fin de la pieza
-                const noteSeconds = Tone.Time(n.time).toSeconds() + Tone.Time(n.dur).toSeconds();
-                if(noteSeconds > lastTime) lastTime = noteSeconds;
-            });
+            isPlaying = true;
+            audioBlob = null;
+            currentMidi = new Midi();
+            const track = currentMidi.addTrack();
+            track.name = "Piano Solo";
 
-            // Programar stop automático
-            Tone.Transport.schedule(() => {
-                setTimeout(stopRecordingAndPlayback, 2000); // Pequeño margen para el reverb
-            }, lastTime);
+            document.getElementById('btn-label').innerText = "Grabando...";
+            document.getElementById('actionBtn').disabled = true;
+            document.getElementById('downloadAudio').classList.add('hidden');
+            document.getElementById('downloadMidi').classList.add('hidden');
+            document.getElementById('status-led').className = 'w-2 h-2 rounded-full bg-red-500 animate-pulse';
+            document.getElementById('status-text').innerText = "Capturando Audio y MIDI";
 
             recorder.start();
-            Tone.Transport.start("+0.1");
-            isPlaying = true;
-            document.getElementById('playIcon').className = "fas fa-stop text-[var(--piano-gold)]";
-            log("GRABANDO INTERPRETACIÓN...");
-        }
-
-        function stopRecordingAndPlayback() {
-            if(!isPlaying) return;
-            
-            Tone.Transport.stop();
             Tone.Transport.cancel();
-            if(recorder.state === "recording") recorder.stop();
             
-            isPlaying = false;
-            document.getElementById('playIcon').className = "fas fa-play text-white";
-            log("GRABACIÓN FINALIZADA");
+            let currentTime = 0;
+            const cycles = 2; // Grabación de 16 segundos aprox
+
+            for(let i = 0; i < cycles; i++) {
+                selectedProg.forEach(step => {
+                    // Acordes (MIDI + Audio)
+                    step.chord.forEach(note => {
+                        Tone.Transport.schedule(time => {
+                            sampler.triggerAttackRelease(note, "1n", time, 0.2);
+                            track.addNote({ name: note, time: currentTime, duration: 2, velocity: 0.3 });
+                        }, currentTime);
+                    });
+
+                    // Melodía (MIDI + Audio)
+                    for(let j = 0; j < 4; j++) {
+                        const noteTime = currentTime + (j * 0.5);
+                        const randomNote = step.scale[Math.floor(Math.random() * step.scale.length)];
+                        const vel = 0.4 + Math.random() * 0.3;
+
+                        Tone.Transport.schedule(time => {
+                            sampler.triggerAttackRelease(randomNote, "4n", time, vel);
+                            track.addNote({ name: randomNote, time: noteTime, duration: 0.5, velocity: vel });
+                            spawnParticle();
+                        }, noteTime);
+                    }
+                    currentTime += 2;
+                });
+            }
+
+            Tone.Transport.start();
+            
+            Tone.Transport.schedule(async (time) => {
+                Tone.Transport.stop();
+                audioBlob = await recorder.stop();
+                
+                isPlaying = false;
+                document.getElementById('btn-label').innerText = "Nueva Grabación";
+                document.getElementById('actionBtn').disabled = false;
+                document.getElementById('status-led').className = 'w-2 h-2 rounded-full bg-green-500';
+                document.getElementById('status-text').innerText = "Grabación Completa";
+                document.getElementById('downloadAudio').classList.remove('hidden');
+                document.getElementById('downloadMidi').classList.remove('hidden');
+            }, currentTime + 1);
         }
 
-        function downloadAudio() {
-            if(!audioUrl) return;
-            const a = document.createElement('a');
-            a.href = audioUrl;
-            const timestamp = new Date().getTime();
-            a.download = `Jaddy_Piano_Solo_${timestamp}.webm`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+        function downloadRecordedAudio() {
+            if (!audioBlob) return;
+            const url = URL.createObjectURL(audioBlob);
+            const anchor = document.createElement("a");
+            anchor.download = "piano-solo-jaddy.webm";
+            anchor.href = url;
+            anchor.click();
         }
 
-        function animateKey(vel) {
-            const keys = document.querySelectorAll('.key-viz');
-            const randomKey = keys[Math.floor(Math.random() * keys.length)];
-            const height = Math.max(20, vel * 100);
-            
-            randomKey.style.height = `${height}%`;
-            randomKey.style.backgroundColor = "var(--piano-gold)";
-            randomKey.style.boxShadow = `0 0 ${vel * 30}px var(--piano-gold)`;
-            
-            setTimeout(() => {
-                randomKey.style.height = "8px";
-                randomKey.style.backgroundColor = "#18181b";
-                randomKey.style.boxShadow = "none";
-            }, 400);
+        function downloadMidiFile() {
+            if (!currentMidi) return;
+            const anchor = document.createElement("a");
+            anchor.download = "piano-solo-jaddy.mid";
+            const midiArray = currentMidi.toArray();
+            const blob = new Blob([midiArray], { type: "audio/midi" });
+            anchor.href = URL.createObjectURL(blob);
+            anchor.click();
+        }
+
+        function spawnParticle() {
+            const container = document.getElementById('particle-container');
+            const p = document.createElement('div');
+            p.className = 'note-particle';
+            p.style.left = (Math.random() * 80 + 10) + '%';
+            p.innerText = ['♩', '♪', '♫', '♬'][Math.floor(Math.random()*4)];
+            container.appendChild(p);
+            setTimeout(() => p.remove(), 3000);
         }
     </script>
 </body>
