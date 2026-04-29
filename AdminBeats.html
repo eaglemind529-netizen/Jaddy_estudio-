@@ -50,7 +50,6 @@
 <body>
 
     <div id="app">
-        <!-- Navegación -->
         <nav class="p-5 border-b border-white/5 bg-black/80 backdrop-blur-2xl sticky top-0 z-[60]">
             <div class="max-w-5xl mx-auto flex justify-between items-center">
                 <div class="flex items-center gap-4">
@@ -69,7 +68,6 @@
         </nav>
 
         <main class="max-w-5xl mx-auto p-6 pt-10 pb-40">
-            <!-- Formulario dinámico -->
             <section id="beatForm" class="hidden bg-gradient-to-b from-[#111] to-[#070707] border border-white/5 p-8 rounded-[2.5rem] shadow-2xl mb-12">
                 <h2 class="text-xl font-black uppercase italic tracking-tighter mb-8 flex items-center gap-3 text-white">
                     <i data-lucide="plus" class="text-orange-500"></i> Configuración de Venta
@@ -98,7 +96,6 @@
                 </form>
             </section>
 
-            <!-- Lista de Beats -->
             <div class="flex items-center justify-between mb-8">
                 <h2 class="text-2xl font-black italic uppercase tracking-tighter text-white">Catálogo de Beats</h2>
             </div>
@@ -107,7 +104,6 @@
             </div>
         </main>
 
-        <!-- Reproductor Master -->
         <div id="masterPlayer" class="hidden fixed bottom-0 left-0 right-0 z-[100] glass-player p-6 shadow-2xl">
             <div class="max-w-4xl mx-auto">
                 <div class="flex justify-between items-center mb-4">
@@ -134,19 +130,26 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-        // CONFIGURACIÓN AUTOMÁTICA (No toques nada aquí)
-        const firebaseConfig = JSON.parse(__firebase_config);
+        // TUS CREDENCIALES INTEGRADAS
+        const firebaseConfig = {
+            apiKey: "AIzaSyDIaAvpJZrJjQUKsh6KGD7gALJNskto8A8",
+            authDomain: "jaddy-estudio.firebaseapp.com",
+            projectId: "jaddy-estudio",
+            storageBucket: "jaddy-estudio.firebasestorage.app",
+            messagingSenderId: "968903268866",
+            appId: "1:968903268866:web:e2b6895e8acff18178e51b",
+            measurementId: "G-SBBXXDD3TV"
+        };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'jaddy-studio-pro-v1';
 
         let beats = [];
 
-        // Funciones Globales para que funcionen los botones del HTML
         window.toggleForm = () => {
             const form = document.getElementById('beatForm');
             form.classList.toggle('hidden');
@@ -161,7 +164,7 @@
         window.renderBeats = () => {
             const list = document.getElementById('beatsList');
             if (beats.length === 0) {
-                list.innerHTML = `<div class="p-10 text-center text-neutral-600 font-bold uppercase text-xs">Catálogo vacío. Agrega un beat arriba.</div>`;
+                list.innerHTML = `<div class="p-10 text-center text-neutral-600 font-bold uppercase text-xs">Aún no hay pistas. ¡Sube la primera!</div>`;
                 return;
             }
             list.innerHTML = beats.map(beat => `
@@ -214,7 +217,7 @@
         window.deleteBeat = async (id) => {
             if(confirm("¿Eliminar track del catálogo?")) {
                 try {
-                    await deleteDoc(doc(db, 'artifacts', currentAppId, 'public', 'data', 'beats', id));
+                    await deleteDoc(doc(db, 'beats', id));
                 } catch(e) { console.error("Error al borrar:", e); }
             }
         };
@@ -229,27 +232,18 @@
             return { type: 'direct', src: url };
         };
 
-        // Inicio de sesión automático
-        const init = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (err) { console.error("Error de inicio:", err); }
-        };
-
-        init();
+        signInAnonymously(auth).catch(err => console.error("Error de conexión:", err));
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                const q = collection(db, 'artifacts', currentAppId, 'public', 'data', 'beats');
+                // Escuchando tu colección "beats"
+                const q = collection(db, 'beats');
                 onSnapshot(q, (snap) => {
                     beats = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                     window.renderBeats();
                 }, (err) => {
                     console.error("Error de base de datos:", err);
+                    alert("Revisa que las reglas de tu base de datos permitan lectura/escritura.");
                 });
             }
         });
@@ -262,26 +256,24 @@
             
             const media = processLink(document.getElementById('url').value);
             
-            const data = {
-                title: document.getElementById('title').value,
-                url: media.src,
-                type: media.type,
-                price: document.getElementById('price').value,
-                whatsapp: document.getElementById('whatsapp').value,
-                producer: document.getElementById('producer').value || 'Jaddy Studio',
-                email: document.getElementById('email').value || '',
-                paymentMethod: document.getElementById('paymentMethod').value || 'Varios',
-                description: document.getElementById('description').value || '',
-                createdAt: serverTimestamp()
-            };
-
             try {
-                await addDoc(collection(db, 'artifacts', currentAppId, 'public', 'data', 'beats'), data);
+                await addDoc(collection(db, 'beats'), {
+                    title: document.getElementById('title').value,
+                    url: media.src,
+                    type: media.type,
+                    price: document.getElementById('price').value,
+                    whatsapp: document.getElementById('whatsapp').value,
+                    producer: document.getElementById('producer').value || 'Jaddy Studio',
+                    email: document.getElementById('email').value || '',
+                    paymentMethod: document.getElementById('paymentMethod').value || 'Varios',
+                    description: document.getElementById('description').value || '',
+                    createdAt: serverTimestamp()
+                });
                 e.target.reset();
                 window.toggleForm();
             } catch (err) {
                 console.error("Error al guardar:", err);
-                alert("No se pudo guardar. Intenta de nuevo.");
+                alert("Error: " + err.message);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i data-lucide="zap" class="w-5 h-5"></i> PUBLICAR BEAT';
@@ -293,5 +285,6 @@
     </script>
 </body>
 </html>
+
 
 ```
