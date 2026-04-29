@@ -13,7 +13,6 @@
         
         .gold-card:hover { border-color: rgba(234, 179, 8, 0.5); box-shadow: 0 20px 40px rgba(234, 179, 8, 0.15); }
         
-        /* Modificado para que el panel sea flexible cuando sea visible */
         .admin-card { border-color: rgba(168, 85, 247, 0.3); background: rgba(168, 85, 247, 0.08); display: none; }
         .admin-card.is-visible { display: flex !important; }
         .admin-card:hover { border-color: rgba(168, 85, 247, 0.8); box-shadow: 0 0 30px rgba(168, 85, 247, 0.3); }
@@ -93,7 +92,7 @@
                 </div>
             </a>
 
-            <!-- PANEL MAESTRO (PERSISTENTE PARA MASTER EMAIL) -->
+            <!-- PANEL MAESTRO -->
             <div id="admin-section-container" class="lg:col-span-4 mt-6">
                 <a href="AdminBeats.html" id="admin-link" class="admin-card group items-center justify-between p-6 rounded-[2rem] border border-purple-500/30">
                     <div class="flex items-center gap-6">
@@ -164,7 +163,6 @@
         const db = getFirestore(app);
         const MASTER_EMAIL = "jaddymusicrecords@gmail.com";
 
-        // Aseguramos persistencia local para que no se cierre la sesión al refrescar
         setPersistence(auth, browserLocalPersistence);
 
         onAuthStateChanged(auth, async (user) => {
@@ -173,14 +171,15 @@
             const userInfo = document.getElementById('user-info');
 
             if (user) {
-                // Lógica de Panel Maestro: Si el email coincide, se muestra siempre
+                // FORZAR VISIBILIDAD SI ES EL MASTER EMAIL
                 if (user.email === MASTER_EMAIL) {
+                    adminLink.style.display = 'flex';
                     adminLink.classList.add('is-visible');
                 } else {
+                    adminLink.style.display = 'none';
                     adminLink.classList.remove('is-visible');
                 }
 
-                // Obtener datos del perfil del artista
                 const docSnap = await getDoc(doc(db, "artistas", user.uid));
                 const userData = docSnap.exists() ? docSnap.data() : { artistName: 'Artista' };
 
@@ -193,8 +192,8 @@
                 authHeader.innerHTML = `<button onclick="window.logout()" class="text-[9px] font-black uppercase text-gray-600 tracking-widest hover:text-red-400">Desconectar</button>`;
                 
             } else {
-                // Estado desconectado
                 userInfo.innerHTML = "";
+                adminLink.style.display = 'none';
                 adminLink.classList.remove('is-visible');
                 authHeader.innerHTML = `<button onclick="window.toggleLogin()" class="text-[9px] font-black uppercase text-cyan-500 tracking-widest border border-cyan-500/20 px-6 py-2.5 rounded-full hover:bg-cyan-500 hover:text-black transition-all">Acceso VIP</button>`;
             }
@@ -229,7 +228,7 @@
                 window.toggleLogin();
             } catch (e) { 
                 console.error(e);
-                alert("Error: " + e.message); 
+                alert("Error de acceso"); 
             }
         };
 
@@ -239,3 +238,4 @@
 </html>
 
 ```
+                    
