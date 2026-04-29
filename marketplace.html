@@ -7,209 +7,109 @@
     <title>Marketplace | Jaddy estudio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.youtube.com/iframe_api"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #070707;
-            color: white;
-            overflow-x: hidden;
-        }
-
-        .gold-gradient {
-            background: linear-gradient(135deg, #facc15 0%, #eab308 100%);
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.3s ease;
-        }
-
-        .glass-card:hover {
-            border-color: rgba(234, 179, 8, 0.3);
-            background: rgba(255, 255, 255, 0.04);
-        }
-
-        .animate-spin-slow {
-            animation: spin 12s linear infinite;
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .modal-active {
-            display: flex !important;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .track-image {
-            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .group:hover .track-image {
-            transform: scale(1.1);
-        }
-
-        #audio-player {
-            transform: translateY(150%);
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        #audio-player.visible {
-            transform: translateY(0);
-        }
-
-        .btn-action {
-            transition: all 0.2s ease;
-        }
-
-        .btn-action:active {
-            transform: scale(0.95);
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #070707; color: white; overflow-x: hidden; }
+        .gold-gradient { background: linear-gradient(135deg, #facc15 0%, #eab308 100%); }
+        .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.3s ease; }
+        .glass-card:hover { border-color: rgba(234, 179, 8, 0.3); background: rgba(255, 255, 255, 0.04); }
+        .admin-panel { background: #0f172a; border-left: 1px solid rgba(255,255,255,0.1); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); }
+        .admin-panel.open { transform: translateX(0); }
+        #youtube-player-container { position: absolute; width: 0; height: 0; pointer-events: none; opacity: 0; }
+        #audio-player { transform: translateY(150%); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #audio-player.visible { transform: translateY(0); }
     </style>
 </head>
 <body class="pb-32">
 
-    <!-- NAVEGACIÓN MÓDULO -->
-    <nav class="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5 h-20 px-6 flex items-center justify-between">
-        <div class="flex items-center gap-3 cursor-pointer" onclick="location.href='index.html'">
+    <div id="youtube-player-container"><div id="yt-engine"></div></div>
+
+    <!-- NAVEGACIÓN -->
+    <nav class="sticky top-0 z-[60] bg-black/80 backdrop-blur-xl border-b border-white/5 h-20 px-6 flex items-center justify-between">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="toggleAdmin()">
             <div class="w-10 h-10 gold-gradient rounded-xl flex items-center justify-center shadow-lg shadow-yellow-500/20">
-                <i class="fa-solid fa-chevron-left text-black text-lg"></i>
+                <i class="fa-solid fa-lock text-black text-sm"></i>
             </div>
             <div class="flex flex-col leading-none">
                 <span class="font-black uppercase tracking-tighter text-xl italic">Jaddy estudio</span>
-                <span class="text-[9px] text-yellow-500 font-bold uppercase tracking-widest">Regresar al Inicio</span>
+                <span class="text-[9px] text-yellow-500 font-bold uppercase tracking-widest">Panel de Administración</span>
             </div>
         </div>
-
         <div class="hidden md:flex bg-white/5 p-1 rounded-2xl border border-white/5">
-            <button id="btn-market" onclick="switchView('marketplace')" class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-yellow-500 bg-white/10 transition-all">
-                Tienda de Beats
-            </button>
-            <button id="btn-vault" onclick="switchView('vault')" class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-all">
-                Mi Baúl (<span id="vault-count">0</span>)
-            </button>
+            <button onclick="switchView('marketplace')" class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-yellow-500 bg-white/10 transition-all">Catálogo</button>
+            <button onclick="switchView('vault')" class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-all">Ventas</button>
         </div>
-
-        <div class="flex items-center gap-4">
-            <div class="bg-white/[0.03] px-4 py-2 rounded-2xl border border-white/10 flex items-center gap-4">
-                <div class="flex flex-col items-end">
-                    <span class="text-[8px] font-black text-gray-500 uppercase italic">Tu Balance</span>
-                    <span class="text-yellow-500 font-black leading-none text-lg">$<span id="user-balance">250.00</span></span>
-                </div>
-                <div class="w-px h-6 bg-white/10"></div>
-                <i class="fa-solid fa-credit-card text-xl text-gray-400"></i>
-            </div>
-        </div>
+        <button onclick="location.href='index.html'" class="text-gray-500 hover:text-white text-xs font-black uppercase italic">Salir</button>
     </nav>
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="max-w-7xl mx-auto p-8">
-        
-        <!-- VISTA MARKETPLACE -->
-        <div id="view-marketplace" class="animate-view">
-            <header class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
-                <div>
-                    <div class="flex items-center gap-2 mb-2">
-                        <i class="fa-solid fa-bolt text-yellow-500 text-[10px]"></i>
-                        <span class="text-[10px] font-black text-yellow-500 uppercase tracking-[0.4em]">Beats Pro</span>
-                    </div>
-                    <h2 class="text-5xl md:text-7xl font-black tracking-tighter italic uppercase leading-none">Marketplace</h2>
-                    <p class="text-gray-500 font-medium mt-4 max-w-xl">Compra tus instrumentales en <span class="text-white">Jaddy estudio</span>. Elige entre pago único o nuestro sistema de <span class="text-yellow-500">crédito a cuotas</span>.</p>
-                </div>
-            </header>
-
-            <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-                <!-- JS inserta las tarjetas aquí -->
-            </div>
+    <!-- PANEL DE ADMINISTRADORA (LATERAL) -->
+    <aside id="admin-sidebar" class="fixed right-0 top-0 h-full w-full md:w-96 z-[100] admin-panel p-8 shadow-2xl">
+        <div class="flex justify-between items-center mb-10">
+            <h3 class="text-2xl font-black italic uppercase italic">Subir Nueva Pista</h3>
+            <button onclick="toggleAdmin()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark text-2xl"></i></button>
         </div>
-
-        <!-- VISTA BAÚL (COMPRAS) -->
-        <div id="view-vault" class="hidden animate-view">
-            <header class="mb-12">
-                <h2 class="text-5xl font-black tracking-tighter italic uppercase leading-none">Mi Baúl</h2>
-                <p class="text-gray-500 mt-2 italic">Aquí se encuentran tus pistas compradas y tus planes de crédito activos.</p>
-            </header>
-            <div id="vault-list" class="flex flex-col gap-6">
-                <!-- JS inserta las pistas compradas aquí -->
+        
+        <div class="space-y-6">
+            <div>
+                <label class="block text-[10px] font-black uppercase text-gray-500 mb-2 tracking-widest">Enlace de YouTube</label>
+                <input id="admin-url" type="text" placeholder="https://www.youtube.com/watch?v=..." class="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-sm focus:border-yellow-500 outline-none transition-all">
             </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-gray-500 mb-2 tracking-widest">Título de la Pista</label>
+                <input id="admin-title" type="text" placeholder="Ej: Trap King 2024" class="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-sm focus:border-yellow-500 outline-none transition-all">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-gray-500 mb-2 tracking-widest">Precio ($)</label>
+                    <input id="admin-price" type="number" placeholder="50" class="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-sm focus:border-yellow-500 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-gray-500 mb-2 tracking-widest">Género</label>
+                    <select id="admin-genre" class="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-sm focus:border-yellow-500 outline-none transition-all appearance-none">
+                        <option>Reggaeton</option>
+                        <option>Trap</option>
+                        <option>Drill</option>
+                        <option>Dancehall</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase text-gray-500 mb-2 tracking-widest">URL de Carátula (Imagen)</label>
+                <input id="admin-img" type="text" placeholder="https://link-de-imagen.jpg" class="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-sm focus:border-yellow-500 outline-none transition-all">
+            </div>
+            
+            <button onclick="addTrackFromPanel()" class="w-full gold-gradient text-black font-black uppercase py-4 rounded-2xl shadow-xl shadow-yellow-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all mt-4">
+                Publicar en Marketplace
+            </button>
+        </div>
+        
+        <p class="mt-10 text-[9px] text-gray-600 font-bold uppercase text-center tracking-widest">
+            Jaddy estudio | Doña Plataforma v1.0
+        </p>
+    </aside>
+
+    <main class="max-w-7xl mx-auto p-8">
+        <div id="view-marketplace" class="animate-view">
+            <header class="mb-12">
+                <h2 class="text-6xl font-black tracking-tighter italic uppercase leading-none">Marketplace</h2>
+                <p class="text-gray-500 mt-2 font-medium">Gestión en tiempo real de instrumentales.</p>
+            </header>
+            <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10"></div>
         </div>
     </main>
 
-    <!-- MODAL DE COMPRA / CRÉDITO -->
-    <div id="purchase-modal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/95 backdrop-blur-lg" onclick="closeModal()"></div>
-        <div class="bg-[#111] border border-white/10 w-full max-w-lg rounded-[2.5rem] p-10 relative z-10 shadow-2xl scale-up-center">
-            <button onclick="closeModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors">
-                <i class="fa-solid fa-xmark text-2xl"></i>
-            </button>
-            
-            <div class="text-center mb-10">
-                <div class="w-16 h-16 gold-gradient rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-yellow-500/20">
-                    <i class="fa-solid fa-bag-shopping text-black text-2xl"></i>
-                </div>
-                <h3 id="modal-track-title" class="text-3xl font-black uppercase italic tracking-tighter leading-none mb-2">Beat</h3>
-                <p class="text-gray-500 text-xs uppercase font-bold tracking-widest">Opciones de Adquisición</p>
-            </div>
-
-            <div class="space-y-4">
-                <!-- Pago Contado -->
-                <button onclick="processPurchase('contado')" class="w-full bg-white/5 border border-white/10 hover:border-white/30 p-6 rounded-3xl flex items-center justify-between group transition-all btn-action">
-                    <div class="flex items-center gap-4 text-left">
-                        <div class="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-gray-400 group-hover:text-white transition-colors"><i class="fa-solid fa-money-bill-1-wave"></i></div>
-                        <div>
-                            <span class="block font-black text-sm uppercase italic">Comprar Ahora</span>
-                            <span class="text-[10px] text-gray-500">Pago total (Acceso WAV + Stems)</span>
-                        </div>
-                    </div>
-                    <span class="text-2xl font-black">$<span id="modal-track-price">0</span></span>
-                </button>
-
-                <!-- Pago Cuotas -->
-                <button onclick="processPurchase('cuotas')" class="w-full bg-yellow-500/5 border border-yellow-500/20 hover:border-yellow-500 p-6 rounded-3xl flex items-center justify-between group transition-all btn-action">
-                    <div class="flex items-center gap-4 text-left">
-                        <div class="w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center text-yellow-500"><i class="fa-solid fa-handshake"></i></div>
-                        <div>
-                            <span class="block font-black text-sm uppercase italic text-yellow-500">Comprar a Cuotas</span>
-                            <span class="text-[10px] text-yellow-600 font-bold" id="modal-installment-text">Financiamiento disponible</span>
-                        </div>
-                    </div>
-                    <i class="fa-solid fa-chevron-right text-yellow-500"></i>
-                </button>
-            </div>
-
-            <p class="mt-8 text-[9px] text-center text-gray-600 uppercase font-bold leading-relaxed px-4">
-                * Las compras a cuotas requieren el pago total del saldo para liberar los archivos de alta calidad (WAV).
-            </p>
-        </div>
-    </div>
-
-    <!-- REPRODUCTOR FLOTANTE -->
+    <!-- REPRODUCTOR -->
     <div id="audio-player" class="fixed bottom-10 left-1/2 -translate-x-1/2 w-[95%] max-w-4xl bg-black/90 backdrop-blur-3xl border border-white/10 p-6 rounded-[3rem] z-[100] shadow-2xl flex items-center justify-between px-10">
         <div class="flex items-center gap-6">
-            <div class="relative">
-                <img id="player-img" src="" class="w-16 h-16 rounded-2xl object-cover shadow-2xl ring-2 ring-yellow-500/50" alt="">
-                <div class="absolute -top-2 -right-2 w-6 h-6 gold-gradient rounded-full flex items-center justify-center border-4 border-black">
-                    <div class="w-1.5 h-1.5 bg-black rounded-full animate-pulse"></div>
-                </div>
-            </div>
-            <div class="hidden sm:block">
-                <h4 id="player-title" class="font-black text-xl tracking-tighter uppercase italic leading-none mb-1">Título</h4>
-                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Jaddy estudio • Beats Originales</p>
+            <img id="player-img" src="" class="w-16 h-16 rounded-2xl object-cover ring-2 ring-yellow-500/50">
+            <div>
+                <h4 id="player-title" class="font-black text-xl tracking-tighter uppercase italic leading-none mb-1">Cargando...</h4>
+                <span class="text-[9px] text-yellow-500 font-bold uppercase tracking-widest">Escuchando Demo</span>
             </div>
         </div>
         <div class="flex items-center gap-8">
-            <button onclick="togglePlay()" class="bg-white text-black w-14 h-14 rounded-full flex items-center justify-center hover:scale-110 active:scale-90 transition-all shadow-xl shadow-white/10">
+            <button onclick="togglePlay()" class="bg-white text-black w-14 h-14 rounded-full flex items-center justify-center hover:scale-110 active:scale-90 transition-all">
                 <i id="play-icon" class="fa-solid fa-play text-xl ml-1"></i>
             </button>
             <button onclick="closePlayer()" class="text-gray-600 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-2xl"></i></button>
@@ -217,128 +117,121 @@
     </div>
 
     <script>
-        // --- BASE DE DATOS LOCAL ---
-        let balance = 250.00;
-        let myVault = [];
-        let currentModalTrack = null;
+        let ytPlayer;
         let isPlaying = false;
+        let currentTrackId = null;
 
-        const catalog = [
-            { id: 1, title: "Calle de Fuego", price: 60, genre: "Reggaeton", image: "https://images.unsplash.com/photo-1493225255756-d9584f8606e9?w=400" },
-            { id: 2, title: "Drill Mental", price: 45, genre: "Drill", image: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=400" },
-            { id: 3, title: "Trap King", price: 75, genre: "Trap", image: "https://images.unsplash.com/photo-1514525253344-9097cc4360e8?w=400" },
-            { id: 4, title: "Summer Wave", price: 40, genre: "Afrobeat", image: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400" },
-            { id: 5, title: "Piano Soul", price: 55, genre: "R&B", image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400" },
-            { id: 6, title: "Hustle Hard", price: 90, genre: "Hip Hop", image: "https://images.unsplash.com/photo-1459749411177-042180ce673c?w=400" }
+        // Base de datos local inicial (Doña Plataforma puede añadir más)
+        let catalog = [
+            { 
+                id: Date.now(), 
+                title: "Fuego Ártico", 
+                price: 50, 
+                genre: "Reggaeton", 
+                image: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400",
+                url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" 
+            }
         ];
 
-        // --- RENDER ---
-        function renderMarket() {
-            const grid = document.getElementById('catalog-grid');
-            grid.innerHTML = catalog.map(track => {
-                const isOwned = myVault.some(v => v.id === track.id);
-                return `
-                    <div class="glass-card rounded-[2.5rem] overflow-hidden group shadow-2xl">
-                        <div class="relative aspect-square overflow-hidden">
-                            <img src="${track.image}" class="track-image w-full h-full object-cover opacity-60 group-hover:opacity-100" alt="${track.title}">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
-                            <button onclick="playTrack(${track.id})" class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-black shadow-2xl transform scale-75 group-hover:scale-100 transition-all">
-                                    <i class="fa-solid fa-play text-3xl ml-1"></i>
-                                </div>
-                            </button>
-                            <div class="absolute bottom-6 left-6">
-                                <span class="bg-yellow-500 text-black px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest italic">${track.genre}</span>
-                            </div>
-                        </div>
-                        <div class="p-8">
-                            <div class="flex justify-between items-start mb-6">
-                                <div>
-                                    <h3 class="font-black text-2xl tracking-tight leading-none italic uppercase">${track.title}</h3>
-                                    <p class="text-gray-500 text-[9px] font-bold uppercase tracking-[0.2em] mt-1">Prod. Jaddy estudio</p>
-                                </div>
-                                <div class="text-right">
-                                    <span class="block text-2xl font-black text-white">$${track.price}</span>
-                                    <span class="block text-[8px] font-black text-yellow-500 uppercase italic">Contado</span>
-                                </div>
-                            </div>
-                            ${isOwned ? `
-                                <button onclick="switchView('vault')" class="w-full bg-green-500/10 text-green-500 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest border border-green-500/20 flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-circle-check"></i> En tu baúl
-                                </button>
-                            ` : `
-                                <button onclick="openModal(${track.id})" class="w-full bg-white text-black py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-yellow-500 transition-all shadow-xl btn-action">
-                                    Comprar Pista
-                                </button>
-                            `}
-                        </div>
-                    </div>
-                `;
-            }).join('');
+        function toggleAdmin() {
+            document.getElementById('admin-sidebar').classList.toggle('open');
         }
 
-        function renderVault() {
-            const list = document.getElementById('vault-list');
-            document.getElementById('vault-count').innerText = myVault.length;
+        function extractVideoId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length == 11) ? match[2] : null;
+        }
 
-            if (myVault.length === 0) {
-                list.innerHTML = `
-                    <div class="text-center py-32 border-2 border-dashed border-white/5 rounded-[3rem] bg-white/[0.01]">
-                        <i class="fa-solid fa-compact-disc text-5xl text-gray-800 mb-6 animate-spin-slow"></i>
-                        <h3 class="text-xl font-bold uppercase tracking-tighter">No hay pistas adquiridas</h3>
-                        <p class="text-gray-500 mt-2 mb-8 italic">Explora el catálogo de Jaddy estudio y arma tu próximo hit.</p>
-                        <button onclick="switchView('marketplace')" class="bg-yellow-500 text-black px-10 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-yellow-500/20">Ir a la Tienda</button>
-                    </div>
-                `;
-                return;
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('yt-engine', {
+                height: '0', width: '0', videoId: '',
+                playerVars: { 'autoplay': 0, 'controls': 0 },
+                events: { 'onStateChange': (e) => {
+                    isPlaying = (e.data == YT.PlayerState.PLAYING);
+                    document.getElementById('play-icon').className = isPlaying ? "fa-solid fa-pause text-xl" : "fa-solid fa-play text-xl ml-1";
+                }}
+            });
+        }
+
+        function addTrackFromPanel() {
+            const url = document.getElementById('admin-url').value;
+            const title = document.getElementById('admin-title').value;
+            const price = document.getElementById('admin-price').value;
+            const genre = document.getElementById('admin-genre').value;
+            const img = document.getElementById('admin-img').value || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400';
+
+            if(!url || !title || !price) return alert("Doña Plataforma, rellene los campos básicos.");
+
+            const newTrack = {
+                id: Date.now(),
+                title: title,
+                price: price,
+                genre: genre,
+                image: img,
+                url: url
+            };
+
+            catalog.unshift(newTrack); // Añadir al principio
+            renderMarket();
+            toggleAdmin();
+            
+            // Limpiar campos
+            document.getElementById('admin-url').value = '';
+            document.getElementById('admin-title').value = '';
+            document.getElementById('admin-price').value = '';
+        }
+
+        function playTrack(id) {
+            const track = catalog.find(t => t.id === id);
+            const videoId = extractVideoId(track.url);
+            
+            if (currentTrackId !== id) {
+                ytPlayer.loadVideoById(videoId);
+                document.getElementById('player-img').src = track.image;
+                document.getElementById('player-title').innerText = track.title;
+                currentTrackId = id;
+            } else {
+                togglePlay();
             }
+            document.getElementById('audio-player').classList.add('visible');
+        }
 
-            list.innerHTML = myVault.map(track => `
-                <div class="glass-card p-8 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between group relative overflow-hidden">
-                    <div class="flex items-center gap-8 w-full md:w-auto relative z-10">
-                        <div class="relative flex-shrink-0">
-                            <img src="${track.image}" class="w-24 h-24 rounded-3xl object-cover shadow-2xl ring-2 ring-white/5" alt="">
-                            <div class="absolute -top-3 -right-3 w-9 h-9 ${track.status === 'completed' ? 'bg-green-500' : 'bg-yellow-500'} rounded-xl flex items-center justify-center text-black shadow-lg">
-                                <i class="fa-solid ${track.status === 'completed' ? 'fa-check' : 'fa-clock'} text-xs"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <h4 class="font-black text-3xl uppercase italic tracking-tighter leading-none mb-1">${track.title}</h4>
-                            <div class="flex gap-2">
-                                <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest text-gray-500">
-                                    Método: ${track.paymentType}
-                                </span>
-                                ${track.status === 'pending' ? `
-                                    <span class="bg-yellow-500/10 border border-yellow-500/20 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest text-yellow-500 italic">
-                                        Crédito Activo
-                                    </span>
-                                ` : ''}
-                            </div>
-                        </div>
+        function togglePlay() {
+            if (isPlaying) ytPlayer.pauseVideo(); else ytPlayer.playVideo();
+        }
+
+        function closePlayer() {
+            ytPlayer.stopVideo();
+            document.getElementById('audio-player').classList.remove('visible');
+            currentTrackId = null;
+        }
+
+        function renderMarket() {
+            const grid = document.getElementById('catalog-grid');
+            grid.innerHTML = catalog.map(track => `
+                <div class="glass-card rounded-[2.5rem] overflow-hidden group">
+                    <div class="relative aspect-square">
+                        <img src="${track.image}" class="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-all duration-500">
+                        <button onclick="playTrack(${track.id})" class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                            <div class="w-16 h-16 bg-white text-black rounded-full flex items-center justify-center shadow-2xl"><i class="fa-solid fa-play ml-1"></i></div>
+                        </button>
+                        <div class="absolute bottom-4 left-4 bg-yellow-500 text-black text-[8px] font-black px-2 py-1 rounded uppercase tracking-widest">${track.genre}</div>
                     </div>
-                    <div class="mt-8 md:mt-0 w-full md:w-auto relative z-10">
-                        ${track.status === 'completed' ? `
-                            <button class="w-full md:w-auto bg-white text-black px-12 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-yellow-500 transition-all flex items-center justify-center gap-3 shadow-xl btn-action">
-                                <i class="fa-solid fa-cloud-arrow-down text-lg"></i> Descargar WAV Final
-                            </button>
-                        ` : `
-                            <div class="flex flex-col items-center gap-3">
-                                <button onclick="alert('Dirigiendo a pasarela de pagos para cuota de Jaddy estudio...')" class="w-full md:w-auto bg-yellow-500 text-black px-10 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-yellow-500/20 btn-action">
-                                    Pagar Siguiente Cuota
-                                </button>
-                                <span class="text-[9px] font-bold text-gray-500 uppercase italic">Archivos bloqueados hasta saldar</span>
-                            </div>
-                        `}
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-black text-lg uppercase italic leading-tight">${track.title}</h3>
+                            <span class="text-2xl font-black text-white">$${track.price}</span>
+                        </div>
+                        <button class="bg-white/5 border border-white/10 hover:bg-white hover:text-black px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all">Comprar</button>
                     </div>
                 </div>
             `).join('');
         }
 
-        // --- CONTROLADORES ---
-        function switchView(view) {
-            const market = document.getElementById('view-marketplace');
-            const vault = document.getElementById('view-vault');
-            const btnMarket = document.getElementById('btn-market');
-            const btnVault = document.getElementById('btn-vault');
+        window.onload = renderMarket;
+    </script>
+</body>
+</html>
 
-            if (view === 'marketpl
+```
