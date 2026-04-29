@@ -37,7 +37,6 @@
             backdrop-filter: blur(20px);
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
-        /* Estilo para que el formulario se vea mejor al aparecer */
         #beatForm.active {
             display: block !important;
             animation: fadeIn 0.3s ease-out;
@@ -63,7 +62,6 @@
                         <p class="text-[8px] font-bold text-orange-500 uppercase tracking-[0.2em] mt-1">Marketplace & Studio</p>
                     </div>
                 </div>
-                <!-- Botón de Agregar Beat -->
                 <button id="addBtn" class="flex items-center gap-2 px-5 py-2.5 bg-orange-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-orange-600/20 transition-all active:scale-95">
                     <i data-lucide="plus" class="w-4 h-4"></i> AGREGAR BEAT
                 </button>
@@ -105,7 +103,7 @@
                 <h2 class="text-2xl font-black italic uppercase tracking-tighter text-white">Catálogo de Beats</h2>
             </div>
             <div id="beatsList" class="grid gap-3">
-                <div class="p-10 text-center text-neutral-600 font-bold uppercase tracking-widest">Cargando estudio...</div>
+                <div class="p-10 text-center text-neutral-600 font-bold uppercase tracking-widest">Iniciando sistema...</div>
             </div>
         </main>
 
@@ -139,35 +137,57 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
+        // CONFIGURACIÓN ROBUSTA: Intenta cargar de la plataforma o usa una por defecto si estás fuera
+        let config = {};
+        try {
+            config = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+                // SI ESTÁS FUERA DE GEMINI, PEGA TUS CREDENCIALES AQUÍ PARA QUE FUNCIONE:
+                apiKey: "TU_API_KEY",
+                authDomain: "TU_DOMINIO.firebaseapp.com",
+                projectId: "TU_PROJECT_ID",
+                storageBucket: "TU_BUCKET.appspot.com",
+                messagingSenderId: "TU_ID",
+                appId: "TU_APP_ID"
+            };
+        } catch(e) { console.error("Error cargando config", e); }
+
+        const app = initializeApp(config);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'jaddy-studio-pro';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'jaddy-studio-pro-v1';
 
         let beats = [];
 
-        // Inicializar Auth
-        const initAuth = async () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
+        // Auth Centralizada
+        const handleAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) {
+                console.error("Error de Auth:", err);
             }
         };
-        initAuth();
 
-        // Escuchar cambios de datos
+        handleAuth();
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
+                // RUTA SEGURA: artifacts/{appId}/public/data/beats
                 const q = collection(db, 'artifacts', appId, 'public', 'data', 'beats');
                 onSnapshot(q, (snap) => {
                     beats = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                     window.renderBeats();
-                }, (error) => console.error("Firestore Error:", error));
+                }, (error) => {
+                    console.error("Firestore Error:", error);
+                    document.getElementById('beatsList').innerHTML = `<div class="p-10 text-red-500 text-xs font-bold uppercase">Error de Permisos o Conexión</div>`;
+                });
             }
         });
 
+        // Funciones de utilidad
         const processLink = (url) => {
             if (!url) return null;
             if (url.includes('dropbox.com')) return { type: 'dropbox', src: url.replace(/dl=0|dl=1/, 'raw=1') };
@@ -178,11 +198,17 @@
             return { type: 'direct', src: url };
         };
 
-        // Funciones Globales para el HTML
+        // Exportar funciones al objeto window para que los onclick del HTML las vean
+        window.toggleForm = () => {
+            const form = document.getElementById('beatForm');
+            form.classList.toggle('hidden');
+            form.classList.toggle('active');
+        };
+
         window.renderBeats = () => {
             const list = document.getElementById('beatsList');
             if (beats.length === 0) {
-                list.innerHTML = `<div class="p-10 text-center text-neutral-600 font-bold uppercase text-xs">No hay beats publicados todavía</div>`;
+                list.innerHTML = `<div class="p-10 text-center text-neutral-600 font-bold uppercase text-xs tracking-tighter">El estudio está vacío. Agrega tu primer track.</div>`;
                 return;
             }
             list.innerHTML = beats.map(beat => `
@@ -233,15 +259,9 @@
         };
 
         window.deleteBeat = async (id) => {
-            if(confirm("¿Estás seguro de eliminar este beat del estudio?")) {
+            if(confirm("¿Eliminar beat permanentemente?")) {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'beats', id));
             }
-        };
-
-        window.toggleForm = () => {
-            const form = document.getElementById('beatForm');
-            form.classList.toggle('hidden');
-            form.classList.toggle('active');
         };
 
         window.closePlayer = () => {
@@ -249,15 +269,15 @@
             document.getElementById('mediaContainer').innerHTML = '';
         };
 
-        // Event Listeners
-        document.getElementById('addBtn').onclick = window.toggleForm;
-        document.getElementById('closePlayerBtn').onclick = window.closePlayer;
+        // Asignar eventos de clic
+        document.getElementById('addBtn').addEventListener('click', window.toggleForm);
+        document.getElementById('closePlayerBtn').addEventListener('click', window.closePlayer);
 
         document.getElementById('uploadForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
             btn.disabled = true;
-            btn.innerText = "PUBLICANDO...";
+            btn.innerText = "PROCESANDO...";
             
             const rawUrl = document.getElementById('url').value;
             const media = processLink(rawUrl);
@@ -278,7 +298,7 @@
                 e.target.reset();
                 window.toggleForm();
             } catch (err) {
-                console.error(err);
+                console.error("Error al publicar:", err);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i data-lucide="zap" class="w-5 h-5"></i> PUBLICAR BEAT';
