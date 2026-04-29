@@ -13,8 +13,10 @@
         
         .gold-card:hover { border-color: rgba(234, 179, 8, 0.5); box-shadow: 0 20px 40px rgba(234, 179, 8, 0.15); }
         
-        .admin-card { border-color: rgba(168, 85, 247, 0.2); background: rgba(168, 85, 247, 0.05); }
-        .admin-card:hover { border-color: rgba(168, 85, 247, 0.6); box-shadow: 0 20px 40px rgba(168, 85, 247, 0.2); }
+        /* Modificado para que el panel sea flexible cuando sea visible */
+        .admin-card { border-color: rgba(168, 85, 247, 0.3); background: rgba(168, 85, 247, 0.08); display: none; }
+        .admin-card.is-visible { display: flex !important; }
+        .admin-card:hover { border-color: rgba(168, 85, 247, 0.8); box-shadow: 0 0 30px rgba(168, 85, 247, 0.3); }
 
         .neon-text { text-shadow: 0 0 10px rgba(34, 211, 238, 0.5); }
         
@@ -28,8 +30,8 @@
 
     <div class="max-w-7xl mx-auto px-6 w-full">
         
-        <!-- Información de Usuario -->
-        <div class="flex justify-between items-center mb-8">
+        <!-- Header de Usuario -->
+        <div class="flex justify-between items-center mb-8 h-12">
             <div id="user-info" class="flex items-center gap-3"></div>
             <div id="auth-header"></div>
         </div>
@@ -44,10 +46,10 @@
             <p class="text-gray-500 font-medium tracking-widest text-xs uppercase">Distribución y Producción Profesional</p>
         </header>
 
-        <!-- GRILLA DE ACCESO A LOS DIFERENTES ARCHIVOS -->
+        <!-- Grilla Principal de Herramientas -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             
-            <!-- Análisis de Voz -> analisis.html -->
+            <!-- Análisis de Voz -->
             <a href="analisis.html" class="group">
                 <div class="glass-card p-8 rounded-[2.5rem] h-full flex flex-col items-center text-center">
                     <div class="w-14 h-14 bg-cyan-500/10 text-cyan-400 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-cyan-500 group-hover:text-black transition-colors">
@@ -58,7 +60,7 @@
                 </div>
             </a>
 
-            <!-- Estudio de Melodía -> composer.html -->
+            <!-- Estudio de Melodía -->
             <a href="composer.html" class="group">
                 <div class="glass-card p-8 rounded-[2.5rem] h-full flex flex-col items-center text-center border-blue-500/20 bg-blue-500/5">
                     <div class="w-14 h-14 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-500 group-hover:text-black transition-colors">
@@ -69,7 +71,7 @@
                 </div>
             </a>
 
-            <!-- Distribución (Acceso de Distribución) -> distribucion.html -->
+            <!-- Distribución -->
             <a href="distribucion.html" class="group">
                 <div class="glass-card p-8 rounded-[2.5rem] h-full flex flex-col items-center text-center border-emerald-500/20 bg-emerald-500/5">
                     <div class="w-14 h-14 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 group-hover:text-black transition-colors">
@@ -80,7 +82,7 @@
                 </div>
             </a>
 
-            <!-- Beats Store (Venta de pistas) -> marketplace.html -->
+            <!-- Beats Store (Venta) -->
             <a href="marketplace.html" class="group">
                 <div class="glass-card gold-card p-8 rounded-[2.5rem] h-full flex flex-col items-center text-center border-yellow-500/20 bg-yellow-500/5">
                     <div class="w-14 h-14 bg-yellow-500/20 text-yellow-500 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-yellow-500 group-hover:text-black transition-colors">
@@ -91,21 +93,19 @@
                 </div>
             </a>
 
-            <!-- PANEL MAESTRO -> AdminBeats.html -->
-            <div id="admin-section" class="hidden lg:col-span-4 mt-6">
-                <a href="AdminBeats.html" class="group block">
-                    <div class="glass-card admin-card p-6 rounded-[2rem] flex items-center justify-between border-purple-500/30">
-                        <div class="flex items-center gap-6">
-                            <div class="w-12 h-12 bg-purple-500/20 text-purple-400 rounded-xl flex items-center justify-center group-hover:bg-purple-500 group-hover:text-black transition-all">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-                            </div>
-                            <div class="text-left">
-                                <h3 class="text-sm font-black uppercase tracking-widest text-purple-400">Panel Maestro Jaddy</h3>
-                                <p class="text-gray-500 text-[10px]">Administración de catálogo, ventas y usuarios.</p>
-                            </div>
+            <!-- PANEL MAESTRO (PERSISTENTE PARA MASTER EMAIL) -->
+            <div id="admin-section-container" class="lg:col-span-4 mt-6">
+                <a href="AdminBeats.html" id="admin-link" class="admin-card group items-center justify-between p-6 rounded-[2rem] border border-purple-500/30">
+                    <div class="flex items-center gap-6">
+                        <div class="w-12 h-12 bg-purple-500/20 text-purple-400 rounded-xl flex items-center justify-center group-hover:bg-purple-500 group-hover:text-black transition-all">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
                         </div>
-                        <span class="text-[9px] font-bold bg-purple-500/20 text-purple-300 px-4 py-1.5 rounded-full uppercase tracking-widest border border-purple-500/30 animate-pulse">Master Admin</span>
+                        <div class="text-left">
+                            <h3 class="text-sm font-black uppercase tracking-widest text-purple-400">Panel Maestro Jaddy</h3>
+                            <p class="text-gray-500 text-[10px]">Administración de catálogo, ventas y usuarios.</p>
+                        </div>
                     </div>
+                    <span class="text-[9px] font-bold bg-purple-500/20 text-purple-300 px-4 py-1.5 rounded-full uppercase tracking-widest border border-purple-500/30 animate-pulse">Master Admin</span>
                 </a>
             </div>
 
@@ -120,7 +120,7 @@
     <!-- MODAL DE ACCESO -->
     <div id="login-modal" class="fixed inset-0 bg-black/95 backdrop-blur-xl hidden flex items-center justify-center z-50 p-4">
         <div class="w-full max-w-md glass-card p-8 rounded-[3rem] relative">
-            <button onclick="window.toggleLogin()" class="absolute top-6 right-8 text-gray-500 hover:text-white">&times;</button>
+            <button onclick="window.toggleLogin()" class="absolute top-6 right-8 text-gray-500 hover:text-white text-2xl">&times;</button>
             <div class="flex justify-center gap-8 mb-10 font-black uppercase tracking-widest text-[11px]">
                 <button id="tab-login" onclick="switchTab('login')" class="tab-active pb-2 text-cyan-500">Entrar</button>
                 <button id="tab-register" onclick="switchTab('register')" class="pb-2 text-gray-500">Registrarse</button>
@@ -147,7 +147,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -164,12 +164,23 @@
         const db = getFirestore(app);
         const MASTER_EMAIL = "jaddymusicrecords@gmail.com";
 
+        // Aseguramos persistencia local para que no se cierre la sesión al refrescar
+        setPersistence(auth, browserLocalPersistence);
+
         onAuthStateChanged(auth, async (user) => {
-            const adminSection = document.getElementById('admin-section');
+            const adminLink = document.getElementById('admin-link');
             const authHeader = document.getElementById('auth-header');
             const userInfo = document.getElementById('user-info');
 
             if (user) {
+                // Lógica de Panel Maestro: Si el email coincide, se muestra siempre
+                if (user.email === MASTER_EMAIL) {
+                    adminLink.classList.add('is-visible');
+                } else {
+                    adminLink.classList.remove('is-visible');
+                }
+
+                // Obtener datos del perfil del artista
                 const docSnap = await getDoc(doc(db, "artistas", user.uid));
                 const userData = docSnap.exists() ? docSnap.data() : { artistName: 'Artista' };
 
@@ -181,15 +192,16 @@
                 `;
                 authHeader.innerHTML = `<button onclick="window.logout()" class="text-[9px] font-black uppercase text-gray-600 tracking-widest hover:text-red-400">Desconectar</button>`;
                 
-                if (user.email === MASTER_EMAIL) adminSection.classList.remove('hidden');
             } else {
+                // Estado desconectado
                 userInfo.innerHTML = "";
-                adminSection.classList.add('hidden');
+                adminLink.classList.remove('is-visible');
                 authHeader.innerHTML = `<button onclick="window.toggleLogin()" class="text-[9px] font-black uppercase text-cyan-500 tracking-widest border border-cyan-500/20 px-6 py-2.5 rounded-full hover:bg-cyan-500 hover:text-black transition-all">Acceso VIP</button>`;
             }
         });
 
         window.toggleLogin = () => document.getElementById('login-modal').classList.toggle('hidden');
+        
         window.switchTab = (mode) => {
             document.getElementById('form-login').classList.toggle('hidden', mode !== 'login');
             document.getElementById('form-register').classList.toggle('hidden', mode !== 'register');
@@ -215,10 +227,13 @@
                     });
                 }
                 window.toggleLogin();
-            } catch (e) { alert("Error de acceso."); }
+            } catch (e) { 
+                console.error(e);
+                alert("Error: " + e.message); 
+            }
         };
 
-        window.logout = () => signOut(auth);
+        window.logout = () => signOut(auth).then(() => location.reload());
     </script>
 </body>
 </html>
