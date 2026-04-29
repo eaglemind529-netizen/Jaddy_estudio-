@@ -1,0 +1,295 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdminBeats - Jaddy Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Urbanist', sans-serif;
+            background-color: #000000;
+            color: #e4e4e7;
+        }
+
+        .gold-gradient {
+            background: linear-gradient(135deg, #facc15 0%, #eab308 100%);
+        }
+
+        .glass-card {
+            background: rgba(24, 24, 27, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .custom-input {
+            background: #09090b;
+            border: 1px solid #27272a;
+            transition: all 0.3s ease;
+        }
+
+        .custom-input:focus {
+            border-color: #facc15;
+            box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.2);
+            outline: none;
+        }
+
+        /* Animación de carga */
+        .loader {
+            border: 3px solid rgba(250, 204, 21, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid #facc15;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Pantalla de Login -->
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
+        <div class="max-w-md w-full glass-card p-8 rounded-[2.5rem] shadow-2xl text-center">
+            <div class="gold-gradient w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 rotate-3 shadow-[0_0_30px_rgba(250,204,21,0.3)]">
+                <i class="fa-solid fa-crown text-black text-4xl"></i>
+            </div>
+            <h1 class="text-4xl font-black text-white italic uppercase tracking-tighter mb-2">Jaddy Studio</h1>
+            <p class="text-zinc-500 text-sm mb-8 tracking-widest uppercase">Acceso Admin Master</p>
+            
+            <div class="space-y-4">
+                <input type="email" id="admin-email" placeholder="Correo del Dueño" 
+                    class="w-full custom-input text-white p-4 rounded-2xl outline-none">
+                <button onclick="attemptLogin()" class="w-full gold-gradient text-black font-black p-4 rounded-2xl hover:scale-[1.02] transition-transform active:scale-95">
+                    ENTRAR AL PANEL
+                </button>
+            </div>
+            <p id="login-error" class="text-red-500 text-xs mt-4 hidden italic">Acceso denegado. Solo el dueño puede entrar.</p>
+        </div>
+    </div>
+
+    <!-- Dashboard Principal (Oculto al inicio) -->
+    <div id="main-dashboard" class="hidden pb-20">
+        
+        <!-- Header -->
+        <header class="sticky top-0 z-40 bg-black/80 backdrop-blur-md border-b border-zinc-800 p-4 md:p-6 mb-8">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-black text-white italic uppercase tracking-tight">
+                        <span class="text-yellow-400">Admin</span>Beats
+                    </h2>
+                    <p class="text-[10px] text-zinc-500 tracking-[0.3em] font-bold">JADDY MUSIC RECORDS</p>
+                </div>
+                <button onclick="logout()" class="bg-zinc-900 hover:bg-zinc-800 text-zinc-400 px-4 py-2 rounded-xl text-sm font-bold transition-colors">
+                    <i class="fa-solid fa-right-from-bracket mr-2"></i>SALIR
+                </button>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Columna Izquierda: Formulario -->
+            <div class="lg:col-span-4">
+                <div class="glass-card p-6 rounded-[2rem] sticky top-28">
+                    <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                        <i class="fa-solid fa-circle-plus text-yellow-400"></i> Nueva Pista
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-[10px] font-black text-zinc-500 uppercase ml-1">Nombre del Beat</label>
+                            <input type="text" id="beat-title" placeholder="Ej: Fuego Urbano" class="w-full custom-input p-3 rounded-xl text-white mt-1">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[10px] font-black text-zinc-500 uppercase ml-1">Género</label>
+                                <input type="text" id="beat-genre" placeholder="Trap" class="w-full custom-input p-3 rounded-xl text-white mt-1">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-black text-zinc-500 uppercase ml-1">BPM</label>
+                                <input type="number" id="beat-bpm" placeholder="140" class="w-full custom-input p-3 rounded-xl text-white mt-1">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-[10px] font-black text-zinc-500 uppercase ml-1">Precio ($)</label>
+                            <input type="number" id="beat-price" placeholder="29.99" class="w-full custom-input p-3 rounded-xl text-white mt-1">
+                        </div>
+
+                        <button onclick="saveBeat()" id="btn-save" class="w-full gold-gradient text-black font-black p-4 rounded-xl mt-4 flex items-center justify-center gap-2 hover:shadow-[0_0_20px_rgba(250,204,21,0.2)] transition-all">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> PUBLICAR AHORA
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Lista -->
+            <div class="lg:col-span-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold text-white italic">Catálogo Musical</h3>
+                    <span id="beat-count" class="bg-zinc-800 text-yellow-400 px-4 py-1 rounded-full text-sm font-black">0 PISTAS</span>
+                </div>
+
+                <div id="beats-list" class="grid gap-4">
+                    <!-- Los beats aparecerán aquí dinámicamente -->
+                    <div class="text-center py-20 bg-zinc-900/30 rounded-[2rem] border-2 border-dashed border-zinc-800">
+                        <i class="fa-solid fa-music text-zinc-700 text-5xl mb-4"></i>
+                        <p class="text-zinc-500 font-bold">No hay pistas cargadas aún</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+        // CONFIGURACIÓN GLOBAL
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'jaddy-studio-web';
+
+        // Variables de Estado
+        window.isLogged = false;
+
+        // Función Login
+        window.attemptLogin = () => {
+            const email = document.getElementById('admin-email').value;
+            const errorMsg = document.getElementById('login-error');
+            
+            if (email.toLowerCase() === 'jaddymusicrecords@gmail.com') {
+                signInAnonymously(auth).then(() => {
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('main-dashboard').classList.remove('hidden');
+                    window.isLogged = true;
+                    loadBeats();
+                });
+            } else {
+                errorMsg.classList.remove('hidden');
+            }
+        };
+
+        window.logout = () => {
+            location.reload();
+        };
+
+        // Guardar Beat
+        window.saveBeat = async () => {
+            const title = document.getElementById('beat-title').value;
+            const genre = document.getElementById('beat-genre').value;
+            const bpm = document.getElementById('beat-bpm').value;
+            const price = document.getElementById('beat-price').value;
+            const btn = document.getElementById('btn-save');
+
+            if (!title || !price) return alert("Ponle nombre y precio al menos, jefe.");
+
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loader"></div>';
+
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'beats'), {
+                    title, genre, bpm, price,
+                    status: 'visible',
+                    createdAt: Date.now()
+                });
+                
+                // Limpiar campos
+                document.getElementById('beat-title').value = '';
+                document.getElementById('beat-genre').value = '';
+                document.getElementById('beat-bpm').value = '';
+                document.getElementById('beat-price').value = '';
+                
+            } catch (e) {
+                console.error(e);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> PUBLICAR AHORA';
+            }
+        };
+
+        // Cargar Beats en Tiempo Real
+        function loadBeats() {
+            const beatsRef = collection(db, 'artifacts', appId, 'public', 'data', 'beats');
+            
+            onSnapshot(beatsRef, (snapshot) => {
+                const list = document.getElementById('beats-list');
+                const countBadge = document.getElementById('beat-count');
+                
+                if (snapshot.empty) {
+                    list.innerHTML = `
+                        <div class="text-center py-20 bg-zinc-900/30 rounded-[2rem] border-2 border-dashed border-zinc-800">
+                            <i class="fa-solid fa-music text-zinc-700 text-5xl mb-4"></i>
+                            <p class="text-zinc-500 font-bold">No hay pistas cargadas aún</p>
+                        </div>`;
+                    countBadge.innerText = "0 PISTAS";
+                    return;
+                }
+
+                countBadge.innerText = `${snapshot.size} PISTAS`;
+                list.innerHTML = '';
+                
+                snapshot.forEach((docSnap) => {
+                    const beat = docSnap.data();
+                    const id = docSnap.id;
+                    const isVisible = beat.status === 'visible';
+
+                    const item = document.createElement('div');
+                    item.className = `glass-card p-5 rounded-3xl flex items-center justify-between border-l-4 ${isVisible ? 'border-l-yellow-400' : 'border-l-zinc-700 opacity-60'}`;
+                    item.innerHTML = `
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-zinc-800 rounded-2xl flex items-center justify-center text-yellow-400">
+                                <i class="fa-solid ${isVisible ? 'fa-volume-high' : 'fa-volume-mute'}"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white">${beat.title}</h4>
+                                <p class="text-[10px] text-zinc-500 font-bold uppercase">${beat.genre} • ${beat.bpm} BPM • <span class="text-green-400">$${beat.price}</span></p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="window.toggleBeat('${id}', '${beat.status}')" class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center hover:text-yellow-400 transition-colors">
+                                <i class="fa-solid ${isVisible ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                            </button>
+                            <button onclick="window.deleteBeat('${id}')" class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center hover:text-red-500 transition-colors">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+            });
+        }
+
+        // Acciones globales
+        window.toggleBeat = async (id, currentStatus) => {
+            const newStatus = currentStatus === 'visible' ? 'hidden' : 'visible';
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'beats', id), {
+                status: newStatus
+            });
+        };
+
+        window.deleteBeat = async (id) => {
+            if(confirm("¿Seguro que quieres borrar este beat para siempre?")) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'beats', id));
+            }
+        };
+
+    </script>
+</body>
+</html>
+
+```
