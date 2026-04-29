@@ -1,0 +1,253 @@
+```react
+import React, { useState, useEffect } from 'react';
+import { 
+  Plus, Trash2, Youtube, Lock, Key, Mail, Edit3, AlignLeft
+} from 'lucide-react';
+
+// Firebase Imports
+import { initializeApp } from 'firebase/app';
+import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from 'firebase/auth';
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  onSnapshot, 
+  deleteDoc, 
+  doc, 
+  serverTimestamp,
+  enableIndexedDbPersistence // Importante para el modo offline
+} from 'firebase/firestore';
+
+// Configuración de Firebase
+const firebaseConfig = JSON.parse(__firebase_config);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'jaddy-studio-pro';
+
+// ACTIVAR PERSISTENCIA OFFLINE (Permite trabajar sin señal)
+enableIndexedDbPersistence(db).catch((err) => {
+    if (err.code === 'failed-precondition') {
+        console.warn('La persistencia falló: Varias pestañas abiertas');
+    } else if (err.code === 'unimplemented') {
+        console.warn('El navegador no soporta persistencia');
+    }
+});
+
+const OWNER_EMAIL = "Jaddymusicrecords@gmail.com"; 
+
+const App = () => {
+  const [user, setUser] = useState(null);
+  const [catalog, setCatalog] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [inputEmail, setInputEmail] = useState("");
+  
+  const [formData, setFormData] = useState({
+    title: '',
+    url: '',
+    price: '',
+    genre: '',
+    description: '',
+    image: ''
+  });
+
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (error) {
+        console.error("Error de Auth:", error);
+      }
+    };
+    initAuth();
+    const unsubscribe = onAuthStateChanged(auth, setUser);
+    return () => unsubscribe();
+  }, []);
+
+  const verifyAccess = () => {
+    if (inputEmail.trim().toLowerCase() === OWNER_EMAIL.toLowerCase()) {
+      setIsAuthorized(true);
+      showStatus('success', 'Modo Administrador Activo');
+    } else {
+      showStatus('error', 'Acceso denegado');
+    }
+  };
+
+  useEffect(() => {
+    if (!user || !isAuthorized) return;
+    const beatsRef = collection(db, 'artifacts', appId, 'public', 'data', 'beats');
+    
+    const unsubscribe = onSnapshot(beatsRef, (snapshot) => {
+      const tracks = snapshot.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data(),
+        fromCache: snapshot.metadata.fromCache // Indica si el dato viene del teléfono o de la nube
+      }));
+      setCatalog(tracks);
+      setLoading(false);
+    }, () => setLoading(false));
+    return () => unsubscribe();
+  }, [user, isAuthorized]);
+
+  const showStatus = (type, text) => {
+    setStatusMsg({ type, text });
+    setTimeout(() => setStatusMsg({ type: '', text: '' }), 4000);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!user || !isAuthorized || !formData.title || !formData.url) return;
+    try {
+      const beatsRef = collection(db, 'artifacts', appId, 'public', 'data', 'beats');
+      // Firebase guardará esto localmente si no hay internet y lo subirá después
+      await addDoc(beatsRef, {
+        ...formData,
+        price: Number(formData.price) || 0,
+        createdAt: serverTimestamp(),
+      });
+      setFormData({ title: '', url: '', price: '', genre: '', description: '', image: '' });
+      showStatus('success', 'Guardado (Se sincronizará al volver la señal)');
+    } catch (error) {
+      showStatus('error', 'Error al procesar');
+    }
+  };
+
+  const removeTrack = async (id) => {
+    if (!confirm("¿Eliminar track?")) return;
+    try {
+      await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'beats', id));
+      showStatus('success', 'Eliminado correctamente');
+    } catch (error) {
+      showStatus('error', 'Error al eliminar');
+    }
+  };
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-[#070707] flex items-center justify-center p-6 text-white font-sans">
+        <div className="max-w-md w-full bg-[#0f0f0f] border border-white/10 p-10 rounded-[2.5rem] shadow-2xl text-center">
+          <div className="w-16 h-16 bg-yellow-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Lock size={28} className="text-black" />
+          </div>
+          <h1 className="text-2xl font-black uppercase italic tracking-tighter mb-8">Jaddy Admin</h1>
+          <input 
+            type="email"
+            value={inputEmail}
+            onChange={(e) => setInputEmail(e.target.value)}
+            placeholder="Correo del dueño"
+            className="w-full bg-black border border-white/10 rounded-xl py-4 px-6 mb-4 outline-none focus:border-yellow-500"
+          />
+          <button onClick={verifyAccess} className="w-full bg-yellow-500 text-black font-black uppercase py-4 rounded-xl hover:bg-yellow-400 transition-all">Entrar</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#070707] text-white p-6 md:p-12 font-sans">
+      {statusMsg.text && (
+        <div className="fixed top-6 right-6 z-50 px-6 py-4 rounded-2xl bg-yellow-500 text-black border border-yellow-600 shadow-xl animate-bounce">
+          <span className="text-[10px] font-black uppercase tracking-widest">{statusMsg.text}</span>
+        </div>
+      )}
+
+      <header className="max-w-7xl mx-auto mb-12">
+        <h1 className="text-5xl font-black italic uppercase tracking-tighter mb-2">Jaddy Studio</h1>
+        <p className="text-yellow-500 text-[10px] font-black uppercase tracking-[0.4em]">Panel de Control Offline Ready</p>
+      </header>
+
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <section className="lg:col-span-5">
+          <div className="bg-[#0f0f0f] border border-white/5 rounded-[2.5rem] p-8 sticky top-10 shadow-2xl">
+            <h2 className="text-xl font-black mb-8 flex items-center gap-3 italic uppercase text-yellow-500">
+              <Plus size={20} /> Nueva Instrumental
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input 
+                type="text" required value={formData.title}
+                onChange={e => setFormData({...formData, title: e.target.value})}
+                placeholder="Título" 
+                className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-sm focus:border-yellow-500 outline-none"
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <input 
+                  type="text" required value={formData.genre}
+                  onChange={e => setFormData({...formData, genre: e.target.value})}
+                  placeholder="Género"
+                  className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-sm focus:border-yellow-500 outline-none"
+                />
+                <input 
+                  type="number" required value={formData.price}
+                  onChange={e => setFormData({...formData, price: e.target.value})}
+                  placeholder="Precio $"
+                  className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-sm focus:border-yellow-500 outline-none"
+                />
+              </div>
+              <textarea 
+                rows="2" value={formData.description}
+                onChange={e => setFormData({...formData, description: e.target.value})}
+                placeholder="Descripción / Notas"
+                className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-sm focus:border-yellow-500 outline-none resize-none"
+              ></textarea>
+              <input 
+                type="text" required value={formData.url}
+                onChange={e => setFormData({...formData, url: e.target.value})}
+                placeholder="Link de Youtube"
+                className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-sm focus:border-yellow-500 outline-none"
+              />
+              <input 
+                type="text" value={formData.image}
+                onChange={e => setFormData({...formData, image: e.target.value})}
+                placeholder="URL de Portada" 
+                className="w-full bg-black border border-white/10 rounded-2xl py-4 px-6 text-sm focus:border-yellow-500 outline-none"
+              />
+              <button type="submit" className="w-full bg-yellow-500 text-black font-black uppercase py-5 rounded-2xl hover:bg-yellow-400 transition-all tracking-widest text-[11px]">
+                Guardar Pista
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <section className="lg:col-span-7">
+          <div className="bg-[#0f0f0f] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl">
+            <div className="p-8 border-b border-white/5">
+              <h3 className="font-black uppercase italic tracking-tighter text-lg">Catálogo Sincronizado</h3>
+            </div>
+            <div className="divide-y divide-white/5">
+              {loading ? (
+                <div className="p-12 text-center text-gray-700 animate-pulse uppercase font-black text-[10px]">Cargando...</div>
+              ) : catalog.map(track => (
+                <div key={track.id} className="p-6 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-xl bg-black border border-white/10 flex-shrink-0 overflow-hidden">
+                       <img src={track.image || 'https://via.placeholder.com/150'} className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <h4 className="font-black uppercase italic text-md leading-none">{track.title}</h4>
+                      <p className="text-yellow-500 font-bold text-[10px] mt-1 tracking-widest uppercase">{track.genre} - ${track.price}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => removeTrack(track.id)} className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all">
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+};
+
+export default App;
+
+```
