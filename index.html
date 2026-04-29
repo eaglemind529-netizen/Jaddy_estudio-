@@ -11,107 +11,227 @@
         .glass-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .glass-card:hover { transform: translateY(-10px); background: rgba(255, 255, 255, 0.05); border-color: rgba(34, 211, 238, 0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
         
-        /* Estilo para el Marketplace Jaddy */
         .gold-card:hover { border-color: rgba(234, 179, 8, 0.5); box-shadow: 0 20px 40px rgba(234, 179, 8, 0.15); }
         
+        .admin-card { border-color: rgba(168, 85, 247, 0.2); background: rgba(168, 85, 247, 0.05); }
+        .admin-card:hover { border-color: rgba(168, 85, 247, 0.6); box-shadow: 0 20px 40px rgba(168, 85, 247, 0.2); }
+
         .neon-text { text-shadow: 0 0 10px rgba(34, 211, 238, 0.5); }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 0.4; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0.4; transform: scale(0.8); } }
+        
+        input { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; outline: none; }
+        input:focus { border-color: #22d3ee !important; }
+        
+        .tab-active { border-bottom: 2px solid #22d3ee; color: #22d3ee; }
     </style>
 </head>
 <body class="gradient-bg min-h-screen text-white font-sans py-12">
 
     <div class="max-w-7xl mx-auto px-6 w-full">
         
-        <!-- Logo y Título -->
+        <!-- Header de Usuario -->
+        <div class="flex justify-between items-center mb-8">
+            <div id="user-info" class="flex items-center gap-3"></div>
+            <div id="auth-header"></div>
+        </div>
+
         <header class="text-center mb-16 space-y-4">
             <div class="inline-block px-4 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 text-[10px] font-black uppercase tracking-[0.4em] mb-4">
                 Plataforma de Ingeniería Musical
             </div>
-            <h1 class="text-5xl md:text-7xl font-black italic tracking-tighter uppercase">
+            <h1 class="text-5xl md:text-7xl font-black italic tracking-tighter uppercase leading-tight">
                 Jaddy <span class="text-cyan-500 neon-text">Studio</span>
             </h1>
             <p class="text-gray-500 font-medium tracking-widest text-xs uppercase">Soluciones integrales para el artista urbano</p>
         </header>
 
-        <!-- Grilla de Opciones -->
+        <!-- GRILLA PRINCIPAL (SIEMPRE VISIBLE) -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             
-            <!-- Opción 1: Análisis -->
-            <a href="analisis.html" class="group">
+            <a href="#" class="group">
                 <div class="glass-card p-8 rounded-[2.5rem] h-full flex flex-col items-center text-center">
                     <div class="w-14 h-14 bg-cyan-500/10 text-cyan-400 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-cyan-500 group-hover:text-black transition-colors">
                         <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                     </div>
                     <h3 class="text-lg font-black uppercase tracking-tighter mb-3">Análisis de Voz</h3>
-                    <p class="text-gray-500 text-xs leading-relaxed mb-6">Escaneo espectral y visión AI para mezcla profesional.</p>
-                    <div class="mt-auto">
-                        <span class="text-[9px] font-bold text-cyan-500 tracking-widest uppercase flex items-center justify-center">
-                            <span class="status-dot bg-cyan-500 mr-2"></span> Sistema Activo
-                        </span>
-                    </div>
+                    <p class="text-gray-500 text-xs leading-relaxed">Escaneo espectral y visión AI para mezcla profesional.</p>
                 </div>
             </a>
 
-            <!-- Opción 2: Composición IA -->
-            <a href="composer.html" class="group">
+            <a href="#" class="group">
                 <div class="glass-card p-8 rounded-[2.5rem] h-full flex flex-col items-center text-center border-blue-500/20 bg-blue-500/5">
                     <div class="w-14 h-14 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-500 group-hover:text-black transition-colors">
                         <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"></path></svg>
                     </div>
                     <h3 class="text-lg font-black uppercase tracking-tighter mb-3">Estudio de Melodía</h3>
-                    <p class="text-gray-500 text-xs leading-relaxed mb-6">Generación de piano orgánico y loops mediante IA.</p>
-                    <div class="mt-auto">
-                        <span class="text-[9px] font-bold text-blue-400 tracking-widest uppercase flex items-center justify-center">
-                            <span class="status-dot bg-blue-500 mr-2"></span> Online
-                        </span>
-                    </div>
+                    <p class="text-gray-500 text-xs leading-relaxed">Generación de piano orgánico y loops mediante IA.</p>
                 </div>
             </a>
 
-            <!-- Opción 3: Limpieza -->
-            <a href="limpieza.html" class="group">
+            <a href="#" class="group">
                 <div class="glass-card p-8 rounded-[2.5rem] h-full flex flex-col items-center text-center">
                     <div class="w-14 h-14 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 group-hover:text-black transition-colors">
                         <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                     </div>
                     <h3 class="text-lg font-black uppercase tracking-tighter mb-3">Limpieza de Voz</h3>
-                    <p class="text-gray-500 text-xs leading-relaxed mb-6">Eliminación de ruido y restauración de audio con IA.</p>
-                    <div class="mt-auto">
-                        <span class="text-[9px] font-bold text-emerald-500 tracking-widest uppercase flex items-center justify-center">
-                            <span class="status-dot bg-emerald-500 mr-2"></span> Calibrado
-                        </span>
-                    </div>
+                    <p class="text-gray-500 text-xs leading-relaxed">Eliminación de ruido y restauración de audio con IA.</p>
                 </div>
             </a>
 
-            <!-- Opción 4: Marketplace de Beats -->
-            <a href="marketplace.html" class="group">
+            <a href="#" class="group">
                 <div class="glass-card gold-card p-8 rounded-[2.5rem] h-full flex flex-col items-center text-center border-yellow-500/20 bg-yellow-500/5">
                     <div class="w-14 h-14 bg-yellow-500/20 text-yellow-500 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-yellow-500 group-hover:text-black transition-colors">
-                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                     </div>
                     <h3 class="text-lg font-black uppercase tracking-tighter mb-3">Beats Store</h3>
-                    <p class="text-gray-500 text-xs leading-relaxed mb-6">Marketplace exclusivo de instrumentales y créditos.</p>
-                    <div class="mt-auto">
-                        <span class="text-[9px] font-bold text-yellow-500 tracking-widest uppercase flex items-center justify-center">
-                            <span class="status-dot bg-yellow-500 mr-2"></span> Tienda Abierta
-                        </span>
-                    </div>
+                    <p class="text-gray-500 text-xs leading-relaxed">Marketplace exclusivo de instrumentales y créditos.</p>
                 </div>
             </a>
+
+            <!-- PANEL MAESTRO (SOLO ADMIN - OCULTO POR DEFECTO) -->
+            <div id="admin-section" class="hidden lg:col-span-4 mt-6 animate-pulse">
+                <a href="#" class="group">
+                    <div class="glass-card admin-card p-6 rounded-[2rem] flex items-center justify-between border-purple-500/30">
+                        <div class="flex items-center gap-6">
+                            <div class="w-12 h-12 bg-purple-500/20 text-purple-400 rounded-xl flex items-center justify-center group-hover:bg-purple-500 group-hover:text-black transition-all">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-sm font-black uppercase tracking-widest text-purple-400">Panel Maestro Jaddy</h3>
+                                <p class="text-gray-500 text-[10px]">Gestión total: Agregar pistas, créditos y métodos de pago.</p>
+                            </div>
+                        </div>
+                        <span class="text-[9px] font-bold bg-purple-500/20 text-purple-300 px-4 py-1.5 rounded-full uppercase tracking-widest border border-purple-500/30">Acceso Root Activo</span>
+                    </div>
+                </a>
+            </div>
 
         </div>
 
-        <!-- Footer Informativo -->
         <footer class="mt-20 text-center border-t border-white/5 pt-8">
-            <p class="text-gray-700 text-[10px] font-mono tracking-widest uppercase italic">© 2024 JADDY ESTUDIO | Workflow de Ingeniería Avanzada por Gemini 2.5</p>
+            <p class="text-gray-700 text-[10px] font-mono tracking-widest uppercase italic">© 2024 JADDY ESTUDIO | Ingeniería Avanzada</p>
         </footer>
 
     </div>
 
+    <!-- MODAL DE ACCESO MIXTO -->
+    <div id="login-modal" class="fixed inset-0 bg-black/95 backdrop-blur-xl hidden flex items-center justify-center z-50 p-4">
+        <div class="w-full max-w-md glass-card p-8 rounded-[3rem] relative">
+            <button onclick="window.toggleLogin()" class="absolute top-6 right-8 text-gray-500 hover:text-white">&times;</button>
+            
+            <div class="flex justify-center gap-8 mb-10 font-black uppercase tracking-widest text-[11px]">
+                <button id="tab-login" onclick="switchTab('login')" class="tab-active pb-2">Entrar</button>
+                <button id="tab-register" onclick="switchTab('register')" class="pb-2 text-gray-500">Unirse</button>
+            </div>
+
+            <!-- Form LOGIN -->
+            <div id="form-login" class="space-y-4">
+                <input type="email" id="auth-email" placeholder="EMAIL" class="w-full p-4 rounded-2xl text-[11px] font-bold">
+                <input type="password" id="auth-pass" placeholder="CONTRASEÑA" class="w-full p-4 rounded-2xl text-[11px] font-bold">
+                <button onclick="handleAuth('login')" class="w-full py-5 bg-cyan-500 text-black font-black rounded-2xl uppercase text-[11px] hover:scale-[1.02] transition-transform">Acceder</button>
+            </div>
+
+            <!-- Form REGISTER -->
+            <div id="form-register" class="hidden space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="reg-name" placeholder="NOMBRE REAL" class="w-full p-4 rounded-2xl text-[11px] font-bold">
+                    <input type="text" id="reg-artist" placeholder="ARTISTA" class="w-full p-4 rounded-2xl text-[11px] font-bold">
+                </div>
+                <input type="tel" id="reg-phone" placeholder="TELÉFONO" class="w-full p-4 rounded-2xl text-[11px] font-bold">
+                <input type="email" id="reg-email" placeholder="EMAIL" class="w-full p-4 rounded-2xl text-[11px] font-bold">
+                <input type="password" id="reg-pass" placeholder="CONTRASEÑA" class="w-full p-4 rounded-2xl text-[11px] font-bold">
+                <button onclick="handleAuth('register')" class="w-full py-5 bg-white text-black font-black rounded-2xl uppercase text-[11px] hover:scale-[1.02] transition-transform">Crear Cuenta</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDIaAvpJZrJjQUKsh6KGD7gALJNskto8A8",
+            authDomain: "jaddy-estudio.firebaseapp.com",
+            projectId: "jaddy-estudio",
+            storageBucket: "jaddy-estudio.firebasestorage.app",
+            messagingSenderId: "968903268866",
+            appId: "1:968903268866:web:e2b6895e8acff18178e51b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const MASTER_EMAIL = "jaddymusicrecords@gmail.com";
+
+        onAuthStateChanged(auth, async (user) => {
+            const adminSection = document.getElementById('admin-section');
+            const authHeader = document.getElementById('auth-header');
+            const userInfo = document.getElementById('user-info');
+
+            if (user) {
+                const docRef = doc(db, "artistas", user.uid);
+                const docSnap = await getDoc(docRef);
+                const userData = docSnap.exists() ? docSnap.data() : { artistName: 'Artista' };
+
+                userInfo.innerHTML = `
+                    <div class="px-4 py-2 bg-white/5 rounded-full border border-white/10 flex items-center gap-3">
+                        <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                        <span class="text-[10px] font-black uppercase tracking-widest">${userData.artistName}</span>
+                    </div>
+                `;
+                authHeader.innerHTML = `<button onclick="window.logout()" class="text-[9px] font-black uppercase text-gray-500 tracking-widest hover:text-red-400">Logout</button>`;
+                
+                // Solo tú ves lo morado
+                if (user.email === MASTER_EMAIL) adminSection.classList.remove('hidden');
+                else adminSection.classList.add('hidden');
+                
+            } else {
+                userInfo.innerHTML = "";
+                adminSection.classList.add('hidden');
+                authHeader.innerHTML = `<button onclick="window.toggleLogin()" class="text-[9px] font-black uppercase text-cyan-500 tracking-widest border border-cyan-500/20 px-6 py-2.5 rounded-full hover:bg-cyan-500 hover:text-black transition-all">Acceso Artistas</button>`;
+            }
+        });
+
+        window.toggleLogin = () => document.getElementById('login-modal').classList.toggle('hidden');
+        window.switchTab = (mode) => {
+            document.getElementById('form-login').classList.toggle('hidden', mode !== 'login');
+            document.getElementById('form-register').classList.toggle('hidden', mode !== 'register');
+            document.getElementById('tab-login').className = mode === 'login' ? 'tab-active pb-2' : 'pb-2 text-gray-500';
+            document.getElementById('tab-register').className = mode === 'register' ? 'tab-active pb-2' : 'pb-2 text-gray-500';
+        };
+
+        window.handleAuth = async (type) => {
+            if (type === 'login') {
+                const email = document.getElementById('auth-email').value;
+                const pass = document.getElementById('auth-pass').value;
+                try {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                    window.toggleLogin();
+                } catch (e) { alert("Error de acceso"); }
+            } else {
+                const email = document.getElementById('reg-email').value;
+                const pass = document.getElementById('reg-pass').value;
+                const name = document.getElementById('reg-name').value;
+                const artist = document.getElementById('reg-artist').value;
+                const phone = document.getElementById('reg-phone').value;
+
+                try {
+                    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                    await setDoc(doc(db, "artistas", cred.user.uid), {
+                        fullName: name,
+                        artistName: artist,
+                        phone: phone,
+                        email: email,
+                        role: "artist"
+                    });
+                    window.toggleLogin();
+                } catch (e) { alert("Error en el registro"); }
+            }
+        };
+
+        window.logout = () => signOut(auth);
+    </script>
 </body>
 </html>
 
 ```
-
