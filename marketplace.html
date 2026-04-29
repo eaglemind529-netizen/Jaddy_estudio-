@@ -1,287 +1,304 @@
-```react
-import React, { useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
-import { getFirestore, collection, doc, onSnapshot, query } from 'firebase/firestore';
-import { ShoppingCart, Play, ExternalLink, Music, Info, X, CheckCircle, CreditCard } from 'lucide-react';
-
-// Configuración de Firebase (Idéntica a tu Admin Panel)
-const firebaseConfig = {
-    apiKey: "AIzaSyDIaAvpJZrJjQUKsh6KGD7gALJNskto8A8",
-    authDomain: "jaddy-estudio.firebaseapp.com",
-    projectId: "jaddy-estudio",
-    storageBucket: "jaddy-estudio.firebasestorage.app",
-    messagingSenderId: "968903268866",
-    appId: "1:968903268866:web:e2b6895e8acff18178e51b"
-};
-
-const APP_ID = "jaddy_studio_v1";
-
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-export default function App() {
-  const [user, setUser] = useState(null);
-  const [beats, setBeats] = useState([]);
-  const [paymentInfo, setPaymentInfo] = useState(null);
-  const [selectedBeat, setSelectedBeat] = useState(null);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [filter, setFilter] = useState('all');
-
-  // 1. Manejo de Autenticación (Requerido por Regla 3)
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace | Jaddy Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: white;
+            overflow-x: hidden;
         }
-      } catch (err) {
-        console.error("Error de auth:", err);
-      }
-    };
-    initAuth();
-    const unsubscribe = onAuthStateChanged(auth, setUser);
-    return () => unsubscribe();
-  }, []);
 
-  // 2. Escuchar Datos (Sincronización en tiempo real)
-  useEffect(() => {
-    if (!user) return;
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-    // Escuchar Beats
-    const beatsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'beats');
-    const unsubBeats = onSnapshot(beatsRef, (snap) => {
-      const beatsData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Ordenar por más recientes (frontend)
-      setBeats(beatsData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)));
-    }, (err) => console.error("Error cargando beats:", err));
+        .accent-gradient {
+            background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+        }
 
-    // Escuchar Pagos
-    const payRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'payments');
-    const unsubPay = onSnapshot(payRef, (doc) => {
-      if (doc.exists()) setPaymentInfo(doc.data());
-    }, (err) => console.error("Error cargando pagos:", err));
+        .text-gradient {
+            background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-    return () => {
-      unsubBeats();
-      unsubPay();
-    };
-  }, [user]);
+        .hide { display: none !important; }
 
-  const filteredBeats = beats.filter(b => {
-    if (filter === 'free') return b.type === 'free';
-    if (filter === 'paid') return b.type === 'paid';
-    return true;
-  });
+        .playing-pulse {
+            animation: pulse-purple 2s infinite;
+        }
 
-  const openCheckout = (beat) => {
-    setSelectedBeat(beat);
-    setShowPaymentModal(true);
-  };
+        @keyframes pulse-purple {
+            0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(168, 85, 247, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
 
-  return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-purple-500/30">
-      {/* Background Decor */}
-      <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full"></div>
-      </div>
-
-      {/* Header */}
-      <header className="border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-          <div className="flex flex-col">
-            <h1 className="text-2xl font-black italic tracking-tighter uppercase leading-none">
-              JADDY <span className="text-purple-500 underline">STUDIO</span>
-            </h1>
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mt-1">Marketplace Oficial</span>
-          </div>
-
-          <div className="flex gap-2 bg-white/5 p-1 rounded-full border border-white/10 scale-90 md:scale-100">
-             <button 
-              onClick={() => setFilter('all')}
-              className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all ${filter === 'all' ? 'bg-purple-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
-             >Todos</button>
-             <button 
-              onClick={() => setFilter('paid')}
-              className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all ${filter === 'paid' ? 'bg-purple-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
-             >Premium</button>
-             <button 
-              onClick={() => setFilter('free')}
-              className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all ${filter === 'free' ? 'bg-green-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
-             >Gratis</button>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 py-12">
-        {/* Hero Section */}
-        <div className="mb-16 text-center md:text-left">
-          <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter mb-4 leading-tight">
-            ENCUENTRA EL <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-indigo-500 font-black">SONIDO PERFECTO</span>
-          </h2>
-          <p className="text-gray-400 max-w-xl text-sm font-medium leading-relaxed">
-            Explora nuestro catálogo de beats exclusivos producidos en Jaddy Studio. 
-            Calidad profesional para tus proyectos musicales.
-          </p>
-        </div>
-
-        {/* Beats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredBeats.map((beat) => (
-            <div key={beat.id} className="group bg-white/5 border border-white/5 rounded-[32px] p-6 hover:bg-white/[0.08] hover:border-purple-500/30 transition-all duration-500">
-              <div className="flex justify-between items-start mb-6">
-                <div className={`p-3 rounded-2xl ${beat.type === 'free' ? 'bg-green-500/10 text-green-500' : 'bg-purple-500/10 text-purple-500'}`}>
-                  <Music size={24} />
-                </div>
-                <div className="text-right">
-                  <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">{beat.genre}</span>
-                  <span className="text-2xl font-black italic">
-                    {beat.type === 'free' ? 'FREE' : `$${beat.price}`}
-                  </span>
-                </div>
-              </div>
-
-              <h3 className="text-xl font-black uppercase italic mb-6 group-hover:text-purple-400 transition-colors line-clamp-1">
-                {beat.name}
-              </h3>
-
-              <div className="flex flex-col gap-3">
-                <a 
-                  href={beat.link} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full bg-white/5 hover:bg-white/10 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all border border-white/5"
-                >
-                  <Play size={14} fill="currentColor" /> Escuchar Demo
-                </a>
-                
-                <button 
-                  onClick={() => openCheckout(beat)}
-                  className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-xl shadow-purple-900/20"
-                >
-                  <ShoppingCart size={14} /> {beat.type === 'free' ? 'Obtener Ahora' : 'Comprar Licencia'}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredBeats.length === 0 && (
-          <div className="text-center py-20 bg-white/5 rounded-[40px] border border-dashed border-white/10">
-            <Info className="mx-auto text-gray-600 mb-4" size={40} />
-            <p className="font-black uppercase text-gray-500 tracking-widest italic">No se encontraron pistas en esta categoría</p>
-          </div>
-        )}
-      </main>
-
-      {/* Footer */}
-      <footer className="mt-20 border-t border-white/5 py-12 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em]">
-            © {new Date().getFullYear()} Jaddy Studio - Todos los derechos reservados
-          </p>
-          <div className="flex gap-8">
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest cursor-help hover:text-white transition-colors">Términos</span>
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest cursor-help hover:text-white transition-colors">Licencias</span>
-          </div>
-        </div>
-      </footer>
-
-      {/* Modal de Pago / Checkout */}
-      {showPaymentModal && selectedBeat && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="bg-[#121212] border border-white/10 w-full max-w-lg rounded-[40px] overflow-hidden relative shadow-2xl">
-            <button 
-              onClick={() => setShowPaymentModal(false)}
-              className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/5 transition-colors text-gray-500 hover:text-white"
-            >
-              <X size={20} />
-            </button>
-
-            <div className="p-8 md:p-10">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 rounded-2xl bg-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
-                  <CreditCard size={24} />
-                </div>
-                <div>
-                  <h4 className="font-black uppercase italic text-xl">Finalizar Compra</h4>
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{selectedBeat.name}</p>
-                </div>
-              </div>
-
-              {selectedBeat.type === 'free' ? (
-                <div className="space-y-6">
-                  <div className="p-6 bg-green-500/10 rounded-3xl border border-green-500/20">
-                    <p className="text-green-500 text-sm font-bold leading-relaxed">
-                      Esta pista es de uso libre. Puedes descargarla directamente desde el enlace de YouTube o contactar al estudio para el archivo original.
-                    </p>
-                  </div>
-                  <a 
-                    href={selectedBeat.link} 
-                    target="_blank" 
-                    className="block w-full text-center bg-green-600 hover:bg-green-500 py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all"
-                  >
-                    Ir a Descarga
-                  </a>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  <p className="text-xs text-gray-400 font-medium">Realiza tu pago de <span className="text-white font-black underline">${selectedBeat.price}</span> usando cualquiera de estos métodos y envía el comprobante:</p>
-                  
-                  <div className="space-y-3">
-                    {paymentInfo?.pago_movil && (
-                      <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                        <span className="block text-[9px] font-black text-purple-500 uppercase mb-1">Pago Móvil</span>
-                        <p className="text-xs font-bold text-gray-300 whitespace-pre-line">{paymentInfo.pago_movil}</p>
-                      </div>
-                    )}
-                    {paymentInfo?.binance && (
-                      <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                        <span className="block text-[9px] font-black text-yellow-500 uppercase mb-1">Binance Pay</span>
-                        <p className="text-xs font-bold text-gray-300">{paymentInfo.binance}</p>
-                      </div>
-                    )}
-                    {paymentInfo?.contigo && (
-                      <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                        <span className="block text-[9px] font-black text-indigo-500 uppercase mb-1">Cuenta Contigo</span>
-                        <p className="text-xs font-bold text-gray-300">{paymentInfo.contigo}</p>
-                      </div>
-                    )}
-                    {paymentInfo?.otros && (
-                      <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                        <span className="block text-[9px] font-black text-gray-400 uppercase mb-1">Otros / Zelle</span>
-                        <p className="text-xs font-bold text-gray-300">{paymentInfo.otros}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="pt-4">
-                    <a 
-                      href={`https://wa.me/584123456789?text=Hola! Quiero comprar el beat: ${selectedBeat.name} ($${selectedBeat.price})`}
-                      target="_blank"
-                      className="flex items-center justify-center gap-3 w-full bg-green-600 hover:bg-green-500 py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-lg shadow-green-900/20"
-                    >
-                      Enviar Comprobante por WhatsApp
-                    </a>
-                  </div>
-                </div>
-              )}
-              
-              <div className="mt-8 flex items-center justify-center gap-2 text-[10px] font-bold text-gray-600 uppercase tracking-widest">
-                <CheckCircle size={12} /> Pago 100% Seguro vía Jaddy Studio
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+    <!-- Fondo Decorativo -->
+    <div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none">
+        <div class="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full"></div>
+        <div class="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full"></div>
     </div>
-  );
-}
+
+    <!-- Navegación -->
+    <nav class="border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-black italic tracking-tighter uppercase leading-none">
+                    JADDY <span class="text-purple-500 underline">STUDIO</span>
+                </h1>
+                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mt-1 block">Marketplace</span>
+            </div>
+            
+            <div class="flex gap-2 bg-white/5 p-1 rounded-full border border-white/10">
+                <button onclick="setFilter('all')" id="btn-all" class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all bg-purple-600">Todos</button>
+                <button onclick="setFilter('paid')" id="btn-paid" class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all text-gray-400">Premium</button>
+                <button onclick="setFilter('free')" id="btn-free" class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all text-gray-400">Gratis</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        <div class="mb-12">
+            <h2 class="text-5xl md:text-7xl font-black uppercase italic tracking-tighter mb-4 leading-tight">
+                CATÁLOGO DE <br>
+                <span class="text-gradient">INSTRUMENTALES</span>
+            </h2>
+            <p class="text-gray-400 max-w-xl text-sm font-medium leading-relaxed">
+                Escucha los demos exclusivos y adquiere tu licencia directamente.
+            </p>
+        </div>
+
+        <!-- Contenedor de Beats -->
+        <div id="beats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Los beats se cargan aquí -->
+            <div class="animate-pulse bg-white/5 h-64 rounded-[32px]"></div>
+            <div class="animate-pulse bg-white/5 h-64 rounded-[32px]"></div>
+            <div class="animate-pulse bg-white/5 h-64 rounded-[32px]"></div>
+        </div>
+    </main>
+
+    <!-- Modal de Checkout -->
+    <div id="payment-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md hide">
+        <div class="glass w-full max-w-lg rounded-[40px] overflow-hidden relative shadow-2xl bg-[#0d0d0d] border border-white/10">
+            <button onclick="closeModal()" class="absolute top-6 right-8 text-2xl text-gray-500 hover:text-white transition-colors">&times;</button>
+            <div class="p-10">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-12 h-12 rounded-2xl accent-gradient flex items-center justify-center shadow-lg shadow-purple-500/20">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" stroke-width="2" stroke-linecap="round"></path></svg>
+                    </div>
+                    <div>
+                        <h4 class="font-black uppercase italic text-xl">Finalizar Compra</h4>
+                        <p id="modal-beat-name" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest"></p>
+                    </div>
+                </div>
+                <div id="payment-content" class="space-y-6"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getFirestore, doc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDIaAvpJZrJjQUKsh6KGD7gALJNskto8A8",
+            authDomain: "jaddy-estudio.firebaseapp.com",
+            projectId: "jaddy-estudio",
+            storageBucket: "jaddy-estudio.firebasestorage.app",
+            messagingSenderId: "968903268866",
+            appId: "1:968903268866:web:e2b6895e8acff18178e51b"
+        };
+
+        const APP_ID = "jaddy_studio_v1";
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let allBeats = [];
+        let paymentInfo = {};
+        let currentFilter = 'all';
+        
+        // Manejo de Audio Global
+        let currentAudio = null;
+        let currentPlayingId = null;
+
+        window.setFilter = (f) => {
+            currentFilter = f;
+            renderBeats();
+            updateFilterButtons();
+        };
+
+        const updateFilterButtons = () => {
+            ['all', 'paid', 'free'].forEach(f => {
+                const btn = document.getElementById(`btn-${f}`);
+                btn.className = f === currentFilter 
+                    ? "px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all bg-purple-600 text-white"
+                    : "px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all text-gray-400 hover:text-white";
+            });
+        };
+
+        window.togglePlay = (url, id) => {
+            const btn = document.getElementById(`play-btn-${id}`);
+            const icon = btn.querySelector('svg');
+
+            // Si es el mismo audio
+            if (currentPlayingId === id && currentAudio) {
+                if (currentAudio.paused) {
+                    currentAudio.play();
+                    btn.classList.add('playing-pulse', 'bg-purple-600');
+                    icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>'; // Icono Pause
+                } else {
+                    currentAudio.pause();
+                    btn.classList.remove('playing-pulse', 'bg-purple-600');
+                    icon.innerHTML = '<path d="M8 5v14l11-7z"></path>'; // Icono Play
+                }
+                return;
+            }
+
+            // Si hay otro audio sonando, detenerlo
+            if (currentAudio) {
+                currentAudio.pause();
+                const oldBtn = document.getElementById(`play-btn-${currentPlayingId}`);
+                if (oldBtn) {
+                    oldBtn.classList.remove('playing-pulse', 'bg-purple-600');
+                    oldBtn.querySelector('svg').innerHTML = '<path d="M8 5v14l11-7z"></path>';
+                }
+            }
+
+            // Crear nuevo audio
+            currentAudio = new Audio(url);
+            currentPlayingId = id;
+            
+            currentAudio.play().catch(e => {
+                console.error("Error al reproducir audio:", e);
+                alert("No se pudo cargar el audio. Verifica el enlace.");
+            });
+
+            btn.classList.add('playing-pulse', 'bg-purple-600');
+            icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>';
+
+            currentAudio.onended = () => {
+                btn.classList.remove('playing-pulse', 'bg-purple-600');
+                icon.innerHTML = '<path d="M8 5v14l11-7z"></path>';
+                currentPlayingId = null;
+            };
+        };
+
+        const renderBeats = () => {
+            const grid = document.getElementById('beats-grid');
+            grid.innerHTML = "";
+
+            const filtered = allBeats.filter(b => {
+                if (currentFilter === 'free') return b.type === 'free';
+                if (currentFilter === 'paid') return b.type === 'paid';
+                return true;
+            });
+
+            filtered.forEach(beat => {
+                const isPlaying = currentPlayingId === beat.id && currentAudio && !currentAudio.paused;
+                const card = document.createElement('div');
+                card.className = "glass p-8 rounded-[40px] hover:border-purple-500/30 transition-all duration-500 group";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-8">
+                        <button id="play-btn-${beat.id}" onclick="togglePlay('${beat.link}', '${beat.id}')" 
+                                class="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 ${isPlaying ? 'bg-purple-600 playing-pulse' : 'bg-white/5 hover:bg-white/10'}">
+                            <svg class="w-6 h-6 fill-current text-white" viewBox="0 0 24 24">
+                                ${isPlaying ? '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>' : '<path d="M8 5v14l11-7z"></path>'}
+                            </svg>
+                        </button>
+                        <div class="text-right">
+                            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-1">${beat.genre || 'Instrumental'}</span>
+                            <span class="text-3xl font-black italic tracking-tighter text-gradient">${beat.type === 'free' ? 'FREE' : '$' + beat.price}</span>
+                        </div>
+                    </div>
+
+                    <h3 class="text-2xl font-black uppercase italic mb-8 tracking-tight group-hover:translate-x-2 transition-transform duration-300">${beat.name}</h3>
+
+                    <div class="flex gap-3">
+                        <button onclick="openCheckout('${beat.id}')" class="flex-1 bg-white/5 border border-white/5 hover:bg-white/10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
+                            Detalles
+                        </button>
+                        <button onclick="openCheckout('${beat.id}')" class="flex-1 accent-gradient py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-purple-500/20 active:scale-95 transition-all">
+                            Adquirir
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        };
+
+        window.openCheckout = (id) => {
+            const beat = allBeats.find(b => b.id === id);
+            if(!beat) return;
+            document.getElementById('modal-beat-name').innerText = beat.name;
+            const container = document.getElementById('payment-content');
+            
+            if(beat.type === 'free') {
+                container.innerHTML = `
+                    <div class="p-6 bg-green-500/10 rounded-3xl border border-green-500/20 mb-6 text-center">
+                        <p class="text-green-500 text-xs font-bold">LICENCIA GRATUITA ACTIVADA</p>
+                    </div>
+                    <a href="${beat.link}" target="_blank" class="block w-full text-center bg-white text-black py-5 rounded-2xl font-black uppercase text-xs hover:bg-gray-200 transition-colors">Descargar Audio</a>
+                `;
+            } else {
+                let methods = "";
+                if(paymentInfo.pago_movil) methods += `
+                    <div class="p-5 bg-white/5 rounded-3xl border border-white/10">
+                        <span class="text-[9px] font-black text-purple-500 uppercase block mb-2 tracking-widest">Pago Móvil (Venezuela)</span>
+                        <p class="text-sm font-bold text-gray-300 leading-relaxed">${paymentInfo.pago_movil.replace(/\n/g, '<br>')}</p>
+                    </div>`;
+                
+                if(paymentInfo.binance) methods += `
+                    <div class="p-5 bg-white/5 rounded-3xl border border-white/10">
+                        <span class="text-[9px] font-black text-yellow-500 uppercase block mb-2 tracking-widest">Binance Pay (Global)</span>
+                        <p class="text-sm font-bold text-gray-300">${paymentInfo.binance}</p>
+                    </div>`;
+                
+                container.innerHTML = `
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="text-gray-400 text-xs font-bold uppercase">Monto a pagar:</span>
+                        <span class="text-2xl font-black text-white">$${beat.price} USD</span>
+                    </div>
+                    <div class="space-y-4">${methods}</div>
+                    <a href="https://wa.me/584120000000?text=Hola Jaddy, quiero adquirir la licencia de: ${beat.name}" target="_blank" class="block w-full text-center bg-[#25D366] text-white py-5 rounded-2xl font-black uppercase text-xs mt-6 hover:opacity-90 transition-opacity">Enviar Comprobante WhatsApp</a>
+                `;
+            }
+            document.getElementById('payment-modal').classList.remove('hide');
+        };
+
+        window.closeModal = () => document.getElementById('payment-modal').classList.add('hide');
+
+        const init = async () => {
+            try {
+                await signInAnonymously(auth);
+                onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'beats'), (snap) => {
+                    allBeats = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    renderBeats();
+                });
+                onSnapshot(doc(db, 'artifacts', APP_ID, 'public', 'data', 'payments'), (snap) => {
+                    if(snap.exists()) paymentInfo = snap.data();
+                });
+            } catch (e) { console.error("Error Firebase:", e); }
+        };
+
+        init();
+    </script>
+</body>
+</html>
 
 ```
