@@ -43,6 +43,16 @@
             70% { box-shadow: 0 0 0 10px rgba(168, 85, 247, 0); }
             100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
         }
+
+        /* Contenedor invisible para YouTube */
+        #yt-player-container {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -51,6 +61,11 @@
     <div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none">
         <div class="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full"></div>
         <div class="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full"></div>
+    </div>
+
+    <!-- Reproductor Invisible de YouTube -->
+    <div id="yt-player-container">
+        <div id="player"></div>
     </div>
 
     <!-- Navegación -->
@@ -78,30 +93,29 @@
                 <span class="text-gradient">INSTRUMENTALES</span>
             </h2>
             <p class="text-gray-400 max-w-xl text-sm font-medium leading-relaxed">
-                Escucha los demos exclusivos y adquiere tu licencia directamente.
+                Escucha los mejores beats producidos por Jaddy Studio. Calidad profesional para tu próximo hit.
             </p>
         </div>
 
-        <!-- Contenedor de Beats -->
         <div id="beats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Los beats se cargan aquí -->
-            <div class="animate-pulse bg-white/5 h-64 rounded-[32px]"></div>
-            <div class="animate-pulse bg-white/5 h-64 rounded-[32px]"></div>
-            <div class="animate-pulse bg-white/5 h-64 rounded-[32px]"></div>
+            <!-- Cargando -->
+            <div class="animate-pulse bg-white/5 h-64 rounded-[40px]"></div>
+            <div class="animate-pulse bg-white/5 h-64 rounded-[40px]"></div>
+            <div class="animate-pulse bg-white/5 h-64 rounded-[40px]"></div>
         </div>
     </main>
 
-    <!-- Modal de Checkout -->
+    <!-- Modal de Pago -->
     <div id="payment-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md hide">
-        <div class="glass w-full max-w-lg rounded-[40px] overflow-hidden relative shadow-2xl bg-[#0d0d0d] border border-white/10">
+        <div class="glass w-full max-w-lg rounded-[40px] overflow-hidden relative bg-[#0d0d0d] border border-white/10">
             <button onclick="closeModal()" class="absolute top-6 right-8 text-2xl text-gray-500 hover:text-white transition-colors">&times;</button>
             <div class="p-10">
                 <div class="flex items-center gap-4 mb-8">
-                    <div class="w-12 h-12 rounded-2xl accent-gradient flex items-center justify-center shadow-lg shadow-purple-500/20">
+                    <div class="w-12 h-12 rounded-2xl accent-gradient flex items-center justify-center">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" stroke-width="2" stroke-linecap="round"></path></svg>
                     </div>
                     <div>
-                        <h4 class="font-black uppercase italic text-xl">Finalizar Compra</h4>
+                        <h4 class="font-black uppercase italic text-xl tracking-tight">Obtener Licencia</h4>
                         <p id="modal-beat-name" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest"></p>
                     </div>
                 </div>
@@ -110,6 +124,8 @@
         </div>
     </div>
 
+    <!-- Scripts de YouTube y Firebase -->
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getFirestore, doc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
@@ -132,10 +148,76 @@
         let allBeats = [];
         let paymentInfo = {};
         let currentFilter = 'all';
-        
-        // Manejo de Audio Global
-        let currentAudio = null;
+        let ytPlayer = null;
         let currentPlayingId = null;
+
+        // Extraer ID de YouTube
+        function getYTId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length == 11) ? match[2] : null;
+        }
+
+        // Inicializar YouTube Player
+        window.onYouTubeIframeAPIReady = () => {
+            ytPlayer = new YT.Player('player', {
+                height: '0',
+                width: '0',
+                events: {
+                    'onStateChange': (event) => {
+                        if (event.data === YT.PlayerState.ENDED) {
+                            stopAllUI();
+                        }
+                    }
+                }
+            });
+        };
+
+        const stopAllUI = () => {
+            if (currentPlayingId) {
+                const btn = document.getElementById(`play-btn-${currentPlayingId}`);
+                if (btn) {
+                    btn.classList.remove('playing-pulse', 'bg-purple-600');
+                    btn.querySelector('svg').innerHTML = '<path d="M8 5v14l11-7z"></path>';
+                }
+            }
+            currentPlayingId = null;
+        };
+
+        window.togglePlay = (url, id) => {
+            if (!ytPlayer || !ytPlayer.loadVideoById) return;
+
+            const videoId = getYTId(url);
+            if (!videoId) {
+                alert("Enlace de YouTube no válido");
+                return;
+            }
+
+            const btn = document.getElementById(`play-btn-${id}`);
+            const icon = btn.querySelector('svg');
+
+            // Si es el mismo video
+            if (currentPlayingId === id) {
+                const state = ytPlayer.getPlayerState();
+                if (state === YT.PlayerState.PLAYING) {
+                    ytPlayer.pauseVideo();
+                    btn.classList.remove('playing-pulse', 'bg-purple-600');
+                    icon.innerHTML = '<path d="M8 5v14l11-7z"></path>';
+                } else {
+                    ytPlayer.playVideo();
+                    btn.classList.add('playing-pulse', 'bg-purple-600');
+                    icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>';
+                }
+                return;
+            }
+
+            // Cambiar de video
+            stopAllUI();
+            currentPlayingId = id;
+            ytPlayer.loadVideoById(videoId);
+            btn.classList.add('playing-pulse', 'bg-purple-600');
+            icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>';
+        };
 
         window.setFilter = (f) => {
             currentFilter = f;
@@ -148,55 +230,8 @@
                 const btn = document.getElementById(`btn-${f}`);
                 btn.className = f === currentFilter 
                     ? "px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all bg-purple-600 text-white"
-                    : "px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all text-gray-400 hover:text-white";
+                    : "px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all text-gray-400";
             });
-        };
-
-        window.togglePlay = (url, id) => {
-            const btn = document.getElementById(`play-btn-${id}`);
-            const icon = btn.querySelector('svg');
-
-            // Si es el mismo audio
-            if (currentPlayingId === id && currentAudio) {
-                if (currentAudio.paused) {
-                    currentAudio.play();
-                    btn.classList.add('playing-pulse', 'bg-purple-600');
-                    icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>'; // Icono Pause
-                } else {
-                    currentAudio.pause();
-                    btn.classList.remove('playing-pulse', 'bg-purple-600');
-                    icon.innerHTML = '<path d="M8 5v14l11-7z"></path>'; // Icono Play
-                }
-                return;
-            }
-
-            // Si hay otro audio sonando, detenerlo
-            if (currentAudio) {
-                currentAudio.pause();
-                const oldBtn = document.getElementById(`play-btn-${currentPlayingId}`);
-                if (oldBtn) {
-                    oldBtn.classList.remove('playing-pulse', 'bg-purple-600');
-                    oldBtn.querySelector('svg').innerHTML = '<path d="M8 5v14l11-7z"></path>';
-                }
-            }
-
-            // Crear nuevo audio
-            currentAudio = new Audio(url);
-            currentPlayingId = id;
-            
-            currentAudio.play().catch(e => {
-                console.error("Error al reproducir audio:", e);
-                alert("No se pudo cargar el audio. Verifica el enlace.");
-            });
-
-            btn.classList.add('playing-pulse', 'bg-purple-600');
-            icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>';
-
-            currentAudio.onended = () => {
-                btn.classList.remove('playing-pulse', 'bg-purple-600');
-                icon.innerHTML = '<path d="M8 5v14l11-7z"></path>';
-                currentPlayingId = null;
-            };
         };
 
         const renderBeats = () => {
@@ -210,27 +245,26 @@
             });
 
             filtered.forEach(beat => {
-                const isPlaying = currentPlayingId === beat.id && currentAudio && !currentAudio.paused;
                 const card = document.createElement('div');
                 card.className = "glass p-8 rounded-[40px] hover:border-purple-500/30 transition-all duration-500 group";
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-8">
                         <button id="play-btn-${beat.id}" onclick="togglePlay('${beat.link}', '${beat.id}')" 
-                                class="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 ${isPlaying ? 'bg-purple-600 playing-pulse' : 'bg-white/5 hover:bg-white/10'}">
+                                class="w-14 h-14 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all duration-300">
                             <svg class="w-6 h-6 fill-current text-white" viewBox="0 0 24 24">
-                                ${isPlaying ? '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>' : '<path d="M8 5v14l11-7z"></path>'}
+                                <path d="M8 5v14l11-7z"></path>
                             </svg>
                         </button>
                         <div class="text-right">
-                            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-1">${beat.genre || 'Instrumental'}</span>
+                            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-1">${beat.genre || 'TRAP'}</span>
                             <span class="text-3xl font-black italic tracking-tighter text-gradient">${beat.type === 'free' ? 'FREE' : '$' + beat.price}</span>
                         </div>
                     </div>
 
-                    <h3 class="text-2xl font-black uppercase italic mb-8 tracking-tight group-hover:translate-x-2 transition-transform duration-300">${beat.name}</h3>
+                    <h3 class="text-2xl font-black uppercase italic mb-8 tracking-tight">${beat.name}</h3>
 
                     <div class="flex gap-3">
-                        <button onclick="openCheckout('${beat.id}')" class="flex-1 bg-white/5 border border-white/5 hover:bg-white/10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
+                        <button onclick="openCheckout('${beat.id}')" class="flex-1 bg-white/5 border border-white/5 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">
                             Detalles
                         </button>
                         <button onclick="openCheckout('${beat.id}')" class="flex-1 accent-gradient py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-purple-500/20 active:scale-95 transition-all">
@@ -250,32 +284,26 @@
             
             if(beat.type === 'free') {
                 container.innerHTML = `
-                    <div class="p-6 bg-green-500/10 rounded-3xl border border-green-500/20 mb-6 text-center">
-                        <p class="text-green-500 text-xs font-bold">LICENCIA GRATUITA ACTIVADA</p>
+                    <div class="p-6 bg-green-500/10 rounded-3xl border border-green-500/20 text-center">
+                        <p class="text-green-500 text-xs font-bold uppercase tracking-widest">Beat Gratuito</p>
                     </div>
-                    <a href="${beat.link}" target="_blank" class="block w-full text-center bg-white text-black py-5 rounded-2xl font-black uppercase text-xs hover:bg-gray-200 transition-colors">Descargar Audio</a>
+                    <a href="${beat.link}" target="_blank" class="block w-full text-center bg-white text-black py-5 rounded-2xl font-black uppercase text-xs">Descargar de YouTube</a>
                 `;
             } else {
-                let methods = "";
-                if(paymentInfo.pago_movil) methods += `
+                let m = "";
+                if(paymentInfo.pago_movil) m += `
                     <div class="p-5 bg-white/5 rounded-3xl border border-white/10">
-                        <span class="text-[9px] font-black text-purple-500 uppercase block mb-2 tracking-widest">Pago Móvil (Venezuela)</span>
+                        <span class="text-[9px] font-black text-purple-500 uppercase block mb-2 tracking-widest">Pago Móvil</span>
                         <p class="text-sm font-bold text-gray-300 leading-relaxed">${paymentInfo.pago_movil.replace(/\n/g, '<br>')}</p>
-                    </div>`;
-                
-                if(paymentInfo.binance) methods += `
-                    <div class="p-5 bg-white/5 rounded-3xl border border-white/10">
-                        <span class="text-[9px] font-black text-yellow-500 uppercase block mb-2 tracking-widest">Binance Pay (Global)</span>
-                        <p class="text-sm font-bold text-gray-300">${paymentInfo.binance}</p>
                     </div>`;
                 
                 container.innerHTML = `
                     <div class="flex justify-between items-center mb-6">
-                        <span class="text-gray-400 text-xs font-bold uppercase">Monto a pagar:</span>
+                        <span class="text-gray-400 text-xs font-bold uppercase">Monto:</span>
                         <span class="text-2xl font-black text-white">$${beat.price} USD</span>
                     </div>
-                    <div class="space-y-4">${methods}</div>
-                    <a href="https://wa.me/584120000000?text=Hola Jaddy, quiero adquirir la licencia de: ${beat.name}" target="_blank" class="block w-full text-center bg-[#25D366] text-white py-5 rounded-2xl font-black uppercase text-xs mt-6 hover:opacity-90 transition-opacity">Enviar Comprobante WhatsApp</a>
+                    <div class="space-y-4">${m}</div>
+                    <a href="https://wa.me/584120000000?text=Compro Beat: ${beat.name}" target="_blank" class="block w-full text-center bg-[#25D366] text-white py-5 rounded-2xl font-black uppercase text-xs mt-6">Contactar Productor</a>
                 `;
             }
             document.getElementById('payment-modal').classList.remove('hide');
@@ -293,7 +321,7 @@
                 onSnapshot(doc(db, 'artifacts', APP_ID, 'public', 'data', 'payments'), (snap) => {
                     if(snap.exists()) paymentInfo = snap.data();
                 });
-            } catch (e) { console.error("Error Firebase:", e); }
+            } catch (e) { console.error(e); }
         };
 
         init();
