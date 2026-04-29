@@ -62,7 +62,7 @@
                         <p class="text-[8px] font-bold text-orange-500 uppercase tracking-[0.2em] mt-1">Marketplace & Studio</p>
                     </div>
                 </div>
-                <button id="addBtn" class="flex items-center gap-2 px-5 py-2.5 bg-orange-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-orange-600/20 transition-all active:scale-95">
+                <button onclick="window.toggleForm()" class="flex items-center gap-2 px-5 py-2.5 bg-orange-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-orange-600/20 transition-all active:scale-95">
                     <i data-lucide="plus" class="w-4 h-4"></i> AGREGAR BEAT
                 </button>
             </div>
@@ -103,19 +103,19 @@
                 <h2 class="text-2xl font-black italic uppercase tracking-tighter text-white">Catálogo de Beats</h2>
             </div>
             <div id="beatsList" class="grid gap-3">
-                <div class="p-10 text-center text-neutral-600 font-bold uppercase tracking-widest">Iniciando sistema...</div>
+                <div class="p-10 text-center text-neutral-600 font-bold uppercase tracking-widest">Cargando tracks...</div>
             </div>
         </main>
 
         <!-- Reproductor Master -->
-        <div id="masterPlayer" class="hidden fixed bottom-0 left-0 right-0 z-[100] glass-player p-6 shadow-2xl animate-in slide-in-from-bottom-10">
+        <div id="masterPlayer" class="hidden fixed bottom-0 left-0 right-0 z-[100] glass-player p-6 shadow-2xl">
             <div class="max-w-4xl mx-auto">
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center gap-3">
                         <i data-lucide="activity" class="text-orange-500 animate-pulse w-5 h-5"></i>
                         <h4 id="playTitle" class="font-black uppercase text-white tracking-widest text-sm"></h4>
                     </div>
-                    <button id="closePlayerBtn" class="text-neutral-500 hover:text-white transition-all">
+                    <button onclick="window.closePlayer()" class="text-neutral-500 hover:text-white transition-all">
                         <i data-lucide="x" class="w-6 h-6"></i>
                     </button>
                 </div>
@@ -137,61 +137,31 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-        // Configuración de Firebase
+        // CONFIGURACIÓN AUTOMÁTICA (No toques nada aquí)
         const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'jaddy-studio-pro-v1';
+        const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'jaddy-studio-pro-v1';
 
         let beats = [];
-        let isUserReady = false;
 
-        // Inicialización de Auth con reintentos
-        const initAuth = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (err) {
-                console.error("Auth Fail, retrying...", err);
-                setTimeout(initAuth, 2000);
-            }
+        // Funciones Globales para que funcionen los botones del HTML
+        window.toggleForm = () => {
+            const form = document.getElementById('beatForm');
+            form.classList.toggle('hidden');
+            form.classList.toggle('active');
         };
 
-        initAuth();
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                isUserReady = true;
-                const q = collection(db, 'artifacts', appId, 'public', 'data', 'beats');
-                onSnapshot(q, (snap) => {
-                    beats = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                    window.renderBeats();
-                }, (error) => {
-                    console.error("Firestore Listen Error:", error);
-                    document.getElementById('beatsList').innerHTML = `<div class="p-10 text-red-500 text-xs font-bold uppercase">Error de Conexión. Revisa la consola.</div>`;
-                });
-            }
-        });
-
-        // Procesador de links mejorado
-        const processLink = (url) => {
-            if (!url) return { type: 'direct', src: '' };
-            if (url.includes('dropbox.com')) return { type: 'dropbox', src: url.replace(/dl=0|dl=1/, 'raw=1') };
-            if (url.includes('youtube.com') || url.includes('youtu.be')) {
-                const id = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|&v=))([^#&?]{11})/)?.[1];
-                return { type: 'youtube', src: id };
-            }
-            return { type: 'direct', src: url };
+        window.closePlayer = () => {
+            document.getElementById('masterPlayer').classList.add('hidden');
+            document.getElementById('mediaContainer').innerHTML = '';
         };
 
         window.renderBeats = () => {
             const list = document.getElementById('beatsList');
             if (beats.length === 0) {
-                list.innerHTML = `<div class="p-10 text-center text-neutral-600 font-bold uppercase text-xs">Aún no hay pistas en el catálogo.</div>`;
+                list.innerHTML = `<div class="p-10 text-center text-neutral-600 font-bold uppercase text-xs">Catálogo vacío. Agrega un beat arriba.</div>`;
                 return;
             }
             list.innerHTML = beats.map(beat => `
@@ -244,38 +214,53 @@
         window.deleteBeat = async (id) => {
             if(confirm("¿Eliminar track del catálogo?")) {
                 try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'beats', id));
-                } catch(e) { console.error("Delete error", e); }
+                    await deleteDoc(doc(db, 'artifacts', currentAppId, 'public', 'data', 'beats', id));
+                } catch(e) { console.error("Error al borrar:", e); }
             }
         };
 
-        window.toggleForm = () => {
-            const form = document.getElementById('beatForm');
-            form.classList.toggle('hidden');
-            form.classList.toggle('active');
+        const processLink = (url) => {
+            if (!url) return { type: 'direct', src: '' };
+            if (url.includes('dropbox.com')) return { type: 'dropbox', src: url.replace(/dl=0|dl=1/, 'raw=1') };
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                const id = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|&v=))([^#&?]{11})/)?.[1];
+                return { type: 'youtube', src: id };
+            }
+            return { type: 'direct', src: url };
         };
 
-        window.closePlayer = () => {
-            document.getElementById('masterPlayer').classList.add('hidden');
-            document.getElementById('mediaContainer').innerHTML = '';
+        // Inicio de sesión automático
+        const init = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) { console.error("Error de inicio:", err); }
         };
 
-        document.getElementById('addBtn').onclick = window.toggleForm;
-        document.getElementById('closePlayerBtn').onclick = window.closePlayer;
+        init();
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const q = collection(db, 'artifacts', currentAppId, 'public', 'data', 'beats');
+                onSnapshot(q, (snap) => {
+                    beats = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    window.renderBeats();
+                }, (err) => {
+                    console.error("Error de base de datos:", err);
+                });
+            }
+        });
 
         document.getElementById('uploadForm').onsubmit = async (e) => {
             e.preventDefault();
-            if (!isUserReady) {
-                console.error("User not authenticated yet");
-                return;
-            }
-
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.innerHTML = '<span>PROCESANDO...</span>';
+            btn.innerHTML = '<span>PUBLICANDO...</span>';
             
-            const rawUrl = document.getElementById('url').value;
-            const media = processLink(rawUrl);
+            const media = processLink(document.getElementById('url').value);
             
             const data = {
                 title: document.getElementById('title').value,
@@ -291,17 +276,12 @@
             };
 
             try {
-                // Guardar directamente en la colección
-                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'beats');
-                await addDoc(colRef, data);
-                
-                // Si llegamos aquí, se guardó correctamente
+                await addDoc(collection(db, 'artifacts', currentAppId, 'public', 'data', 'beats'), data);
                 e.target.reset();
                 window.toggleForm();
-                console.log("Beat publicado exitosamente");
             } catch (err) {
-                console.error("Error crítico al guardar en Firebase:", err);
-                alert("Error al guardar: " + err.message);
+                console.error("Error al guardar:", err);
+                alert("No se pudo guardar. Intenta de nuevo.");
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i data-lucide="zap" class="w-5 h-5"></i> PUBLICAR BEAT';
@@ -315,4 +295,3 @@
 </html>
 
 ```
-    
