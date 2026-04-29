@@ -78,7 +78,7 @@
                     <div class="space-y-4">
                         <label class="text-[10px] font-bold text-neutral-500 uppercase px-1">Información Básica</label>
                         <input type="text" id="title" placeholder="Nombre del Beat" required>
-                        <input type="text" id="url" placeholder="Link Dropbox / YouTube" required>
+                        <input type="text" id="url" placeholder="Link Directo / Dropbox / YouTube" required>
                         <input type="text" id="producer" placeholder="Productor">
                     </div>
                     <div class="space-y-4">
@@ -92,7 +92,7 @@
                         <input type="number" id="price" value="29.99">
                         <textarea id="description" class="h-28" placeholder="Descripción breve del beat..."></textarea>
                     </div>
-                    <button type="submit" class="md:col-span-2 lg:col-span-3 bg-gradient-to-r from-orange-600 to-red-600 py-4 rounded-xl font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:brightness-110 transition-all">
+                    <button type="submit" id="submitBtn" class="md:col-span-2 lg:col-span-3 bg-gradient-to-r from-orange-600 to-red-600 py-4 rounded-xl font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:brightness-110 transition-all">
                         <i data-lucide="zap" class="w-5 h-5"></i> PUBLICAR BEAT
                     </button>
                 </form>
@@ -137,29 +137,18 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-        // CONFIGURACIÓN ROBUSTA: Intenta cargar de la plataforma o usa una por defecto si estás fuera
-        let config = {};
-        try {
-            config = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-                // SI ESTÁS FUERA DE GEMINI, PEGA TUS CREDENCIALES AQUÍ PARA QUE FUNCIONE:
-                apiKey: "TU_API_KEY",
-                authDomain: "TU_DOMINIO.firebaseapp.com",
-                projectId: "TU_PROJECT_ID",
-                storageBucket: "TU_BUCKET.appspot.com",
-                messagingSenderId: "TU_ID",
-                appId: "TU_APP_ID"
-            };
-        } catch(e) { console.error("Error cargando config", e); }
-
-        const app = initializeApp(config);
+        // Configuración de Firebase
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'jaddy-studio-pro-v1';
 
         let beats = [];
+        let isUserReady = false;
 
-        // Auth Centralizada
-        const handleAuth = async () => {
+        // Inicialización de Auth con reintentos
+        const initAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
@@ -167,29 +156,30 @@
                     await signInAnonymously(auth);
                 }
             } catch (err) {
-                console.error("Error de Auth:", err);
+                console.error("Auth Fail, retrying...", err);
+                setTimeout(initAuth, 2000);
             }
         };
 
-        handleAuth();
+        initAuth();
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // RUTA SEGURA: artifacts/{appId}/public/data/beats
+                isUserReady = true;
                 const q = collection(db, 'artifacts', appId, 'public', 'data', 'beats');
                 onSnapshot(q, (snap) => {
                     beats = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                     window.renderBeats();
                 }, (error) => {
-                    console.error("Firestore Error:", error);
-                    document.getElementById('beatsList').innerHTML = `<div class="p-10 text-red-500 text-xs font-bold uppercase">Error de Permisos o Conexión</div>`;
+                    console.error("Firestore Listen Error:", error);
+                    document.getElementById('beatsList').innerHTML = `<div class="p-10 text-red-500 text-xs font-bold uppercase">Error de Conexión. Revisa la consola.</div>`;
                 });
             }
         });
 
-        // Funciones de utilidad
+        // Procesador de links mejorado
         const processLink = (url) => {
-            if (!url) return null;
+            if (!url) return { type: 'direct', src: '' };
             if (url.includes('dropbox.com')) return { type: 'dropbox', src: url.replace(/dl=0|dl=1/, 'raw=1') };
             if (url.includes('youtube.com') || url.includes('youtu.be')) {
                 const id = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|&v=))([^#&?]{11})/)?.[1];
@@ -198,27 +188,20 @@
             return { type: 'direct', src: url };
         };
 
-        // Exportar funciones al objeto window para que los onclick del HTML las vean
-        window.toggleForm = () => {
-            const form = document.getElementById('beatForm');
-            form.classList.toggle('hidden');
-            form.classList.toggle('active');
-        };
-
         window.renderBeats = () => {
             const list = document.getElementById('beatsList');
             if (beats.length === 0) {
-                list.innerHTML = `<div class="p-10 text-center text-neutral-600 font-bold uppercase text-xs tracking-tighter">El estudio está vacío. Agrega tu primer track.</div>`;
+                list.innerHTML = `<div class="p-10 text-center text-neutral-600 font-bold uppercase text-xs">Aún no hay pistas en el catálogo.</div>`;
                 return;
             }
             list.innerHTML = beats.map(beat => `
                 <div class="group p-4 rounded-3xl border border-white/5 bg-[#0a0a0a] flex items-center gap-5 hover:border-orange-500/30 transition-all">
-                    <button onclick="window.playBeat('${beat.id}')" class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-neutral-400 hover:bg-orange-600 hover:text-white transition-all shadow-inner">
+                    <button onclick="window.playBeat('${beat.id}')" class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-neutral-400 hover:bg-orange-600 hover:text-white transition-all">
                         <i data-lucide="play" class="w-6 h-6 ml-1"></i>
                     </button>
                     <div class="flex-1 min-w-0">
                         <h3 class="font-black uppercase text-white truncate">${beat.title}</h3>
-                        <p class="text-[9px] text-neutral-500 font-bold uppercase mt-1 tracking-widest">PROD. ${beat.producer || 'JADDY STUDIO'}</p>
+                        <p class="text-[9px] text-neutral-500 font-bold uppercase mt-1 tracking-widest">PROD. ${beat.producer || 'JADDY'}</p>
                     </div>
                     <div class="text-right flex items-center gap-4">
                         <p class="text-xl font-black italic text-white">$${beat.price}</p>
@@ -241,11 +224,11 @@
             document.getElementById('playPrice').innerText = `$${beat.price}`;
             
             if(beat.type === 'youtube') {
-                media.innerHTML = `<div class="aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-2xl"><iframe width="100%" height="100%" src="https://www.youtube.com/embed/${beat.src}?autoplay=1" frameborder="0" allowfullscreen></iframe></div>`;
+                media.innerHTML = `<div class="aspect-video rounded-3xl overflow-hidden border border-white/10"><iframe width="100%" height="100%" src="https://www.youtube.com/embed/${beat.src}?autoplay=1" frameborder="0" allowfullscreen></iframe></div>`;
             } else {
                 media.innerHTML = `<div class="bg-black/40 p-6 rounded-3xl border border-white/5 shadow-inner">
                     <div class="flex justify-center items-end gap-1.5 h-14 mb-4">
-                        ${Array(25).fill('<div class="w-1.5 bg-orange-600 rounded-full animate-audio-bar" style="height:40%"></div>').map((bar, i) => bar.replace('height:40%', `height:${20 + Math.random()*80}%`)).join('')}
+                        ${Array(25).fill('<div class="w-1.5 bg-orange-600 rounded-full animate-audio-bar"></div>').join('')}
                     </div>
                     <audio src="${beat.url}" controls autoplay class="w-full h-10 invert brightness-125"></audio>
                 </div>`;
@@ -259,9 +242,17 @@
         };
 
         window.deleteBeat = async (id) => {
-            if(confirm("¿Eliminar beat permanentemente?")) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'beats', id));
+            if(confirm("¿Eliminar track del catálogo?")) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'beats', id));
+                } catch(e) { console.error("Delete error", e); }
             }
+        };
+
+        window.toggleForm = () => {
+            const form = document.getElementById('beatForm');
+            form.classList.toggle('hidden');
+            form.classList.toggle('active');
         };
 
         window.closePlayer = () => {
@@ -269,36 +260,48 @@
             document.getElementById('mediaContainer').innerHTML = '';
         };
 
-        // Asignar eventos de clic
-        document.getElementById('addBtn').addEventListener('click', window.toggleForm);
-        document.getElementById('closePlayerBtn').addEventListener('click', window.closePlayer);
+        document.getElementById('addBtn').onclick = window.toggleForm;
+        document.getElementById('closePlayerBtn').onclick = window.closePlayer;
 
         document.getElementById('uploadForm').onsubmit = async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button');
+            if (!isUserReady) {
+                console.error("User not authenticated yet");
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.innerText = "PROCESANDO...";
+            btn.innerHTML = '<span>PROCESANDO...</span>';
             
             const rawUrl = document.getElementById('url').value;
             const media = processLink(rawUrl);
             
+            const data = {
+                title: document.getElementById('title').value,
+                url: media.src,
+                type: media.type,
+                price: document.getElementById('price').value,
+                whatsapp: document.getElementById('whatsapp').value,
+                producer: document.getElementById('producer').value || 'Jaddy Studio',
+                email: document.getElementById('email').value || '',
+                paymentMethod: document.getElementById('paymentMethod').value || 'Varios',
+                description: document.getElementById('description').value || '',
+                createdAt: serverTimestamp()
+            };
+
             try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'beats'), {
-                    title: document.getElementById('title').value,
-                    url: media.src,
-                    type: media.type,
-                    price: document.getElementById('price').value,
-                    whatsapp: document.getElementById('whatsapp').value,
-                    producer: document.getElementById('producer').value || 'Jaddy Studio',
-                    email: document.getElementById('email').value,
-                    paymentMethod: document.getElementById('paymentMethod').value,
-                    description: document.getElementById('description').value,
-                    createdAt: serverTimestamp()
-                });
+                // Guardar directamente en la colección
+                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'beats');
+                await addDoc(colRef, data);
+                
+                // Si llegamos aquí, se guardó correctamente
                 e.target.reset();
                 window.toggleForm();
+                console.log("Beat publicado exitosamente");
             } catch (err) {
-                console.error("Error al publicar:", err);
+                console.error("Error crítico al guardar en Firebase:", err);
+                alert("Error al guardar: " + err.message);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i data-lucide="zap" class="w-5 h-5"></i> PUBLICAR BEAT';
@@ -312,3 +315,4 @@
 </html>
 
 ```
+    
