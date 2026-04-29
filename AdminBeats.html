@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jaddy Records - Panel Maestro</title>
+    <title>Jaddy Records - Official Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,323 +12,440 @@
         
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #050505;
+            background-color: #000000;
             color: #ffffff;
-            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .glass-card {
-            background: rgba(20, 20, 20, 0.9);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        .gold-text {
+            background: linear-gradient(135deg, #facc15 0%, #eab308 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .gold-gradient {
+        .gold-bg {
             background: linear-gradient(135deg, #facc15 0%, #eab308 100%);
         }
 
-        .nav-btn {
-            transition: all 0.3s ease;
-        }
-
-        .nav-active {
-            color: #facc15 !important;
-            transform: translateY(-4px);
-        }
-
-        .upload-zone {
-            border: 2px dashed rgba(250, 204, 21, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .upload-zone:active {
-            border-color: #facc15;
-            background: rgba(250, 204, 21, 0.05);
+        .glass-card {
+            background: rgba(15, 15, 15, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         input[type="file"] { display: none; }
         
-        /* Animaciones */
-        .fade-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .custom-scroll::-webkit-scrollbar { display: none; }
+        
+        .artist-gradient {
+            background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%);
         }
+
+        #progress-bar { transition: width 0.1s linear; }
+
+        @keyframes pulse-gold {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .loading-pulse { animation: pulse-gold 1.5s infinite; }
+
+        .form-input {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 10px 15px;
+            outline: none;
+            transition: all 0.3s;
+            font-size: 13px;
+            color: white;
+            width: 100%;
+        }
+
+        .form-input:focus {
+            border-color: #eab308;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .status-badge {
+            font-size: 8px;
+            font-weight: 900;
+            padding: 2px 8px;
+            border-radius: 99px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .contact-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            transition: transform 0.2s;
+        }
+
+        .contact-btn:active { transform: scale(0.95); }
     </style>
 </head>
-<body class="pb-28">
+<body class="pb-40 custom-scroll">
 
-    <!-- Header Fijo -->
-    <header class="p-6 sticky top-0 z-50 glass-card border-b border-white/5 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 gold-gradient rounded-xl flex items-center justify-center rotate-3 shadow-lg">
-                <i class="fa-solid fa-bolt text-black text-xl"></i>
-            </div>
-            <div>
-                <h1 class="text-lg font-black italic uppercase tracking-tighter leading-none">Jaddy Records</h1>
-                <p class="text-[9px] text-yellow-500 font-bold uppercase tracking-widest mt-1 underline decoration-2">Admin Pro</p>
+    <!-- PERFIL DEL PRODUCTOR -->
+    <section class="relative h-[30vh] w-full overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover opacity-60">
+        <div class="absolute inset-0 artist-gradient"></div>
+        <div class="absolute bottom-0 left-0 p-8 w-full">
+            <div class="flex items-end gap-6">
+                <div class="w-20 h-20 rounded-full border-2 border-yellow-500 overflow-hidden shadow-[0_0_30px_rgba(234,179,8,0.2)]">
+                    <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <h2 class="text-3xl font-black italic uppercase tracking-tighter leading-none">JADDY<br><span class="gold-text text-4xl">RECORDS</span></h2>
+                </div>
             </div>
         </div>
-        <div class="flex gap-2">
-            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-            <span class="text-[10px] font-bold text-zinc-500 uppercase">En Línea</span>
+    </section>
+
+    <!-- FORMULARIO DE SUBIDA -->
+    <header class="p-6">
+        <h1 class="text-lg font-black italic uppercase tracking-tighter mb-4 opacity-60">
+            NUEVA <span class="text-white">PUBLICACIÓN</span>
+        </h1>
+
+        <div class="glass-card p-5 rounded-[2rem] mb-10">
+            <div class="flex items-start gap-4 mb-6">
+                <label class="relative cursor-pointer shrink-0">
+                    <input type="file" accept="image/*" id="beat-image-input">
+                    <div id="image-preview" class="w-20 h-20 bg-zinc-900 rounded-2xl border border-white/10 flex items-center justify-center overflow-hidden">
+                        <i class="fa-solid fa-camera text-zinc-700 text-xl"></i>
+                    </div>
+                </label>
+                
+                <div class="flex-1 min-w-0">
+                    <input type="text" id="beat-name-input" placeholder="NOMBRE DEL BEAT" class="w-full bg-transparent border-b border-white/10 py-1 font-black italic uppercase text-lg outline-none focus:border-yellow-500 transition-all placeholder:opacity-20">
+                    
+                    <input type="text" id="producer-name-input" placeholder="PRODUCTOR" class="w-full bg-transparent border-b border-white/5 py-1 font-bold uppercase text-[9px] outline-none focus:border-yellow-500/50 transition-all placeholder:opacity-20 mt-1 tracking-widest text-zinc-400">
+
+                    <label class="inline-flex items-center gap-2 cursor-pointer mt-3">
+                        <input type="file" accept="audio/*" id="beat-audio-input">
+                        <div id="audio-label" class="text-[8px] font-black uppercase bg-white/5 px-3 py-1.5 rounded-lg text-zinc-400 border border-white/5">
+                            <i class="fa-solid fa-music mr-1"></i> CARGAR AUDIO
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[8px] font-black uppercase tracking-widest opacity-40">Categoría</label>
+                        <select id="beat-category-input" class="form-input bg-zinc-900">
+                            <option value="venta">VENTA / LEASE</option>
+                            <option value="free">USO LIBRE</option>
+                            <option value="exclusivo">EXCLUSIVO</option>
+                        </select>
+                    </div>
+                    <div id="price-container" class="flex flex-col gap-1.5">
+                        <label class="text-[8px] font-black uppercase tracking-widest opacity-40">Precio ($)</label>
+                        <input type="number" id="beat-price-input" placeholder="0.00" class="form-input">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[8px] font-black uppercase tracking-widest opacity-40">WhatsApp (Sin +)</label>
+                        <input type="tel" id="whatsapp-input" placeholder="584120000000" class="form-input">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[8px] font-black uppercase tracking-widest opacity-40">Correo Electrónico</label>
+                        <input type="email" id="email-input" placeholder="ejemplo@gmail.com" class="form-input">
+                    </div>
+                </div>
+
+                <div id="payment-methods-container" class="flex flex-col gap-1.5">
+                    <label class="text-[8px] font-black uppercase tracking-widest opacity-40">Datos de Pago / Instrucciones</label>
+                    <textarea id="payment-methods-input" placeholder="PayPal: correo@ejemplo.com&#10;Pago Móvil: Banesco 0412...&#10;Binance ID: 12345678" class="form-input h-24 resize-none py-2"></textarea>
+                </div>
+            </div>
+
+            <button id="btn-upload" class="w-full gold-bg text-black font-black uppercase py-4 rounded-xl text-[10px] tracking-[0.2em] shadow-lg active:scale-[0.98] transition-all mt-6">
+                PUBLICAR BEAT
+            </button>
+            <p id="upload-status" class="hidden text-center mt-4 text-[9px] font-bold uppercase text-yellow-500 loading-pulse">Sincronizando con la nube...</p>
         </div>
     </header>
 
-    <!-- Contenedor Principal Dinámico -->
-    <main id="app-content" class="p-4 max-w-xl mx-auto min-h-[70vh]">
-        <!-- Aquí se cargará el contenido mediante JS -->
-    </main>
+    <!-- LISTADO -->
+    <section class="px-6">
+        <h2 class="text-xl font-black italic uppercase tracking-tighter mb-4">FEED <span class="opacity-30">RECIENTE</span></h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="wall-container"></div>
+    </section>
 
-    <!-- Barra de Navegación Inferior -->
-    <nav class="fixed bottom-0 left-0 right-0 glass-card border-t border-white/10 px-6 py-4 flex justify-between items-end z-50">
-        <button onclick="router('home')" id="nav-home" class="nav-btn flex flex-col items-center gap-1 text-zinc-600 flex-1">
-            <i class="fa-solid fa-house-chimney text-xl"></i>
-            <span class="text-[8px] font-black uppercase">Inicio</span>
-        </button>
-        
-        <button onclick="router('catalog')" id="nav-catalog" class="nav-btn flex flex-col items-center gap-1 text-zinc-600 flex-1">
-            <i class="fa-solid fa-compact-disc text-xl"></i>
-            <span class="text-[8px] font-black uppercase">Catálogo</span>
-        </button>
-
-        <button onclick="router('upload')" id="nav-upload" class="flex flex-col items-center gap-1 flex-1 -mt-8">
-            <div class="w-14 h-14 gold-gradient rounded-full flex items-center justify-center shadow-xl shadow-yellow-500/20 border-4 border-[#050505] active:scale-90 transition-transform">
-                <i class="fa-solid fa-plus text-black text-2xl"></i>
+    <!-- PLAYER -->
+    <div id="mini-player" class="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-t border-white/10 p-4 z-50 translate-y-full transition-transform duration-500">
+        <div class="flex items-center gap-3">
+            <img id="player-img" src="" class="w-10 h-10 rounded-lg object-cover bg-zinc-800 shadow-lg">
+            <div class="flex-1 min-w-0">
+                <h4 id="player-name" class="font-black uppercase italic text-xs truncate text-white">---</h4>
+                <p id="player-producer" class="text-[7px] font-bold uppercase tracking-widest text-zinc-500 truncate"></p>
+                <div class="h-1 bg-white/10 rounded-full mt-2">
+                    <div id="progress-bar" class="h-full gold-bg w-0 rounded-full"></div>
+                </div>
             </div>
-            <span class="text-[8px] font-black uppercase text-yellow-500 mt-1">Subir</span>
-        </button>
+            <button id="btn-play-pause" class="w-10 h-10 gold-bg rounded-full flex items-center justify-center text-black text-xs shadow-lg">
+                <i class="fa-solid fa-pause"></i>
+            </button>
+        </div>
+    </div>
 
-        <button onclick="router('artists')" id="nav-artists" class="nav-btn flex flex-col items-center gap-1 text-zinc-600 flex-1">
-            <i class="fa-solid fa-user-group text-xl"></i>
-            <span class="text-[8px] font-black uppercase">Artistas</span>
-        </button>
+    <!-- MODAL DE CONTACTO Y PAGO -->
+    <div id="contact-modal" class="modal" onclick="closeModal()">
+        <div class="glass-card w-full max-w-sm p-6 rounded-[2.5rem] border border-yellow-500/20" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 class="font-black italic uppercase text-xl" id="modal-beat-name">BEAT NAME</h3>
+                    <p class="text-[9px] font-bold text-yellow-500 uppercase tracking-widest" id="modal-beat-price">PRECIO</p>
+                </div>
+                <button onclick="closeModal()" class="text-zinc-500 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- Información de Pago -->
+                <div class="bg-white/5 rounded-2xl p-4 border border-white/5">
+                    <p class="text-[8px] font-black text-zinc-500 uppercase mb-2 tracking-widest">Detalles de Pago:</p>
+                    <p class="text-[11px] font-medium leading-relaxed text-zinc-200 whitespace-pre-wrap" id="modal-payment-info"></p>
+                </div>
 
-        <button onclick="router('settings')" id="nav-settings" class="nav-btn flex flex-col items-center gap-1 text-zinc-600 flex-1">
-            <i class="fa-solid fa-gear text-xl"></i>
-            <span class="text-[8px] font-black uppercase">Ajustes</span>
-        </button>
-    </nav>
+                <!-- Botones de Contacto -->
+                <div class="grid grid-cols-1 gap-2 pt-2">
+                    <a id="modal-whatsapp-btn" href="#" target="_blank" class="contact-btn bg-[#25D366] text-white hidden">
+                        <i class="fa-brands fa-whatsapp text-lg"></i> Contactar por WhatsApp
+                    </a>
+                    <a id="modal-email-btn" href="#" class="contact-btn bg-white/10 text-white border border-white/10 hidden">
+                        <i class="fa-solid fa-envelope text-lg"></i> Enviar Correo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <script>
-        // --- ESTADO DE LA APP ---
-        let currentView = 'home';
-        let tracks = JSON.parse(localStorage.getItem('jaddy_tracks')) || [];
-        let artists = JSON.parse(localStorage.getItem('jaddy_artists')) || [];
-        
-        let uploadForm = {
-            name: '',
-            image: null,
-            audioName: '',
-            isExclusive: false
+    <audio id="main-audio"></audio>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'jaddy-records-v2';
+
+        let currentUser = null;
+        let selectedImageData = null;
+        let selectedAudioData = null;
+        let isPlaying = false;
+        let currentPlayingId = null;
+
+        const audioEngine = document.getElementById('main-audio');
+
+        // CATEGORY TOGGLE
+        document.getElementById('beat-category-input').onchange = (e) => {
+            const isVenta = e.target.value === 'venta';
+            document.getElementById('price-container').style.opacity = isVenta ? "1" : "0.3";
+            document.getElementById('payment-methods-container').style.opacity = isVenta ? "1" : "0.3";
         };
 
-        // --- NAVEGACIÓN ---
-        function router(view) {
-            currentView = view;
-            
-            // Actualizar UI de botones
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
-            const activeBtn = document.getElementById(`nav-${view}`);
-            if(activeBtn) activeBtn.classList.add('nav-active');
+        // AUTH
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
+        initAuth();
 
-            render();
-            window.scrollTo(0,0);
-        }
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                const beatsRef = collection(db, 'artifacts', appId, 'public', 'data', 'beats');
+                onSnapshot(beatsRef, (snap) => {
+                    const beats = [];
+                    snap.forEach(d => beats.push({id: d.id, ...d.data()}));
+                    renderBeats(beats.sort((a,b) => b.createdAt - a.createdAt));
+                }, (err) => console.error(err));
+            }
+        });
 
-        // --- RENDERIZADO ---
-        function render() {
-            const container = document.getElementById('app-content');
-            
-            if (currentView === 'home') {
-                container.innerHTML = `
-                    <div class="fade-in space-y-6">
-                        <div class="gold-gradient rounded-[2.5rem] p-8 text-black relative overflow-hidden">
-                            <h3 class="font-black italic text-3xl uppercase tracking-tighter leading-none mb-2">Bienvenido, Jefe</h3>
-                            <p class="text-[10px] font-bold uppercase opacity-80">Estado actual de la disquera</p>
-                            <div class="mt-8 flex gap-4">
-                                <div class="bg-black/10 backdrop-blur-md p-4 rounded-2xl flex-1">
-                                    <span class="block text-[8px] font-black uppercase">Total Beats</span>
-                                    <span class="text-2xl font-black">${tracks.length}</span>
-                                </div>
-                                <div class="bg-black/10 backdrop-blur-md p-4 rounded-2xl flex-1">
-                                    <span class="block text-[8px] font-black uppercase">Artistas</span>
-                                    <span class="text-2xl font-black">${artists.length}</span>
-                                </div>
+        function renderBeats(beats) {
+            const container = document.getElementById('wall-container');
+            container.innerHTML = beats.map(b => {
+                const isCurrent = currentPlayingId === b.id;
+                let badge = b.category === 'free' ? 'FREE' : (b.category === 'exclusivo' ? 'EXCL' : `$${b.price}`);
+                
+                return `
+                    <div class="glass-card rounded-[1.8rem] overflow-hidden group border ${isCurrent ? 'border-yellow-500' : 'border-white/5'}">
+                        <div class="relative aspect-square cursor-pointer" onclick="handlePlay('${b.id}')">
+                            <img src="${b.image}" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i class="fa-solid ${isCurrent && isPlaying ? 'fa-pause' : 'fa-play'} text-xl"></i>
+                            </div>
+                            <div class="absolute top-3 left-3">
+                                <span class="status-badge gold-bg text-black">${badge}</span>
                             </div>
                         </div>
-
-                        <div class="space-y-4">
-                            <h4 class="text-[11px] font-black uppercase tracking-widest text-zinc-500 px-2">Acciones Rápidas</h4>
-                            <div class="grid grid-cols-1 gap-3">
-                                <button onclick="router('upload')" class="bg-zinc-900 p-5 rounded-3xl border border-white/5 flex items-center justify-between group">
-                                    <div class="flex items-center gap-4">
-                                        <div class="w-12 h-12 bg-yellow-500/10 rounded-2xl flex items-center justify-center text-yellow-500">
-                                            <i class="fa-solid fa-upload"></i>
-                                        </div>
-                                        <div class="text-left">
-                                            <span class="block text-sm font-black uppercase italic tracking-tighter text-white">Subir nueva pista</span>
-                                            <span class="text-[9px] text-zinc-500 font-bold uppercase">MP3, WAV o Instrumentales</span>
-                                        </div>
-                                    </div>
-                                    <i class="fa-solid fa-chevron-right text-zinc-700 group-hover:text-yellow-500"></i>
+                        <div class="p-4">
+                            <h3 class="font-black uppercase italic text-[10px] truncate ${isCurrent ? 'gold-text' : ''}">${b.name}</h3>
+                            <p class="text-[7px] font-bold uppercase tracking-widest text-zinc-500 truncate mb-3">${b.producer || 'JADDY'}</p>
+                            
+                            <div class="flex justify-between items-center">
+                                <button onclick="openContactModal('${b.id}')" class="text-[8px] font-black uppercase gold-text border border-yellow-500/30 px-3 py-1 rounded-full">
+                                    ADQUIRIR
+                                </button>
+                                <button onclick="deleteBeat('${b.id}')" class="text-white/10 hover:text-red-500 transition-colors">
+                                    <i class="fa-solid fa-trash-can text-[10px]"></i>
                                 </button>
                             </div>
                         </div>
                     </div>
                 `;
-            }
-
-            if (currentView === 'upload') {
-                container.innerHTML = `
-                    <div class="fade-in space-y-6">
-                        <header class="flex justify-between items-center">
-                            <h2 class="text-2xl font-black italic uppercase tracking-tighter">Nueva Carga</h2>
-                            <button onclick="router('home')" class="w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
-                        </header>
-
-                        <div class="bg-zinc-900/60 p-6 rounded-[3rem] border border-white/5 space-y-6">
-                            <div class="flex justify-center">
-                                <label class="w-40 h-40 bg-black rounded-[2.5rem] border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center overflow-hidden cursor-pointer">
-                                    <input type="file" accept="image/*" onchange="processFile(this, 'image')">
-                                    ${uploadForm.image ? `<img src="${uploadForm.image}" class="w-full h-full object-cover">` : `
-                                        <i class="fa-solid fa-camera text-2xl text-zinc-700 mb-2"></i>
-                                        <span class="text-[9px] font-black uppercase text-zinc-500">Foto Portada</span>
-                                    `}
-                                </label>
-                            </div>
-
-                            <div class="space-y-1">
-                                <label class="text-[10px] font-black uppercase text-zinc-500 ml-4">Nombre del Beat / Track</label>
-                                <input type="text" id="t-name" value="${uploadForm.name}" oninput="uploadForm.name = this.value" placeholder="Ej: Trap King 2024" 
-                                    class="w-full bg-black border border-zinc-800 p-5 rounded-2xl font-bold focus:border-yellow-500 outline-none">
-                            </div>
-
-                            <label class="upload-zone p-10 rounded-[2rem] flex flex-col items-center justify-center gap-3 cursor-pointer">
-                                <input type="file" accept="audio/*" onchange="processFile(this, 'audio')">
-                                <i class="fa-solid fa-music text-3xl text-yellow-500"></i>
-                                <div class="text-center">
-                                    <span class="block text-xs font-black uppercase text-white">${uploadForm.audioName || 'Seleccionar Audio'}</span>
-                                    <span class="text-[9px] font-bold text-zinc-500 uppercase">Click para buscar archivo</span>
-                                </div>
-                            </label>
-
-                            <button onclick="saveTrack()" class="w-full gold-gradient text-black py-5 rounded-2xl font-black uppercase text-sm shadow-xl active:scale-95 transition-all">
-                                Publicar en Jaddy Records
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-
-            if (currentView === 'catalog') {
-                container.innerHTML = `
-                    <div class="fade-in space-y-6">
-                        <h2 class="text-2xl font-black italic uppercase tracking-tighter">Mi Catálogo</h2>
-                        <div class="grid grid-cols-1 gap-4">
-                            ${tracks.length === 0 ? `
-                                <div class="py-20 text-center space-y-4">
-                                    <i class="fa-solid fa-compact-disc text-5xl text-zinc-800 animate-spin-slow"></i>
-                                    <p class="text-zinc-600 font-black uppercase text-[10px] tracking-widest">No hay música en el servidor</p>
-                                    <button onclick="router('upload')" class="text-yellow-500 font-black uppercase text-[10px] underline">Subir algo ahora</button>
-                                </div>
-                            ` : tracks.map((t, index) => `
-                                <div class="bg-zinc-900/40 p-4 rounded-[2rem] border border-white/5 flex items-center gap-4">
-                                    <img src="${t.image || 'https://via.placeholder.com/100'}" class="w-16 h-16 rounded-2xl object-cover bg-zinc-800">
-                                    <div class="flex-1">
-                                        <h4 class="font-black text-sm uppercase tracking-tighter">${t.name}</h4>
-                                        <span class="text-[9px] font-black uppercase text-zinc-500">${t.audioName || 'Beat Instrumental'}</span>
-                                    </div>
-                                    <button onclick="deleteTrack(${index})" class="w-10 h-10 text-red-500/50 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-
-            if (currentView === 'artists') {
-                container.innerHTML = `
-                    <div class="fade-in space-y-6">
-                        <h2 class="text-2xl font-black italic uppercase tracking-tighter">Artistas</h2>
-                        <div class="bg-zinc-900/60 p-6 rounded-[2.5rem] border border-white/5">
-                            <input id="art-name" type="text" placeholder="Nombre del Artista..." class="w-full bg-black border border-zinc-800 p-4 rounded-xl font-bold mb-4 outline-none">
-                            <button onclick="addArtist()" class="w-full bg-white text-black py-4 rounded-xl font-black uppercase text-[10px]">Añadir a la lista</button>
-                        </div>
-                        <div class="space-y-2">
-                            ${artists.map((a, i) => `
-                                <div class="bg-zinc-900/20 p-4 rounded-xl flex justify-between items-center border border-white/5">
-                                    <span class="font-black uppercase text-xs text-zinc-300">${a}</span>
-                                    <button onclick="deleteArtist(${i})" class="text-zinc-700"><i class="fa-solid fa-x"></i></button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }
+            }).join('');
         }
 
-        // --- LÓGICA DE NEGOCIO ---
-        function processFile(input, type) {
-            const file = input.files[0];
-            if(!file) return;
+        window.openContactModal = (id) => {
+            const beatsRef = collection(db, 'artifacts', appId, 'public', 'data', 'beats');
+            onSnapshot(beatsRef, (snap) => {
+                snap.forEach(d => {
+                    if(d.id === id) {
+                        const b = d.data();
+                        document.getElementById('modal-beat-name').innerText = b.name;
+                        document.getElementById('modal-beat-price').innerText = b.category === 'venta' ? `PRECIO: $${b.price} USD` : b.category.toUpperCase();
+                        document.getElementById('modal-payment-info').innerText = b.paymentMethods || "Contactar para detalles.";
+                        
+                        const waBtn = document.getElementById('modal-whatsapp-btn');
+                        if(b.whatsapp) {
+                            waBtn.href = `https://wa.me/${b.whatsapp}?text=Hola,%20estoy%20interesado%20en%20el%20beat:%20${encodeURIComponent(b.name)}`;
+                            waBtn.classList.remove('hidden');
+                        } else waBtn.classList.add('hidden');
 
-            if(type === 'audio') {
-                uploadForm.audioName = file.name;
-                render();
-            } else {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    uploadForm.image = e.target.result;
-                    render();
-                }
-                reader.readAsDataURL(file);
-            }
-        }
+                        const mailBtn = document.getElementById('modal-email-btn');
+                        if(b.email) {
+                            mailBtn.href = `mailto:${b.email}?subject=Interés en Beat: ${b.name}`;
+                            mailBtn.classList.remove('hidden');
+                        } else mailBtn.classList.add('hidden');
 
-        function saveTrack() {
-            if(!uploadForm.name) return toast("Ponle un nombre a la pista");
+                        document.getElementById('contact-modal').style.display = 'flex';
+                    }
+                });
+            });
+        };
+
+        window.closeModal = () => document.getElementById('contact-modal').style.display = 'none';
+
+        // FILE PREVIEWS
+        document.getElementById('beat-image-input').onchange = (e) => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                selectedImageData = ev.target.result;
+                document.getElementById('image-preview').innerHTML = `<img src="${selectedImageData}" class="w-full h-full object-cover">`;
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        };
+
+        document.getElementById('beat-audio-input').onchange = (e) => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                selectedAudioData = ev.target.result;
+                document.getElementById('audio-label').innerHTML = `<i class="fa-solid fa-check text-yellow-500"></i> LISTO`;
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        };
+
+        // UPLOAD
+        document.getElementById('btn-upload').onclick = async () => {
+            const name = document.getElementById('beat-name-input').value;
+            const producer = document.getElementById('producer-name-input').value;
+            const category = document.getElementById('beat-category-input').value;
+            const price = document.getElementById('beat-price-input').value;
+            const whatsapp = document.getElementById('whatsapp-input').value;
+            const email = document.getElementById('email-input').value;
+            const paymentMethods = document.getElementById('payment-methods-input').value;
+
+            if(!name || !selectedAudioData) return alert("Nombre y Audio son obligatorios");
+
+            document.getElementById('upload-status').classList.remove('hidden');
             
-            tracks.push({...uploadForm, date: new Date().toISOString()});
-            localStorage.setItem('jaddy_tracks', JSON.stringify(tracks));
-            
-            // Limpiar
-            uploadForm = { name: '', image: null, audioName: '', isExclusive: false };
-            toast("¡Pista publicada con éxito!");
-            router('catalog');
-        }
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'beats'), {
+                    name, producer, category, price, whatsapp, email, paymentMethods,
+                    image: selectedImageData || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop',
+                    audio: selectedAudioData,
+                    createdAt: Date.now()
+                });
+                location.reload();
+            } catch(e) { 
+                alert("Error al subir");
+                document.getElementById('upload-status').classList.add('hidden');
+            }
+        };
 
-        function deleteTrack(i) {
-            tracks.splice(i, 1);
-            localStorage.setItem('jaddy_tracks', JSON.stringify(tracks));
-            render();
-        }
+        // PLAYER LOGIC
+        window.handlePlay = (id) => {
+            const beatsRef = collection(db, 'artifacts', appId, 'public', 'data', 'beats');
+            onSnapshot(beatsRef, (snap) => {
+                snap.forEach(d => {
+                    if(d.id === id) {
+                        if(currentPlayingId === id) {
+                            if(audioEngine.paused) { audioEngine.play(); isPlaying = true; }
+                            else { audioEngine.pause(); isPlaying = false; }
+                        } else {
+                            currentPlayingId = id;
+                            audioEngine.src = d.data().audio;
+                            audioEngine.play();
+                            isPlaying = true;
+                            document.getElementById('player-img').src = d.data().image;
+                            document.getElementById('player-name').innerText = d.data().name;
+                            document.getElementById('player-producer').innerText = d.data().producer;
+                            document.getElementById('mini-player').classList.remove('translate-y-full');
+                        }
+                        document.getElementById('btn-play-pause').innerHTML = `<i class="fa-solid fa-${isPlaying ? 'pause' : 'play'}"></i>`;
+                    }
+                });
+            });
+        };
 
-        function addArtist() {
-            const input = document.getElementById('art-name');
-            if(!input.value) return;
-            artists.push(input.value);
-            localStorage.setItem('jaddy_artists', JSON.stringify(artists));
-            input.value = '';
-            render();
-        }
+        audioEngine.ontimeupdate = () => {
+            document.getElementById('progress-bar').style.width = `${(audioEngine.currentTime/audioEngine.duration)*100}%`;
+        };
 
-        function deleteArtist(i) {
-            artists.splice(i, 1);
-            localStorage.setItem('jaddy_artists', JSON.stringify(artists));
-            render();
-        }
+        window.deleteBeat = async (id) => {
+            if(confirm("¿Eliminar pista definitivamente?")) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'beats', id));
+            }
+        };
 
-        function toast(msg) {
-            const t = document.createElement('div');
-            t.className = "fixed top-20 left-1/2 -translate-x-1/2 bg-yellow-500 text-black px-6 py-3 rounded-full font-black text-[10px] uppercase shadow-2xl z-[100]";
-            t.innerText = msg;
-            document.body.appendChild(t);
-            setTimeout(() => t.remove(), 2500);
-        }
-
-        // Iniciar app
-        window.onload = () => router('home');
+        document.getElementById('btn-play-pause').onclick = () => {
+            if(audioEngine.paused) { audioEngine.play(); isPlaying = true; }
+            else { audioEngine.pause(); isPlaying = false; }
+            document.getElementById('btn-play-pause').innerHTML = `<i class="fa-solid fa-${isPlaying ? 'pause' : 'play'}"></i>`;
+        };
     </script>
 </body>
 </html>
