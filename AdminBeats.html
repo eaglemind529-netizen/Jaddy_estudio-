@@ -3,182 +3,175 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | Jaddy Studio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jaddy Admin Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #0a0a0a;
-            color: white;
+            color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .glass {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+        .glass-card {
+            background: rgba(23, 23, 23, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+            box-shadow: 0 10px 20px -5px rgba(168, 85, 247, 0.4);
         }
 
         .neo-input {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #171717;
+            border: 2px solid #262626;
             color: white;
-            transition: all 0.3s ease;
+            padding: 1rem;
+            border-radius: 16px;
+            width: 100%;
         }
 
         .neo-input:focus {
             border-color: #a855f7;
-            background: rgba(168, 85, 247, 0.05);
             outline: none;
         }
 
-        .accent-gradient {
-            background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+        /* Animación para notificaciones */
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
+        .toast { animation: slideUp 0.3s ease-out; }
+
+        /* Estilo para el scroll */
+        ::-webkit-scrollbar { width: 0px; }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8">
+<body class="pb-32">
 
-    <!-- Notificaciones -->
-    <div id="status-toast" class="fixed top-5 right-5 z-50 transform translate-x-full transition-transform duration-300">
-        <div class="glass px-6 py-3 rounded-full border-l-4 border-purple-500 shadow-2xl">
-            <p id="status-text" class="text-xs font-bold uppercase tracking-widest text-white">Sincronizando...</p>
+    <!-- Notificación -->
+    <div id="toast" class="fixed bottom-24 left-4 right-4 z-[100] hidden">
+        <div class="toast bg-white text-black p-4 rounded-2xl shadow-2xl flex items-center justify-center font-bold text-sm uppercase tracking-widest">
+            <span id="toast-text">Actualizado</span>
         </div>
     </div>
 
-    <div class="max-w-5xl mx-auto">
-        <!-- Header -->
-        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
-            <div>
-                <h1 class="text-4xl font-black italic tracking-tighter uppercase">JADDY <span class="text-purple-500 underline">STUDIO</span></h1>
-                <div class="flex items-center gap-2 mt-2">
-                    <span id="db-indicator" class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Base de Datos: <span id="db-status">Desconectado</span></p>
+    <!-- Header -->
+    <header class="p-6 pt-10">
+        <div class="flex justify-between items-center mb-2">
+            <h1 class="text-3xl font-extrabold tracking-tighter">JADDY<span class="text-purple-500">ADMIN</span></h1>
+            <div id="db-dot" class="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+        </div>
+        <p class="text-xs text-gray-500 font-bold uppercase tracking-widest">Panel de Control Maestro</p>
+    </header>
+
+    <main class="px-4 space-y-6">
+        
+        <!-- Stats Rápidas -->
+        <div class="grid grid-cols-2 gap-4">
+            <div class="glass-card p-6 border-b-2 border-purple-500">
+                <p class="text-[10px] font-bold text-gray-500 uppercase mb-1">Total Beats</p>
+                <p id="count-beats" class="text-3xl font-extrabold italic">0</p>
+            </div>
+            <div class="glass-card p-6 border-b-2 border-blue-500">
+                <p class="text-[10px] font-bold text-gray-500 uppercase mb-1">Pagos Activos</p>
+                <p id="count-pay" class="text-3xl font-extrabold italic">0</p>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: MÉTODOS DE PAGO -->
+        <section class="space-y-4">
+            <div class="flex items-center justify-between px-2">
+                <h2 class="text-lg font-extrabold uppercase italic tracking-tight">Métodos de Pago</h2>
+                <button onclick="openModal('modal-pay')" class="text-purple-500 font-bold text-xs uppercase underline">Añadir</button>
+            </div>
+
+            <!-- Botón Grande para añadir pago (Más visible) -->
+            <button onclick="openModal('modal-pay')" class="w-full py-4 bg-white/5 border-2 border-dashed border-white/10 rounded-2xl flex items-center justify-center gap-3 text-gray-400 font-bold text-sm uppercase">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="2" stroke-linecap="round"></path></svg>
+                Nueva Opción de Pago
+            </button>
+
+            <div id="pay-list" class="space-y-3">
+                <!-- Se cargan dinámicamente -->
+            </div>
+        </section>
+
+        <!-- SECCIÓN: BEATS -->
+        <section class="space-y-4">
+            <h2 class="text-lg font-extrabold uppercase italic tracking-tight px-2">Gestión de Beats</h2>
+            <div id="beat-list" class="space-y-3 text-center">
+                <p class="text-gray-600 text-[10px] uppercase py-10 font-bold">Cargando catálogo...</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BARRA DE NAVEGACIÓN INFERIOR (CÓMODA PARA MÓVIL) -->
+    <nav class="fixed bottom-0 left-0 right-0 p-4 bg-black/80 backdrop-blur-xl border-t border-white/5 z-50 flex justify-around items-center">
+        <button onclick="window.scrollTo({top:0, behavior:'smooth'})" class="p-4 text-gray-500">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-width="2"></path></svg>
+        </button>
+        
+        <!-- Botón Central Flotante para añadir Beat -->
+        <button onclick="openModal('modal-beat')" class="btn-primary -mt-12 w-16 h-16 rounded-full flex items-center justify-center text-white shadow-2xl">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="3" stroke-linecap="round"></path></svg>
+        </button>
+
+        <button onclick="location.reload()" class="p-4 text-gray-500">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-width="2"></path></svg>
+        </button>
+    </nav>
+
+    <!-- MODAL: AGREGAR PAGO -->
+    <div id="modal-pay" class="fixed inset-0 z-[120] hidden items-end sm:items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
+        <div class="glass-card w-full max-w-md p-8 bg-neutral-900 border-t-4 border-purple-500">
+            <h3 class="text-2xl font-black italic uppercase mb-6">Nuevo <span class="text-purple-500">Pago</span></h3>
+            <form id="form-pay" class="space-y-4">
+                <input id="p_title" required class="neo-input font-bold" placeholder="Nombre (Ej: Pago Móvil)">
+                <textarea id="p_desc" required class="neo-input h-32 text-sm font-medium" placeholder="Cédula, Banco, Teléfono..."></textarea>
+                <div class="flex gap-2">
+                    <button type="button" onclick="closeModal('modal-pay')" class="flex-1 py-4 text-xs font-bold uppercase text-gray-500">Cerrar</button>
+                    <button type="submit" class="flex-[2] btn-primary py-4 rounded-xl font-bold uppercase text-xs tracking-widest">Guardar</button>
                 </div>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="location.reload()" class="glass p-3 rounded-xl hover:bg-white/10 transition-all">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                </button>
-                <div class="accent-gradient px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-tighter">Panel Maestro</div>
-            </div>
-        </header>
-
-        <div class="grid lg:grid-cols-3 gap-8">
-            
-            <!-- Columna Izquierda: Pagos -->
-            <div class="lg:col-span-2 space-y-8">
-                <section class="glass p-8 rounded-3xl">
-                    <h2 class="text-xl font-black uppercase mb-6 flex items-center gap-2">
-                        <span class="w-8 h-8 accent-gradient rounded-lg flex items-center justify-center text-xs">01</span>
-                        Configuración de Pagos
-                    </h2>
-                    
-                    <form id="payment-form" class="grid md:grid-cols-2 gap-6">
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Pago Móvil (Detalles)</label>
-                            <textarea id="pago_movil" class="neo-input w-full p-4 rounded-2xl text-sm min-h-[100px]" placeholder="Banco, C.I., Teléfono..."></textarea>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Binance (ID / Email)</label>
-                            <input id="binance" type="text" class="neo-input w-full p-4 rounded-2xl text-sm" placeholder="ID de Usuario o Correo">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Cuenta Contigo</label>
-                            <input id="contigo" type="text" class="neo-input w-full p-4 rounded-2xl text-sm" placeholder="Nro de Cuenta">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Otros / Zelle</label>
-                            <input id="otros" type="text" class="neo-input w-full p-4 rounded-2xl text-sm" placeholder="Correo o contacto">
-                        </div>
-                        <div class="md:col-span-2 pt-4">
-                            <button type="submit" class="w-full accent-gradient py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:opacity-90 transition-all shadow-lg shadow-purple-500/20">
-                                Guardar Cambios en la Nube
-                            </button>
-                        </div>
-                    </form>
-                </section>
-
-                <section class="glass p-8 rounded-3xl">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-black uppercase flex items-center gap-2">
-                            <span class="w-8 h-8 accent-gradient rounded-lg flex items-center justify-center text-xs">02</span>
-                            Inventario de Beats
-                        </h2>
-                        <button onclick="toggleModal(true)" class="bg-white/10 hover:bg-white/20 p-2 rounded-lg transition-all">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="2" stroke-linecap="round"></path></svg>
-                        </button>
-                    </div>
-
-                    <div id="beats-container" class="grid gap-4">
-                        <!-- Cargando... -->
-                        <div class="animate-pulse bg-white/5 h-16 rounded-2xl"></div>
-                        <div class="animate-pulse bg-white/5 h-16 rounded-2xl"></div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Columna Derecha: Estadísticas / Info -->
-            <div class="space-y-6">
-                <div class="glass p-6 rounded-3xl">
-                    <p class="text-[10px] font-bold text-gray-500 uppercase mb-1">Total Beats</p>
-                    <h3 id="stat-total" class="text-4xl font-black">0</h3>
-                </div>
-                <div class="glass p-6 rounded-3xl border-l-4 border-purple-500">
-                    <p class="text-[10px] font-bold text-gray-500 uppercase mb-1">Última Actividad</p>
-                    <p id="last-update" class="text-xs font-mono text-gray-400">Sin registros</p>
-                </div>
-            </div>
+            </form>
         </div>
     </div>
 
-    <!-- Modal Nuevo Beat -->
-    <div id="beat-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50 items-center justify-center p-4">
-        <div class="glass w-full max-w-lg p-8 rounded-[40px] relative">
-            <button onclick="toggleModal(false)" class="absolute top-6 right-8 text-2xl text-gray-500 hover:text-white">&times;</button>
-            <h2 class="text-2xl font-black uppercase italic mb-8">Nueva <span class="text-purple-500">Pista</span></h2>
-            
-            <form id="beat-form" class="space-y-4">
-                <div class="space-y-1">
-                    <label class="text-[10px] font-black uppercase text-gray-500 ml-1">Título del Beat</label>
-                    <input id="b_name" required type="text" class="neo-input w-full p-4 rounded-2xl font-bold" placeholder="Ej: Fuego Tropical">
+    <!-- MODAL: AGREGAR BEAT -->
+    <div id="modal-beat" class="fixed inset-0 z-[120] hidden items-end sm:items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
+        <div class="glass-card w-full max-w-md p-8 bg-neutral-900 border-t-4 border-blue-500">
+            <h3 class="text-2xl font-black italic uppercase mb-6">Subir <span class="text-blue-500">Beat</span></h3>
+            <form id="form-beat" class="space-y-4">
+                <input id="b_name" required class="neo-input font-bold" placeholder="Título del Beat">
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="b_type" class="neo-input text-xs font-bold">
+                        <option value="paid">Premium</option>
+                        <option value="free">Gratis</option>
+                    </select>
+                    <input id="b_price" type="number" class="neo-input font-bold" placeholder="Precio $">
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-black uppercase text-gray-500 ml-1">Tipo</label>
-                        <select id="b_type" class="neo-input w-full p-4 rounded-2xl font-bold text-sm">
-                            <option value="paid">Premium ($)</option>
-                            <option value="free">Gratis</option>
-                        </select>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-black uppercase text-gray-500 ml-1">Precio ($)</label>
-                        <input id="b_price" type="number" step="0.01" class="neo-input w-full p-4 rounded-2xl font-bold" placeholder="0.00">
-                    </div>
+                <input id="b_genre" required class="neo-input font-bold" placeholder="Género">
+                <input id="b_link" required type="url" class="neo-input text-xs" placeholder="Enlace del archivo">
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeModal('modal-beat')" class="flex-1 py-4 text-xs font-bold uppercase text-gray-500">Cancelar</button>
+                    <button type="submit" class="flex-[2] btn-primary py-4 rounded-xl font-bold uppercase text-xs tracking-widest">Publicar</button>
                 </div>
-                <div class="space-y-1">
-                    <label class="text-[10px] font-black uppercase text-gray-500 ml-1">Género</label>
-                    <input id="b_genre" required type="text" class="neo-input w-full p-4 rounded-2xl font-bold" placeholder="Trap, Reggaeton, Drill...">
-                </div>
-                <div class="space-y-1">
-                    <label class="text-[10px] font-black uppercase text-gray-500 ml-1">Link de YouTube / Audio</label>
-                    <input id="b_link" required type="url" class="neo-input w-full p-4 rounded-2xl font-bold" placeholder="https://youtube.com/watch?v=...">
-                </div>
-                <button type="submit" class="w-full accent-gradient py-4 rounded-2xl font-black uppercase text-xs tracking-widest mt-4">
-                    Publicar Beat
-                </button>
             </form>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, onSnapshot, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, collection, addDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-        // Configuración recibida
         const firebaseConfig = {
             apiKey: "AIzaSyDIaAvpJZrJjQUKsh6KGD7gALJNskto8A8",
             authDomain: "jaddy-estudio.firebaseapp.com",
@@ -189,144 +182,122 @@
         };
 
         const APP_ID = "jaddy_studio_v1";
-
-        // Inicialización
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // UI Functions
-        window.toggleModal = (show) => {
-            document.getElementById('beat-modal').style.display = show ? 'flex' : 'none';
-        }
+        // UI Helpers
+        window.openModal = (id) => {
+            const m = document.getElementById(id);
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        };
+        window.closeModal = (id) => {
+            const m = document.getElementById(id);
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        };
 
-        const notify = (msg) => {
-            const toast = document.getElementById('status-toast');
-            document.getElementById('status-text').innerText = msg;
-            toast.style.transform = 'translateX(0)';
-            setTimeout(() => toast.style.transform = 'translateX(120%)', 3000);
-        }
+        const showNotice = (txt) => {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-text').innerText = txt;
+            t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 2500);
+        };
 
-        // --- CEREBRO: FLUJO DE DATOS ---
-        
-        // 1. Conectar
-        const connect = async () => {
+        // Firebase Auth & Listeners
+        const init = async () => {
             try {
                 await signInAnonymously(auth);
-                document.getElementById('db-indicator').classList.replace('bg-red-500', 'bg-green-500');
-                document.getElementById('db-status').innerText = "Sincronizado";
-                
-                loadPayments();
+                document.getElementById('db-dot').classList.replace('bg-red-500', 'bg-green-500');
+                listenPayments();
                 listenBeats();
-            } catch (e) {
-                console.error(e);
-                document.getElementById('db-status').innerText = "Error de Conexión";
-            }
-        }
+            } catch (e) { console.error(e); }
+        };
 
-        // 2. Gestionar Pagos
-        const loadPayments = async () => {
-            const ref = doc(db, 'artifacts', APP_ID, 'public', 'data', 'payments');
-            const snap = await getDoc(ref);
-            if(snap.exists()) {
-                const d = snap.data();
-                document.getElementById('pago_movil').value = d.pago_movil || "";
-                document.getElementById('binance').value = d.binance || "";
-                document.getElementById('contigo').value = d.contigo || "";
-                document.getElementById('otros').value = d.otros || "";
-                if(d.updated_at) document.getElementById('last-update').innerText = new Date(d.updated_at).toLocaleString();
-            }
-        }
-
-        document.getElementById('payment-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const ref = doc(db, 'artifacts', APP_ID, 'public', 'data', 'payments');
-            const data = {
-                pago_movil: document.getElementById('pago_movil').value,
-                binance: document.getElementById('binance').value,
-                contigo: document.getElementById('contigo').value,
-                otros: document.getElementById('otros').value,
-                updated_at: new Date().toISOString()
-            };
-            
-            try {
-                await setDoc(ref, data);
-                notify("Pagos Actualizados");
-                document.getElementById('last-update').innerText = new Date().toLocaleString();
-            } catch (err) { notify("Error al Guardar"); }
-        });
-
-        // 3. Gestionar Beats
-        const listenBeats = () => {
-            const ref = collection(db, 'artifacts', APP_ID, 'public', 'data', 'beats');
-            onSnapshot(ref, (snap) => {
-                const container = document.getElementById('beats-container');
-                container.innerHTML = "";
-                document.getElementById('stat-total').innerText = snap.size;
-
-                if(snap.empty) {
-                    container.innerHTML = `<p class="text-center py-8 text-gray-600 font-bold uppercase text-[10px] tracking-widest italic">No hay beats registrados</p>`;
-                    return;
-                }
-
-                snap.forEach(docSnap => {
-                    const beat = docSnap.data();
-                    const id = docSnap.id;
-                    const row = document.createElement('div');
-                    row.className = "glass p-4 rounded-2xl flex items-center justify-between group hover:border-purple-500/30 transition-all";
-                    row.innerHTML = `
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-[10px] font-black ${beat.type === 'free' ? 'text-green-500' : 'text-purple-500'}">
-                                ${beat.type === 'free' ? 'FREE' : '$' + beat.price}
-                            </div>
-                            <div>
-                                <h4 class="font-black uppercase text-sm">${beat.name}</h4>
-                                <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">${beat.genre}</p>
-                            </div>
+        const listenPayments = () => {
+            onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'methods'), (snap) => {
+                const list = document.getElementById('pay-list');
+                document.getElementById('count-pay').innerText = snap.size;
+                list.innerHTML = "";
+                snap.forEach(d => {
+                    const pay = d.data();
+                    const el = document.createElement('div');
+                    el.className = "glass-card p-5 flex justify-between items-center group";
+                    el.innerHTML = `
+                        <div>
+                            <p class="text-xs font-black text-purple-400 uppercase tracking-tighter">${pay.title}</p>
+                            <p class="text-[10px] text-gray-500 font-medium mt-1 truncate max-w-[200px]">${pay.desc}</p>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <a href="${beat.link}" target="_blank" class="p-2 text-gray-500 hover:text-white transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-width="2" stroke-linecap="round"></path></svg>
-                            </a>
-                            <button onclick="window.removeBeat('${id}')" class="p-2 text-gray-700 hover:text-red-500 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round"></path></svg>
-                            </button>
-                        </div>
+                        <button onclick="window.delPay('${d.id}')" class="p-2 text-gray-700 hover:text-red-500">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2"></path></svg>
+                        </button>
                     `;
-                    container.appendChild(row);
+                    list.appendChild(el);
                 });
             });
-        }
+        };
 
-        window.removeBeat = async (id) => {
-            if(confirm("¿Seguro que quieres borrar este beat de la nube?")) {
-                await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'beats', id));
-                notify("Beat Eliminado");
-            }
-        }
+        const listenBeats = () => {
+            onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'beats'), (snap) => {
+                const list = document.getElementById('beat-list');
+                document.getElementById('count-beats').innerText = snap.size;
+                list.innerHTML = "";
+                snap.forEach(d => {
+                    const beat = d.data();
+                    const el = document.createElement('div');
+                    el.className = "glass-card p-5 flex justify-between items-center";
+                    el.innerHTML = `
+                        <div class="flex items-center gap-4 text-left">
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-[10px] font-black text-blue-400">
+                                ${beat.type === 'free' ? 'FREE' : '$'}
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold uppercase tracking-tight">${beat.name}</p>
+                                <p class="text-[9px] text-gray-500 uppercase">${beat.genre}</p>
+                            </div>
+                        </div>
+                        <button onclick="window.delBeat('${d.id}')" class="p-2 text-gray-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg>
+                        </button>
+                    `;
+                    list.appendChild(el);
+                });
+            });
+        };
 
-        document.getElementById('beat-form').addEventListener('submit', async (e) => {
+        // Actions
+        window.delPay = async (id) => { if(confirm("¿Eliminar pago?")) await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'methods', id)); showNotice("PAGO ELIMINADO"); };
+        window.delBeat = async (id) => { if(confirm("¿Eliminar beat?")) await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'beats', id)); showNotice("BEAT ELIMINADO"); };
+
+        document.getElementById('form-pay').onsubmit = async (e) => {
             e.preventDefault();
-            const ref = collection(db, 'artifacts', APP_ID, 'public', 'data', 'beats');
-            const newBeat = {
+            await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'methods'), {
+                title: document.getElementById('p_title').value,
+                desc: document.getElementById('p_desc').value,
+                created: Date.now()
+            });
+            showNotice("PAGO GUARDADO");
+            e.target.reset();
+            closeModal('modal-pay');
+        };
+
+        document.getElementById('form-beat').onsubmit = async (e) => {
+            e.preventDefault();
+            await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'beats'), {
                 name: document.getElementById('b_name').value,
                 type: document.getElementById('b_type').value,
                 price: document.getElementById('b_price').value || 0,
                 genre: document.getElementById('b_genre').value,
                 link: document.getElementById('b_link').value,
-                timestamp: new Date().getTime()
-            };
+                created: Date.now()
+            });
+            showNotice("BEAT PUBLICADO");
+            e.target.reset();
+            closeModal('modal-beat');
+        };
 
-            try {
-                await addDoc(ref, newBeat);
-                notify("Beat Publicado con Éxito");
-                e.target.reset();
-                toggleModal(false);
-            } catch (err) { notify("Error al publicar"); }
-        });
-
-        // Iniciar el cerebro
-        connect();
+        init();
     </script>
 </body>
 </html>
