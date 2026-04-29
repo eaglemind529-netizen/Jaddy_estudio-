@@ -37,16 +37,16 @@
             </div>
         </div>
         <div class="hidden md:flex bg-white/5 p-1 rounded-2xl border border-white/5">
-            <button onclick="switchView('marketplace')" class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-yellow-500 bg-white/10 transition-all">Catálogo</button>
-            <button onclick="switchView('vault')" class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-all">Ventas</button>
+            <button onclick="location.reload()" class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-yellow-500 bg-white/10 transition-all">Catálogo</button>
+            <button class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-all">Ventas</button>
         </div>
         <button onclick="location.href='index.html'" class="text-gray-500 hover:text-white text-xs font-black uppercase italic">Salir</button>
     </nav>
 
-    <!-- PANEL DE ADMINISTRADORA (LATERAL) -->
+    <!-- PANEL DE ADMINISTRADORA -->
     <aside id="admin-sidebar" class="fixed right-0 top-0 h-full w-full md:w-96 z-[100] admin-panel p-8 shadow-2xl">
         <div class="flex justify-between items-center mb-10">
-            <h3 class="text-2xl font-black italic uppercase italic">Subir Nueva Pista</h3>
+            <h3 class="text-2xl font-black italic uppercase">Subir Nueva Pista</h3>
             <button onclick="toggleAdmin()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark text-2xl"></i></button>
         </div>
         
@@ -79,7 +79,7 @@
                 <input id="admin-img" type="text" placeholder="https://link-de-imagen.jpg" class="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-sm focus:border-yellow-500 outline-none transition-all">
             </div>
             
-            <button onclick="addTrackFromPanel()" class="w-full gold-gradient text-black font-black uppercase py-4 rounded-2xl shadow-xl shadow-yellow-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all mt-4">
+            <button id="btn-publish" onclick="window.addTrackFromPanel()" class="w-full gold-gradient text-black font-black uppercase py-4 rounded-2xl shadow-xl shadow-yellow-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all mt-4">
                 Publicar en Marketplace
             </button>
         </div>
@@ -90,12 +90,14 @@
     </aside>
 
     <main class="max-w-7xl mx-auto p-8">
-        <div id="view-marketplace" class="animate-view">
+        <div id="view-marketplace">
             <header class="mb-12">
                 <h2 class="text-6xl font-black tracking-tighter italic uppercase leading-none">Marketplace</h2>
                 <p class="text-gray-500 mt-2 font-medium">Gestión en tiempo real de instrumentales.</p>
             </header>
-            <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10"></div>
+            <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+                <!-- Las pistas se cargan aquí desde Firestore -->
+            </div>
         </div>
     </main>
 
@@ -109,33 +111,82 @@
             </div>
         </div>
         <div class="flex items-center gap-8">
-            <button onclick="togglePlay()" class="bg-white text-black w-14 h-14 rounded-full flex items-center justify-center hover:scale-110 active:scale-90 transition-all">
+            <button onclick="window.togglePlay()" class="bg-white text-black w-14 h-14 rounded-full flex items-center justify-center hover:scale-110 active:scale-90 transition-all">
                 <i id="play-icon" class="fa-solid fa-play text-xl ml-1"></i>
             </button>
-            <button onclick="closePlayer()" class="text-gray-600 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            <button onclick="window.closePlayer()" class="text-gray-600 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-2xl"></i></button>
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDIaAvpJZrJjQUKsh6KGD7gALJNskto8A8",
+            authDomain: "jaddy-estudio.firebaseapp.com",
+            projectId: "jaddy-estudio",
+            storageBucket: "jaddy-estudio.firebasestorage.app",
+            messagingSenderId: "968903268866",
+            appId: "1:968903268866:web:e2b6895e8acff18178e51b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
         let ytPlayer;
         let isPlaying = false;
         let currentTrackId = null;
+        let tracksLocal = [];
 
-        // Base de datos local inicial (Doña Plataforma puede añadir más)
-        let catalog = [
-            { 
-                id: Date.now(), 
-                title: "Fuego Ártico", 
-                price: 50, 
-                genre: "Reggaeton", 
-                image: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400",
-                url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" 
+        // Inicializar Auth
+        signInAnonymously(auth);
+
+        // Escuchar cambios en la base de datos (CATÁLOGO REAL)
+        const q = query(collection(db, "beats"), orderBy("createdAt", "desc"));
+        onSnapshot(q, (snapshot) => {
+            tracksLocal = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderMarket(tracksLocal);
+        });
+
+        // Funciones Globales para el diseño original
+        window.toggleAdmin = () => document.getElementById('admin-sidebar').classList.toggle('open');
+
+        window.addTrackFromPanel = async () => {
+            const url = document.getElementById('admin-url').value;
+            const title = document.getElementById('admin-title').value;
+            const price = document.getElementById('admin-price').value;
+            const genre = document.getElementById('admin-genre').value;
+            const img = document.getElementById('admin-img').value || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400';
+
+            if(!url || !title || !price) return alert("Rellene los campos básicos.");
+
+            document.getElementById('btn-publish').innerText = "Publicando...";
+            document.getElementById('btn-publish').disabled = true;
+
+            try {
+                await addDoc(collection(db, "beats"), {
+                    title: title,
+                    price: price,
+                    genre: genre,
+                    image: img,
+                    url: url,
+                    createdAt: Date.now()
+                });
+                
+                toggleAdmin();
+                document.getElementById('admin-url').value = '';
+                document.getElementById('admin-title').value = '';
+                document.getElementById('admin-price').value = '';
+            } catch (e) {
+                alert("Error al subir: " + e.message);
+            } finally {
+                document.getElementById('btn-publish').innerText = "Publicar en Marketplace";
+                document.getElementById('btn-publish').disabled = false;
             }
-        ];
-
-        function toggleAdmin() {
-            document.getElementById('admin-sidebar').classList.toggle('open');
-        }
+        };
 
         function extractVideoId(url) {
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -143,7 +194,7 @@
             return (match && match[2].length == 11) ? match[2] : null;
         }
 
-        function onYouTubeIframeAPIReady() {
+        window.onYouTubeIframeAPIReady = () => {
             ytPlayer = new YT.Player('yt-engine', {
                 height: '0', width: '0', videoId: '',
                 playerVars: { 'autoplay': 0, 'controls': 0 },
@@ -152,38 +203,10 @@
                     document.getElementById('play-icon').className = isPlaying ? "fa-solid fa-pause text-xl" : "fa-solid fa-play text-xl ml-1";
                 }}
             });
-        }
+        };
 
-        function addTrackFromPanel() {
-            const url = document.getElementById('admin-url').value;
-            const title = document.getElementById('admin-title').value;
-            const price = document.getElementById('admin-price').value;
-            const genre = document.getElementById('admin-genre').value;
-            const img = document.getElementById('admin-img').value || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400';
-
-            if(!url || !title || !price) return alert("Doña Plataforma, rellene los campos básicos.");
-
-            const newTrack = {
-                id: Date.now(),
-                title: title,
-                price: price,
-                genre: genre,
-                image: img,
-                url: url
-            };
-
-            catalog.unshift(newTrack); // Añadir al principio
-            renderMarket();
-            toggleAdmin();
-            
-            // Limpiar campos
-            document.getElementById('admin-url').value = '';
-            document.getElementById('admin-title').value = '';
-            document.getElementById('admin-price').value = '';
-        }
-
-        function playTrack(id) {
-            const track = catalog.find(t => t.id === id);
+        window.playTrack = (id) => {
+            const track = tracksLocal.find(t => t.id === id);
             const videoId = extractVideoId(track.url);
             
             if (currentTrackId !== id) {
@@ -192,28 +215,32 @@
                 document.getElementById('player-title').innerText = track.title;
                 currentTrackId = id;
             } else {
-                togglePlay();
+                window.togglePlay();
             }
             document.getElementById('audio-player').classList.add('visible');
-        }
+        };
 
-        function togglePlay() {
+        window.togglePlay = () => {
             if (isPlaying) ytPlayer.pauseVideo(); else ytPlayer.playVideo();
-        }
+        };
 
-        function closePlayer() {
+        window.closePlayer = () => {
             ytPlayer.stopVideo();
             document.getElementById('audio-player').classList.remove('visible');
             currentTrackId = null;
-        }
+        };
 
-        function renderMarket() {
+        function renderMarket(tracks) {
             const grid = document.getElementById('catalog-grid');
-            grid.innerHTML = catalog.map(track => `
+            if (tracks.length === 0) {
+                grid.innerHTML = `<p class="col-span-full text-center text-gray-600 font-bold uppercase tracking-widest py-20">No hay pistas publicadas todavía.</p>`;
+                return;
+            }
+            grid.innerHTML = tracks.map(track => `
                 <div class="glass-card rounded-[2.5rem] overflow-hidden group">
                     <div class="relative aspect-square">
                         <img src="${track.image}" class="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-all duration-500">
-                        <button onclick="playTrack(${track.id})" class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                        <button onclick="window.playTrack('${track.id}')" class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
                             <div class="w-16 h-16 bg-white text-black rounded-full flex items-center justify-center shadow-2xl"><i class="fa-solid fa-play ml-1"></i></div>
                         </button>
                         <div class="absolute bottom-4 left-4 bg-yellow-500 text-black text-[8px] font-black px-2 py-1 rounded uppercase tracking-widest">${track.genre}</div>
@@ -228,8 +255,6 @@
                 </div>
             `).join('');
         }
-
-        window.onload = renderMarket;
     </script>
 </body>
 </html>
