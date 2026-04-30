@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -9,48 +9,98 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background: #050505; color: #fff; }
-        .beat-card { background: #0d0d0d; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
-        .beat-card:hover { border-color: #ea580c; transform: translateY(-5px); }
-        .glass { background: rgba(13, 13, 13, 0.8); backdrop-filter: blur(15px); border-top: 1px solid rgba(255,255,255,0.1); }
-        /* Bloqueo de descarga en controles de audio nativos */
-        audio::-internal-media-controls-download-button { display:none; }
+        body { font-family: 'Inter', sans-serif; background: #050505; color: #fff; overflow-x: hidden; }
+        
+        .beat-row { 
+            background: #0d0d0d; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+            transition: 0.2s;
+        }
+        .beat-row:hover { 
+            background: #141414; 
+            border-left: 4px solid #ea580c;
+        }
+
+        .glass { background: rgba(13, 13, 13, 0.95); backdrop-filter: blur(20px); border-top: 1px solid #ea580c; }
+        
+        /* Modal Styles */
+        #purchaseModal {
+            backdrop-filter: blur(8px);
+            background: rgba(0,0,0,0.8);
+        }
+
         audio::-webkit-media-controls-enclosure { overflow:hidden; }
-        audio::-webkit-media-controls-panel { padding-right: 20px; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
     </style>
 </head>
-<body class="pb-40">
+<body class="pb-32">
 
-    <header class="py-20 px-6 text-center">
-        <h1 class="text-6xl md:text-8xl font-black italic uppercase tracking-tighter">THE <span class="text-orange-500">MARKET</span></h1>
-        <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-[0.5em] mt-2">Jaddy Studio Professional Production</p>
+    <!-- Header -->
+    <header class="py-12 px-6 text-center border-b border-white/5">
+        <h1 class="text-4xl md:text-6xl font-black italic uppercase tracking-tighter">THE <span class="text-orange-500">MARKET</span></h1>
+        <p class="text-[9px] font-bold text-neutral-500 uppercase tracking-[0.4em] mt-2 text-center">Jaddy Studio Professional Production</p>
     </header>
 
-    <main class="max-w-6xl mx-auto px-6">
-        <div id="grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Se carga desde Firebase -->
+    <!-- Lista de Beats -->
+    <main class="max-w-5xl mx-auto mt-6 px-4">
+        <div class="hidden md:grid grid-cols-12 px-6 py-4 text-[10px] font-black uppercase text-neutral-600 tracking-widest">
+            <div class="col-span-1">#</div>
+            <div class="col-span-6">Título / Productor</div>
+            <div class="col-span-2">Género</div>
+            <div class="col-span-3 text-right">Precio / Acción</div>
+        </div>
+
+        <div id="grid" class="flex flex-col">
+            <div class="p-20 text-center animate-pulse text-neutral-700 font-bold uppercase text-xs">Cargando catálogo...</div>
         </div>
     </main>
 
+    <!-- Modal de Compra (Nombre Artístico) -->
+    <div id="purchaseModal" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4">
+        <div class="bg-[#111] border border-orange-500/30 p-8 rounded-2xl max-w-sm w-full shadow-2xl scale-95 transition-transform duration-300" id="modalContent">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-orange-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="mic-2" class="text-orange-500 w-8 h-8"></i>
+                </div>
+                <h2 class="text-xl font-black italic uppercase tracking-tighter">Casi listo</h2>
+                <p class="text-neutral-400 text-[10px] uppercase font-bold tracking-widest mt-1">Ingresa tu nombre artístico</p>
+            </div>
+
+            <div class="space-y-4">
+                <input type="text" id="artistNameInput" placeholder="EJ: YOUNG JADDY" 
+                    class="w-full bg-black border border-neutral-800 p-4 rounded-lg text-sm font-bold uppercase tracking-widest focus:border-orange-500 outline-none text-white transition-all">
+                
+                <button id="confirmPurchaseBtn" 
+                    class="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-lg uppercase text-xs tracking-[0.2em] transition-all shadow-lg shadow-orange-900/20">
+                    FINALIZAR COMPRA
+                </button>
+                
+                <button onclick="closeModal()" class="w-full text-neutral-600 hover:text-white text-[9px] font-bold uppercase tracking-widest transition-colors">
+                    CANCELAR
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Reproductor Inferior -->
-    <div id="player" class="hidden fixed bottom-6 left-4 right-4 md:left-10 md:right-10 z-[100] glass p-6 rounded-[2.5rem]">
-        <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-6">
-            <div class="flex items-center gap-4 flex-1 w-full">
-                <div class="w-12 h-12 bg-orange-600 rounded-xl flex items-center justify-center text-white"><i data-lucide="music-2"></i></div>
+    <div id="player" class="hidden fixed bottom-0 left-0 right-0 z-[100] glass p-4 md:p-6 shadow-2xl">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-4 md:gap-8">
+            <div class="flex items-center gap-4 flex-1 w-full min-w-0">
+                <div class="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center text-white shrink-0"><i data-lucide="music-2" class="w-5 h-5"></i></div>
                 <div class="min-w-0">
-                    <h4 id="pt" class="text-sm font-black uppercase text-white truncate italic tracking-tight">---</h4>
+                    <h4 id="pt" class="text-xs font-black uppercase text-white truncate italic tracking-tight">---</h4>
                     <p id="pp" class="text-[9px] font-bold text-neutral-500 uppercase">PROD. ---</p>
                 </div>
             </div>
             
-            <div id="pm" class="w-full md:w-1/3">
-                <!-- El audio/video se inyecta aquí -->
-            </div>
+            <div id="pm" class="w-full md:w-2/5"></div>
 
             <div class="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
-                <span id="pr" class="text-3xl font-black italic text-white">$0</span>
-                <button id="pb" class="bg-white text-black px-8 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-orange-600 hover:text-white transition-all">COMPRAR</button>
-                <button onclick="document.getElementById('player').classList.add('hidden')" class="text-neutral-500"><i data-lucide="x"></i></button>
+                <span id="pr" class="text-2xl font-black italic text-white">$0</span>
+                <button id="pb" class="bg-white text-black px-6 py-2 rounded-lg font-black uppercase text-[10px] tracking-widest hover:bg-orange-600 hover:text-white transition-all">COMPRAR</button>
+                <button onclick="document.getElementById('player').classList.add('hidden')" class="text-neutral-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
         </div>
     </div>
@@ -58,7 +108,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDIaAvpJZrJjQUKsh6KGD7gALJNskto8A8",
@@ -74,10 +124,14 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         let beats = [];
+        let selectedBeat = null;
 
         signInAnonymously(auth).then(() => {
             onSnapshot(collection(db, 'beats'), (snap) => {
-                beats = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                // FILTRO DE VISIBILIDAD AGREGADO AQUÍ
+                beats = snap.docs
+                    .map(doc => ({ id: doc.id, ...doc.data() }))
+                    .filter(b => b.visible !== false); 
                 render();
             });
         });
@@ -85,38 +139,80 @@
         function render() {
             const g = document.getElementById('grid');
             if(beats.length === 0) { 
-                g.innerHTML = '<p class="col-span-full text-center text-neutral-800 font-black uppercase text-xs py-20">Sin beats disponibles en el estudio</p>'; 
+                g.innerHTML = '<p class="text-center text-neutral-800 font-black uppercase text-xs py-20">Sin beats disponibles</p>'; 
                 return; 
             }
-            g.innerHTML = beats.map(b => `
-                <div class="beat-card p-8 rounded-[2.5rem] flex flex-col group relative">
-                    <!-- Botón de Opciones para WhatsApp -->
-                    <button onclick="window.requestByWhatsApp('${b.id}')" class="absolute top-6 right-6 text-neutral-600 hover:text-orange-500 transition-colors p-2">
-                        <i data-lucide="more-vertical"></i>
-                    </button>
-
-                    <div class="flex justify-between items-start mb-10">
-                        <div class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-neutral-600 group-hover:text-orange-500 transition-colors"><i data-lucide="music"></i></div>
-                        <span class="text-[9px] font-black uppercase text-orange-500 bg-orange-500/10 px-3 py-1 rounded-lg border border-orange-500/10">${b.genre || 'BEAT'}</span>
+            
+            g.innerHTML = beats.map((b, index) => `
+                <div class="beat-row grid grid-cols-12 gap-4 items-center px-6 py-4 cursor-pointer group" onclick="window.play('${b.id}')">
+                    <div class="col-span-1 flex items-center">
+                        <span class="text-[10px] font-mono text-neutral-700 group-hover:hidden">${index + 1}</span>
+                        <div class="hidden group-hover:block text-orange-500">
+                            <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-black uppercase italic text-white mb-1 truncate">${b.title}</h3>
-                    <p class="text-[9px] font-bold text-neutral-600 uppercase mb-8">PROD. ${b.producer || 'Jaddy Studio'}</p>
-                    <div class="mt-auto flex items-center justify-between border-t border-white/5 pt-6">
-                        <span class="text-3xl font-black italic">$${b.price}</span>
-                        <button onclick="window.play('${b.id}')" class="w-12 h-12 bg-white text-black rounded-xl flex items-center justify-center hover:bg-orange-600 hover:text-white transition-all shadow-lg"><i data-lucide="play" class="fill-current ml-1"></i></button>
+                    <div class="col-span-8 md:col-span-6 flex flex-col min-w-0">
+                        <h3 class="text-xs md:text-sm font-black uppercase italic text-white group-hover:text-orange-500 transition-colors truncate">${b.title}</h3>
+                        <p class="text-[9px] font-bold text-neutral-600 uppercase">PROD. ${b.producer || 'Jaddy Studio'}</p>
+                    </div>
+                    <div class="hidden md:col-span-2 md:flex">
+                        <span class="text-[9px] font-black text-neutral-500 uppercase tracking-tighter">${b.genre || 'BEAT'}</span>
+                    </div>
+                    <div class="col-span-3 flex items-center justify-end gap-4">
+                        <span class="text-sm md:text-lg font-black italic">$${b.price}</span>
+                        <button onclick="event.stopPropagation(); window.initPurchase('${b.id}')" class="bg-orange-600/10 text-orange-500 p-2 rounded hover:bg-orange-600 hover:text-white transition-all">
+                            <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        </button>
                     </div>
                 </div>
             `).join('');
             lucide.createIcons();
         }
 
-        // Función con el mensaje automatizado personalizado
-        window.requestByWhatsApp = (id) => {
-            const b = beats.find(x => x.id === id);
-            // Mensaje personalizado solicitado
-            const text = `🔥 ¡Hola Jaddy Studio! Estoy muy interesado en solicitar esta pista: "${b.title}". Me encanta el estilo y el nombre, ¿podrías darme más información para adquirirla?`;
-            const phone = b.whatsapp ? b.whatsapp.replace(/\D/g,'') : '584120000000'; // Fallback a tu número si no hay
+        // --- FLUJO DE COMPRA ---
+
+        window.initPurchase = (id) => {
+            selectedBeat = beats.find(x => x.id === id);
+            const modal = document.getElementById('purchaseModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.remove('hidden');
+            setTimeout(() => content.classList.remove('scale-95'), 10);
+            document.getElementById('artistNameInput').focus();
+        };
+
+        window.closeModal = () => {
+            const modal = document.getElementById('purchaseModal');
+            modal.classList.add('hidden');
+            document.getElementById('artistNameInput').value = '';
+        };
+
+        document.getElementById('confirmPurchaseBtn').onclick = async () => {
+            const artistName = document.getElementById('artistNameInput').value.trim();
+            if (!artistName) {
+                alert("Por favor, ingresa tu nombre artístico.");
+                return;
+            }
+
+            // 1. Notificar a Firebase de Ingresos
+            try {
+                await addDoc(collection(db, 'ingresos'), {
+                    beatId: selectedBeat.id,
+                    tituloBeat: selectedBeat.title,
+                    precio: selectedBeat.price,
+                    artista: artistName,
+                    fecha: serverTimestamp(),
+                    estado: 'pendiente'
+                });
+            } catch (e) {
+                console.error("Error al registrar ingreso:", e);
+            }
+
+            // 2. Abrir WhatsApp con info completa
+            const text = `🔥 ¡Hola Jaddy Studio! Soy el artista "${artistName}". Estoy listo para adquirir la pista: "${selectedBeat.title}". Avísame cómo procedemos con el pago para empezar a grabar. 🎤`;
+            const phone = selectedBeat.whatsapp ? selectedBeat.whatsapp.replace(/\D/g,'') : '584120000000';
             window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+            
+            closeModal();
         };
 
         window.play = (id) => {
@@ -129,13 +225,12 @@
             const m = document.getElementById('pm');
             
             if(b.type === 'youtube') {
-                m.innerHTML = `<iframe width="100%" height="60" src="https://www.youtube.com/embed/${b.url}?autoplay=1" frameborder="0" class="rounded-xl shadow-lg"></iframe>`;
+                m.innerHTML = `<iframe width="100%" height="45" src="https://www.youtube.com/embed/${b.url}?autoplay=1" frameborder="0" class="rounded-lg shadow-lg"></iframe>`;
             } else {
-                // Protección contra descarga habilitada
-                m.innerHTML = `<audio src="${b.url}" controls autoPlay controlsList="nodownload" oncontextmenu="return false;" class="w-full h-8 invert opacity-70"></audio>`;
+                m.innerHTML = `<audio src="${b.url}" controls autoPlay controlsList="nodownload" class="w-full h-8 invert opacity-70"></audio>`;
             }
 
-            document.getElementById('pb').onclick = () => window.requestByWhatsApp(b.id);
+            document.getElementById('pb').onclick = () => window.initPurchase(b.id);
             lucide.createIcons();
         };
 
@@ -144,5 +239,4 @@
 </body>
 </html>
 
-
-
+```
