@@ -1,0 +1,212 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jaddy Studio - Registro de Distribución</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #050505; color: #fff; overflow-x: hidden; }
+        .glass { background: rgba(15, 15, 15, 0.8); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.06); }
+        .premium-input { 
+            background: rgba(255,255,255,0.03) !important; 
+            border: 1px solid rgba(255,255,255,0.08) !important; 
+            color: white !important;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .premium-input:focus { 
+            border-color: #ea580c !important; 
+            background: rgba(234, 88, 12, 0.05) !important;
+            box-shadow: 0 0 20px rgba(234, 88, 12, 0.1);
+            outline: none;
+        }
+        .label-style { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; color: #777; margin-bottom: 10px; display: block; }
+        .text-outline { -webkit-text-stroke: 1px rgba(255,255,255,0.3); color: transparent; }
+        .btn-gradient { background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); }
+    </style>
+</head>
+<body class="pb-20">
+
+    <!-- Header / Logo -->
+    <nav class="p-6 flex justify-center items-center border-b border-white/5 glass sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-600/30">
+                <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+            </div>
+            <span class="font-black uppercase italic text-2xl tracking-tighter">Jaddy <span class="text-orange-500 text-outline">Studio</span></span>
+        </div>
+    </nav>
+
+    <main class="max-w-3xl mx-auto px-6 pt-16">
+        <header class="text-center mb-16">
+            <h1 class="text-5xl md:text-7xl font-black italic uppercase tracking-tighter mb-6 leading-none">
+                Distribución <br> <span class="text-orange-500">Oficial</span>
+            </h1>
+            <p class="text-neutral-500 text-[10px] font-black uppercase tracking-[0.4em] max-w-md mx-auto">
+                Ingresa tus datos legales para iniciar el proceso de carga en plataformas digitales
+            </p>
+        </header>
+
+        <div class="glass p-8 md:p-14 rounded-[3.5rem] shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-orange-600/10 blur-[80px] rounded-full"></div>
+            
+            <form id="registroPro" class="space-y-10 relative z-10">
+                
+                <!-- Sección 01: Quién eres -->
+                <div class="space-y-8">
+                    <div class="flex items-center gap-3 border-b border-white/10 pb-4">
+                        <span class="text-orange-500 font-black text-xs">01</span>
+                        <h3 class="text-white text-[10px] font-black uppercase tracking-widest">Identidad del Artista</h3>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <label class="label-style">Nombre Artístico</label>
+                            <input type="text" id="nombreArtista" placeholder="Ej: Jaddy Flow" class="premium-input w-full p-5 rounded-2xl text-sm font-bold" required>
+                        </div>
+                        <div>
+                            <label class="label-style">Género Principal</label>
+                            <select id="genero" class="premium-input w-full p-5 rounded-2xl text-sm font-bold cursor-pointer">
+                                <option>REGGAETON / URBANO</option>
+                                <option>TRAP / DRILL</option>
+                                <option>DANCEHALL / AFRO</option>
+                                <option>DANCE / ELECTRONICA</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 02: Datos Legales -->
+                <div class="space-y-8">
+                    <div class="flex items-center gap-3 border-b border-white/10 pb-4">
+                        <span class="text-orange-500 font-black text-xs">02</span>
+                        <h3 class="text-white text-[10px] font-black uppercase tracking-widest">Información Legal</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <label class="label-style">Nombre Real Completo</label>
+                            <input type="text" id="nombreReal" placeholder="Como sale en tu ID" class="premium-input w-full p-5 rounded-2xl text-sm font-medium" required>
+                        </div>
+                        <div>
+                            <label class="label-style">Cédula / DNI / Pasaporte</label>
+                            <input type="text" id="identificacion" placeholder="Número de documento" class="premium-input w-full p-5 rounded-2xl text-sm font-medium" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="label-style">Correo Electrónico Oficial</label>
+                        <input type="email" id="email" placeholder="artista@gmail.com" class="premium-input w-full p-5 rounded-2xl text-sm font-medium" required>
+                    </div>
+                </div>
+
+                <!-- Sección 03: Contacto -->
+                <div class="space-y-8">
+                    <div class="flex items-center gap-3 border-b border-white/10 pb-4">
+                        <span class="text-orange-500 font-black text-xs">03</span>
+                        <h3 class="text-white text-[10px] font-black uppercase tracking-widest">Contacto Directo</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <label class="label-style">WhatsApp (Incluir +)</label>
+                            <input type="text" id="whatsapp" placeholder="+58 412 0000000" class="premium-input w-full p-5 rounded-2xl text-sm font-medium" required>
+                        </div>
+                        <div>
+                            <label class="label-style">Link Instagram / Spotify</label>
+                            <input type="url" id="perfilLink" placeholder="https://instagram.com/..." class="premium-input w-full p-5 rounded-2xl text-sm font-medium">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-6">
+                    <button type="submit" id="btnSubmit" class="w-full btn-gradient text-white font-black uppercase py-6 rounded-3xl text-[10px] tracking-[0.4em] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 shadow-xl shadow-orange-600/20">
+                        <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                        SOLICITAR DISTRIBUCIÓN
+                    </button>
+                    <p class="text-center mt-8 text-[9px] text-neutral-600 font-bold uppercase tracking-widest leading-relaxed">
+                        Al enviar, confirmas que eres el dueño legal de los derechos de la obra. Jaddy Studio se pondrá en contacto para la recepción del material (WAV + ARTE).
+                    </p>
+                </div>
+            </form>
+
+            <!-- Éxito -->
+            <div id="finalStep" class="hidden text-center py-12 animate-in fade-in slide-in-from-bottom-8">
+                <div class="w-24 h-24 bg-orange-600/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-orange-500/20">
+                    <i data-lucide="check" class="w-10 h-10 text-orange-500"></i>
+                </div>
+                <h2 class="text-4xl font-black italic uppercase mb-4 tracking-tighter">¡Registro Exitoso!</h2>
+                <p class="text-neutral-400 text-[10px] uppercase font-black tracking-widest leading-loose mb-10">
+                    Tus datos legales han sido enviados al servidor. <br> 
+                    <span class="text-white">PRÓXIMO PASO:</span> Envía tu música al correo oficial del sello.
+                </p>
+                <div class="flex flex-col gap-4">
+                    <button onclick="window.confirmarPorWhatsapp()" class="bg-white text-black px-8 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-500 hover:text-white transition-all">
+                        Notificar vía WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const form = document.getElementById('registroPro');
+        const btn = document.getElementById('btnSubmit');
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-pulse">ENVIANDO DATOS...</span>`;
+
+            const formData = {
+                nombreReal: document.getElementById('nombreReal').value,
+                identificacion: document.getElementById('identificacion').value,
+                nombreArtista: document.getElementById('nombreArtista').value,
+                genero: document.getElementById('genero').value,
+                perfilLink: document.getElementById('perfilLink').value,
+                email: document.getElementById('email').value,
+                whatsapp: document.getElementById('whatsapp').value,
+                fechaRegistro: serverTimestamp(),
+                status: 'solicitud_pendiente' // Estado inicial para que tú lo valides en el admin
+            };
+
+            try {
+                await signInAnonymously(auth);
+                // Guardamos en la misma colección que el admin escucha
+                await addDoc(collection(db, 'artistas_registrados'), formData);
+                
+                form.classList.add('hidden');
+                document.getElementById('finalStep').classList.remove('hidden');
+            } catch (err) {
+                console.error(err);
+                alert("Ocurrió un error. Verifica tu conexión e intenta de nuevo.");
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4"></i> SOLICITAR DISTRIBUCIÓN`;
+            }
+        };
+
+        window.confirmarPorWhatsapp = () => {
+            const artista = document.getElementById('nombreArtista').value;
+            const text = `🔥 ¡Qué tal Jaddy Studio! Acabo de registrarme para distribución oficial como "${artista}". Ya mis datos legales están en el sistema. ¿Me dan luz verde para enviar el material al correo?`;
+            const phone = "584120000000"; // PON AQUÍ TU NÚMERO REAL
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+        };
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
+
+```
