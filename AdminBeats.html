@@ -214,11 +214,15 @@
             lucide.createIcons();
         };
 
+        // FUNCIÓN DE ELIMINAR ACTUALIZADA (Sin clave, solo confirmación)
         window.deleteBeat = async (id) => {
-            if(confirm("¿Eliminar track del catálogo?")) {
+            if (confirm("¿Estás seguro de que deseas eliminar este beat del catálogo? Esta acción no se puede deshacer.")) {
                 try {
                     await deleteDoc(doc(db, 'beats', id));
-                } catch(e) { console.error("Error al borrar:", e); }
+                } catch(e) {
+                    console.error("Error al borrar:", e);
+                    alert("Error al intentar eliminar el beat.");
+                }
             }
         };
 
@@ -236,14 +240,12 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Escuchando tu colección "beats"
                 const q = collection(db, 'beats');
                 onSnapshot(q, (snap) => {
                     beats = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                     window.renderBeats();
                 }, (err) => {
                     console.error("Error de base de datos:", err);
-                    alert("Revisa que las reglas de tu base de datos permitan lectura/escritura.");
                 });
             }
         });
@@ -285,6 +287,5 @@
     </script>
 </body>
 </html>
-
 
 ```
