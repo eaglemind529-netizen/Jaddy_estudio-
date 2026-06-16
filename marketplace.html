@@ -16,16 +16,22 @@
         #purchaseModal { backdrop-filter: blur(8px); background: rgba(0,0,0,0.8); }
         .tab-active { background: #ea580c; color: white; }
         .filter-btn.active { background: #ea580c; color: white; border-color: #ea580c; }
+        audio::-webkit-media-controls-enclosure { overflow:hidden; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
     </style>
 </head>
 <body class="pb-64">
 
     <header class="py-12 px-6 text-center border-b border-white/5 relative">
-        <button onclick="window.shareCatalog()" class="absolute top-6 left-6 text-neutral-500 hover:text-white transition-colors">
-            <i data-lucide="share-2" class="w-6 h-6"></i>
+        <!-- BOTÓN DE COMPARTIR AÑADIDO AQUÍ -->
+        <button onclick="window.shareCatalog()" class="absolute top-6 left-6 text-neutral-500 hover:text-white transition-colors p-2">
+            <i data-lucide="share-2" class="w-5 h-5"></i>
         </button>
+
         <h1 class="text-4xl md:text-6xl font-black italic uppercase tracking-tighter">THE <span class="text-orange-500">MARKET</span></h1>
-        <p class="text-[9px] font-bold text-neutral-500 uppercase tracking-[0.4em] mt-2">Jaddy Studio Professional Production</p>
+        <p class="text-[9px] font-bold text-neutral-500 uppercase tracking-[0.4em] mt-2 text-center">Jaddy Studio Professional Production</p>
         
         <div class="flex justify-center gap-2 mt-8">
             <button onclick="window.filterBeats('all')" id="filter-all" class="filter-btn active px-4 py-1.5 rounded-full border border-white/10 text-[9px] font-black uppercase tracking-widest transition-all">Todo</button>
@@ -35,8 +41,81 @@
     </header>
 
     <main class="max-w-5xl mx-auto mt-6 px-4">
-        <div id="grid" class="flex flex-col gap-1"></div>
+        <div class="hidden md:grid grid-cols-12 px-6 py-4 text-[10px] font-black uppercase text-neutral-600 tracking-widest">
+            <div class="col-span-1">#</div>
+            <div class="col-span-5">Título / Productor</div>
+            <div class="col-span-2">Tipo</div>
+            <div class="col-span-1">Género</div>
+            <div class="col-span-3 text-right">Precio / Acción</div>
+        </div>
+
+        <div id="grid" class="flex flex-col gap-1">
+            <div class="p-20 text-center animate-pulse text-neutral-700 font-bold uppercase text-xs">Cargando catálogo...</div>
+        </div>
     </main>
+
+    <!-- ... (El resto del código como reproductor y modal se mantiene idéntico) ... -->
+    <div id="player" class="hidden fixed bottom-0 left-0 right-0 z-[100] glass p-4 md:p-6 shadow-2xl border-t border-orange-500/20">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-8 h-8 bg-orange-600 rounded flex items-center justify-center text-white shrink-0"><i data-lucide="music" class="w-4 h-4"></i></div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2">
+                            <h4 id="pt" class="text-[10px] md:text-xs font-black uppercase text-white truncate italic tracking-tight">---</h4>
+                            <span id="playerBadge" class="text-[7px] border border-orange-500 text-orange-500 px-1 rounded font-bold uppercase">---</span>
+                        </div>
+                        <p id="pp" class="text-[8px] font-bold text-neutral-500 uppercase">PROD. ---</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('player').classList.add('hidden')" class="text-neutral-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                <div class="md:col-span-5 w-full">
+                    <div id="pm" class="mb-3"></div>
+                    <div id="descContainer" class="bg-black/40 p-3 rounded-lg border border-white/5 mt-2 hidden">
+                        <p class="text-[8px] text-orange-500 font-black uppercase tracking-widest mb-1">Descripción</p>
+                        <p id="pDesc" class="text-[10px] text-neutral-400 leading-relaxed italic"></p>
+                    </div>
+                </div>
+                <div class="md:col-span-7 flex flex-col md:flex-row items-center gap-4 w-full self-center">
+                    <div id="paymentToggle" class="flex bg-white/5 p-1 rounded-xl w-full md:w-auto shrink-0">
+                        <button id="tabContado" onclick="window.switchMode('contado')" class="px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all tab-active">Contado</button>
+                        <button id="tabCredito" onclick="window.switchMode('credito')" class="px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all text-neutral-500">Crédito</button>
+                    </div>
+                    <div class="flex-1 text-center md:text-left">
+                        <div id="priceDisplay">
+                            <span id="pr" class="text-3xl font-black italic text-white leading-none">$0</span>
+                            <p id="priceLabel" class="text-[8px] font-bold text-neutral-500 uppercase mt-1">Pago único</p>
+                        </div>
+                        <div id="creditDisplay" class="hidden">
+                            <div class="flex items-center gap-4 justify-center md:justify-start">
+                                <div><span id="crInitial" class="text-xl font-black text-white">$0</span><p class="text-[7px] font-bold text-orange-500 uppercase">Inicial</p></div>
+                                <div class="w-px h-6 bg-white/10"></div>
+                                <div><span id="crInstallment" class="text-xl font-black text-white">$0</span><p id="crInstallmentLabel" class="text-[7px] font-bold text-orange-500 uppercase">X Cuotas</p></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="pb" class="w-full md:w-auto bg-orange-600 text-white px-8 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-orange-500 transition-all shadow-lg shadow-orange-900/20">ADQUIRIR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="purchaseModal" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4">
+        <div class="bg-[#111] border border-orange-500/30 p-8 rounded-2xl max-w-sm w-full shadow-2xl scale-95 transition-transform duration-300" id="modalContent">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-orange-600/20 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="mic-2" class="text-orange-500 w-8 h-8"></i></div>
+                <h2 class="text-xl font-black italic uppercase tracking-tighter">Casi listo</h2>
+                <p id="modalSubtext" class="text-neutral-400 text-[10px] uppercase font-bold tracking-widest mt-1">Ingresa tu nombre artístico</p>
+            </div>
+            <div class="space-y-4">
+                <input type="text" id="artistNameInput" placeholder="EJ: YOUNG JADDY" class="w-full bg-black border border-neutral-800 p-4 rounded-lg text-sm font-bold uppercase tracking-widest focus:border-orange-500 outline-none text-white transition-all">
+                <button id="confirmPurchaseBtn" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-lg uppercase text-xs tracking-[0.2em] transition-all shadow-lg shadow-orange-900/20">FINALIZAR PEDIDO</button>
+                <button onclick="closeModal()" class="w-full text-neutral-600 hover:text-white text-[9px] font-bold uppercase tracking-widest transition-colors">CANCELAR</button>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
@@ -54,24 +133,29 @@
         };
 
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
         let allBeats = [];
         let currentFilter = 'all';
+        let selectedBeat = null;
+        let selectedMode = 'contado';
 
+        // LÓGICA DE COMPARTIR AÑADIDA
         window.shareCatalog = () => {
             const shareData = {
                 title: 'Jaddy Studio Marketplace',
-                text: 'Mira el catálogo de beats profesionales:',
+                text: 'Mira el catálogo de beats profesionales de Jaddy Studio:',
                 url: window.location.href
             };
-            if (navigator.share) navigator.share(shareData).catch(console.error);
-            else {
+            if (navigator.share) {
+                navigator.share(shareData).catch(err => console.log('Error compartiendo:', err));
+            } else {
                 navigator.clipboard.writeText(window.location.href);
-                alert("¡Enlace copiado al portapapeles!");
+                alert("¡Enlace del catálogo copiado al portapapeles!");
             }
         };
 
-        signInAnonymously(getAuth(app)).then(() => {
+        signInAnonymously(auth).then(() => {
             onSnapshot(collection(db, 'beats'), (snap) => {
                 allBeats = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(b => b.visible === true);
                 render();
@@ -89,19 +173,60 @@
             const g = document.getElementById('grid');
             const filtered = allBeats.filter(b => currentFilter === 'all' || b.category === currentFilter);
             g.innerHTML = filtered.map((b, index) => `
-                <div class="beat-row grid grid-cols-12 gap-4 items-center px-6 py-4 cursor-pointer">
+                <div class="beat-row grid grid-cols-12 gap-4 items-center px-6 py-4 cursor-pointer group" onclick="window.play('${b.id}')">
                     <div class="col-span-1"><span class="text-[10px] font-mono text-neutral-700">${index + 1}</span></div>
-                    <div class="col-span-8 flex flex-col">
-                        <h3 class="text-xs font-black uppercase italic text-white">${b.title}</h3>
+                    <div class="col-span-8 md:col-span-5 flex flex-col min-w-0">
+                        <h3 class="text-xs md:text-sm font-black uppercase italic text-white group-hover:text-orange-500 transition-colors truncate">${b.title}</h3>
                         <p class="text-[9px] font-bold text-neutral-600 uppercase">PROD. ${b.producer || 'Jaddy Studio'}</p>
                     </div>
-                    <div class="col-span-3 text-right">
-                        <span class="text-sm font-black italic text-white">$${b.price}</span>
-                    </div>
+                    <div class="hidden md:col-span-2 md:flex"><span class="text-[8px] font-black px-2 py-0.5 rounded border ${b.category === 'exclusiva' ? 'border-orange-500 text-orange-500' : 'border-blue-500 text-blue-500'} uppercase tracking-widest italic">${b.category === 'exclusiva' ? 'Exclusiva' : 'Licencia'}</span></div>
+                    <div class="hidden md:col-span-1 md:flex"><span class="text-[9px] font-black text-neutral-500 uppercase tracking-tighter">${b.genre || 'BEAT'}</span></div>
+                    <div class="col-span-3 flex items-center justify-end gap-4"><div class="flex flex-col items-end"><span class="text-sm md:text-lg font-black italic text-white leading-none">$${b.price}</span></div><button onclick="event.stopPropagation(); window.initPurchase('${b.id}')" class="bg-orange-600/10 text-orange-500 p-2 rounded hover:bg-orange-600 hover:text-white transition-all"><i data-lucide="shopping-cart" class="w-4 h-4"></i></button></div>
                 </div>
             `).join('');
             lucide.createIcons();
         }
+
+        window.play = (id) => {
+            const b = allBeats.find(x => x.id === id);
+            selectedBeat = b;
+            document.getElementById('player').classList.remove('hidden');
+            document.getElementById('pt').innerText = b.title;
+            document.getElementById('pp').innerText = `PROD. ${b.producer || 'Jaddy Studio'}`;
+            document.getElementById('pr').innerText = `$${b.price}`;
+            const badge = document.getElementById('playerBadge');
+            badge.innerText = b.category === 'exclusiva' ? 'Exclusiva' : 'Licencia';
+            badge.className = `text-[7px] border ${b.category === 'exclusiva' ? 'border-orange-500 text-orange-500' : 'border-blue-500 text-blue-500'} px-1 rounded font-bold uppercase`;
+            const descCont = document.getElementById('descContainer');
+            if(b.description && b.description.trim() !== "") { descCont.classList.remove('hidden'); document.getElementById('pDesc').innerText = b.description; } else { descCont.classList.add('hidden'); }
+            const toggle = document.getElementById('paymentToggle');
+            if(b.saleType === 'ambos') { toggle.classList.remove('hidden'); window.switchMode('contado'); } else { toggle.classList.add('hidden'); window.switchMode(b.saleType === 'credito' ? 'credito' : 'contado'); }
+            if(b.saleType !== 'contado') { const count = parseInt(b.installmentsCount) || 1; const inicial = parseFloat(b.downPayment) || 0; const cuota = ((b.price - inicial) / count).toFixed(2); document.getElementById('crInitial').innerText = `$${inicial}`; document.getElementById('crInstallment').innerText = `$${cuota}`; document.getElementById('crInstallmentLabel').innerText = `${count} Cuotas`; }
+            document.getElementById('pm').innerHTML = b.type === 'youtube' ? `<iframe width="100%" height="45" src="https://www.youtube.com/embed/${b.url}?autoplay=1" frameborder="0" class="rounded-lg"></iframe>` : `<audio src="${b.url}" controls autoPlay class="w-full h-8 invert opacity-70"></audio>`;
+            document.getElementById('pb').onclick = () => window.initPurchase(b.id);
+            lucide.createIcons();
+        };
+
+        window.switchMode = (mode) => {
+            if(!selectedBeat) return;
+            selectedMode = mode;
+            document.getElementById('tabContado').className = `px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${mode === 'contado' ? 'tab-active' : 'text-neutral-500'}`;
+            document.getElementById('tabCredito').className = `px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${mode === 'credito' ? 'tab-active' : 'text-neutral-500'}`;
+            document.getElementById('priceDisplay').classList.toggle('hidden', mode === 'credito');
+            document.getElementById('creditDisplay').classList.toggle('hidden', mode === 'contado');
+        };
+
+        window.initPurchase = (id) => { selectedBeat = allBeats.find(x => x.id === id); document.getElementById('purchaseModal').classList.remove('hidden'); setTimeout(() => document.getElementById('modalContent').classList.remove('scale-95'), 10); };
+        window.closeModal = () => document.getElementById('purchaseModal').classList.add('hidden');
+
+        document.getElementById('confirmPurchaseBtn').onclick = async () => {
+            const artist = document.getElementById('artistNameInput').value.trim();
+            if(!artist) return;
+            const msg = `¡Hola Jaddy Studio! Soy "${artist}". Me interesa: "${selectedBeat.title}" (${selectedBeat.category.toUpperCase()}) en modalidad ${selectedMode.toUpperCase()}.`;
+            window.open(`https://wa.me/${selectedBeat.whatsapp.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`, '_blank');
+            closeModal();
+        };
+
         lucide.createIcons();
     </script>
 </body>
